@@ -184,7 +184,7 @@
 
 
     <!-- Opção de Exportar -->
-    <div class="config-item">
+    <div class="config-item" onclick="abrirexport()">
       <img class="icon2" src="assets/exportar.png" alt="Exportar">
       <div class="config-text">
         <h2 class="medio-text">Exportar histórico</h2>
@@ -192,6 +192,46 @@
       </div>
       <img class="icon1 arrow" src="assets/setas-direitas.png" alt="seta direita">
     </div>
+
+            <!-- Menu de Metas -->
+    <div id="menuexport" class="menuexport">
+      <div class="card">
+        <div class="card-header">
+            <a href="#" class="btn-back" onclick="fecharexport()">
+              <img class="icon1" src="assets/seta-esquerda.png" alt="voltar">
+            </a>
+            <h2 class="medio-text">Configurações > Exportar histórico</h2>
+        </div>
+
+        <p class="descricao">
+         Escolha o formato e envie seu historico de transações
+        </p>
+       <form method="POST" action="/processar_extrato" enctype="multipart/form-data">
+          
+          <input 
+              type="file" 
+              name="arquivo_extrato" 
+              accept=".csv" 
+              required
+              id="csv-file-input"  
+              class="input-file-oculto" 
+          >
+          
+          <label for="csv-file-input" class="label-customizado">
+              <img src="assets/papel.png"  width="50px" height="50px" alt="papel">Clique aqui para escolhe o arquivo CSV
+          </label>
+          
+          <button type="submit" class="btn-submit">
+              Enviar Extrato CSV
+          </button>
+        </form>
+
+      </div>
+    </div>
+    
+    
+
+    
 
     <!-- Opção de Perfil -->
     <div class="config-item">

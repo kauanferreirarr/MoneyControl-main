@@ -92,6 +92,15 @@ function abrirMetas() {
   document.getElementById("menumetas").style.display = "flex";
 }
 
+function abrirexport() {
+  document.getElementById("menuexport").style.display = "flex";
+}
+
+function fecharexport() {
+  document.getElementById("menuexport").style.display = "none";
+}
+
+
 // Função para fechar o modal de metas
 function fecharMetas() {
   document.getElementById("menumetas").style.display = "none";

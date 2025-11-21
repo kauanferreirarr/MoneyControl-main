@@ -609,3 +609,78 @@
   from { opacity: 0; transform: scale(0.9); }
   to { opacity: 1; transform: scale(1); }
 }
+
+.menuexport{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(5px);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.menuexport .card {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  padding: 30px 25px;
+  width: 90%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: aparecer 0.3s ease;
+}
+
+/* 1. Esconde o input padrão do navegador */
+.input-file-oculto {
+    display: none;
+}
+
+/* 2. Estiliza o LABEL para que ele pareça e funcione como um botão */
+.label-customizado {
+    /* Propriedades antigas */
+    display: block; 
+    text-align: center; 
+    padding: 12px 15px;
+    background-color: #f7f7f7;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    color: #555;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;            
+    align-items: center;       
+    justify-content: center;   
+}
+
+/* Efeito de hover */
+.label-customizado:hover {
+    background-color: #eee;
+}
+
+/* 3. Estiliza o botão de submissão (Enviar Extrato CSV) */
+.btn-submit {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background-color: #007bff; /* Cor principal (Mude se necessário) */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 20px;
+    transition: background-color 0.2s;
+}
+
+.btn-submit:hover {
+    background-color: #0056b3;
+}
