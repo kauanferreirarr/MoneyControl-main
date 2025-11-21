@@ -241,3 +241,4 @@ function abrirNotifCard() {
 function fecharNotifCard() {
   document.getElementById("notifcard").style.display = "none";
 }
+
