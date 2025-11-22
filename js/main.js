@@ -12,6 +12,7 @@ import {
   signOut,
   sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
 import {
   getFirestore,
   doc,
@@ -19,7 +20,12 @@ import {
   getDoc,
   updateDoc,
   arrayUnion,
-  increment
+  increment,
+  collection, 
+  query,
+  where,
+  orderBy,
+  getDocs 
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
 // =========================== FIREBASE CONFIG ===========================
@@ -177,9 +183,49 @@ async function verificarResetMensal(dadosUsuario, userRef) {
 }
 
 
+// main.js - NOVO BLOCO (antes da sua função carregarDados)
 
+// Função segura para parsear datas DD/MM/AAAA (Usada para ordenação)
+const parseDateToSort = (dateStr) => {
+    if (!dateStr || typeof dateStr !== 'string') return new Date(0);
+    const parts = dateStr.split('/');
+    if (parts.length === 3) {
+      // Converte para YYYY-MM-DD para o objeto Date (Formato seguro)
+      return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+    }
+    return new Date(0); // Retorna uma data inicial para não quebrar a ordenação
+};
+
+
+// [1] BUSCAR EXTRATO DA COLEÇÃO 'transacoes'
+async function buscarTransacoesExtrato(uid) {
+  try {
+    // É ESSENCIAL que collection, query, where, orderBy, getDocs estejam importados!
+    const q = query(
+      collection(db, "transacoes"),
+      where("user_id", "==", uid),
+      // Ordenamos pela data de criação no servidor (mais seguro)
+      orderBy("criado_em", "desc") 
+    );
+
+    const querySnapshot = await getDocs(q);
+    let transacoesCarregadas = [];
+    querySnapshot.forEach((doc) => {
+      transacoesCarregadas.push(doc.data());
+    });
+    
+    return transacoesCarregadas;
+  } catch (e) {
+    console.error("Erro ao buscar transações externas:", e);
+    return [];
+  }
+}
 
 // === FIRESTORE ===
+
+// main.js - FUNÇÃO CARREGARDADOS CORRIGIDA
+// main.js - FUNÇÃO CARREGARDADOS (Versão Final)
+
 async function carregarDados(uid) {
   
   const userRef = doc(db, "usuarios", uid);
@@ -192,21 +238,74 @@ async function carregarDados(uid) {
 
   const dados = snap.data();
 
-  // AQUI: só chama depois de pegar os dados
+  // AQUI: (Sua lógica de reset mensal)
   await verificarResetMensal(dados, userRef);
+  
+  // =========================================================================
+  // ETAPA DE FUSÃO, CÁLCULO E ATUALIZAÇÃO DO SALDO/GASTOS
+  // =========================================================================
+  
+  const transacoesDoExtrato = await buscarTransacoesExtrato(uid);
+  
+  // 1. Normalizar Transações Manuais (dados.transacoes)
+  let transacoesManuais = (dados.transacoes || []).map(t => ({
+    descricao: t.descricao,
+    data: t.data,
+    valor: Math.abs(t.valor), // Valor sempre positivo
+    tipo: t.tipo === "despesa" ? "despesa" : "saldo",
+    data_sort: parseDateToSort(t.data), // Parse seguro
+    origem: 'manual'
+  }));
 
+  // 2. Normalizar Transações de Extrato (Coleção 'transacoes')
+  let transacoesExtratoNormalizadas = transacoesDoExtrato.map(t => ({
+    descricao: t.descricao + (t.banco_origem ? ` (${t.banco_origem})` : ''),
+    data: t.data, // Mantém o formato DD/MM/AAAA para exibição
+    valor: Math.abs(t.valor),
+    tipo: t.valor < 0 ? 'despesa' : 'saldo',
+    data_sort: parseDateToSort(t.data), // Parse seguro
+    origem: 'extrato'
+  }));
+
+  // 3. Fundir, Ordenar e Recalcular
+  let todasTransacoes = [...transacoesManuais, ...transacoesExtratoNormalizadas];
+  todasTransacoes.sort((a, b) => b.data_sort.getTime() - a.data_sort.getTime());
+
+  let novoSaldo = 0;
+  let novosGastos = 0;
+  
+  todasTransacoes.forEach(t => {
+    const valorReal = t.valor;
+    if (t.tipo === 'saldo') {
+      novoSaldo += valorReal;
+    } else if (t.tipo === 'despesa') {
+      novoSaldo -= valorReal;
+      novosGastos += valorReal;
+    }
+  });
+  
+  // 4. Se houver diferença, atualiza o Firestore com os novos totais
+  if (dados.saldo !== novoSaldo || dados.gastos !== novosGastos) {
+    await updateDoc(userRef, { 
+        saldo: novoSaldo,
+        gastos: novosGastos
+    });
+  }
+  
+  // =========================================================================
+  // FIM DO CÁLCULO
+  // =========================================================================
 
   const limiteInput = document.getElementById("limit-range");
   const displayValue = document.getElementById("display-value");
- 
-  // Carregar valor do banco
-    if(limiteInput && displayValue){
-      if(dados.limiteMensal !== undefined){
-      limiteInput.value = dados.limiteMensal; // atualiza input
+  
+  // (Sua lógica de limite continua aqui...)
+  if(limiteInput && displayValue){
+    if(dados.limiteMensal !== undefined){
+      limiteInput.value = dados.limiteMensal;
       displayValue.textContent = Number(dados.limiteMensal).toLocaleString("pt-BR", {minimumFractionDigits: 2});
     }
 
-    // Atualiza display quando o usuário mexe na barra
     limiteInput.addEventListener("input", () => {
       displayValue.textContent = Number(limiteInput.value).toLocaleString("pt-BR", {minimumFractionDigits: 2});
     });
@@ -216,23 +315,30 @@ async function carregarDados(uid) {
   const gastosAtualEl = document.getElementById("gastos-atual");
   const historicoEl = document.querySelector("#historico ul");
 
-  if (saldoAtualEl) animarSaldo(saldoAtualEl, dados.saldo);
-  if (gastosAtualEl) animarSaldo(gastosAtualEl, dados.gastos);
+  // ATUALIZA O DISPLAY com os valores RECALCULADOS
+  if (saldoAtualEl) animarSaldo(saldoAtualEl, novoSaldo);
+  if (gastosAtualEl) animarSaldo(gastosAtualEl, novosGastos);
 
 
-
-  
+  // =========================================================================
+  // ETAPA DE RENDERIZAÇÃO DO HISTÓRICO
+  // =========================================================================
 
   if (historicoEl) {
     historicoEl.innerHTML = "";
-    const transacoes = (dados.transacoes || []).slice().reverse();
-    transacoes.forEach((t, index) => {
+    
+    // Renderiza a lista fundida e ordenada: 'todasTransacoes'
+    todasTransacoes.forEach((t, index) => {
       const li = document.createElement("li");
-      li.setAttribute('data-index', dados.transacoes.length - 1 - index);
+      li.setAttribute('data-index', index); 
+      
+      // Usa sua função formatarDataTransacao (assumindo que lida com o formato DD/MM/AAAA)
+      const dataFormatada = formatarDataTransacao(t.data); 
+
       li.innerHTML = `
         <div>
           <h3 class="medio-text">${t.descricao}</h3>
-          <p>${formatarDataTransacao(t.data)}</p>
+          <p>${dataFormatada}</p>
         </div>
         <span class="medio-text ${t.tipo === "despesa" ? "red" : "green"}">${formatBR(t.valor)}</span>
         <div class="delete-icon" style="display:none; cursor:pointer;">
@@ -246,7 +352,7 @@ async function carregarDados(uid) {
       `;
       historicoEl.appendChild(li);
 
-      if (index < transacoes.length - 1) {
+      if (index < todasTransacoes.length - 1) {
         const separator = document.createElement("div");
         separator.className = "linha";
         historicoEl.appendChild(separator);
@@ -255,6 +361,49 @@ async function carregarDados(uid) {
   }
   
   setupTransactionItems();
+}
+
+function carregarHistoricoDeTransacoes(userId) {
+    // Escuta a mesma coleção que o server.js está salvando agora
+    const transacoesRef = collection(db, 'artifacts', APP_ID, 'users', userId, 'transacoes');
+    
+    // Ordena por data (a mais recente primeiro)
+    const q = query(transacoesRef, orderBy('data', 'desc')); 
+
+    // onSnapshot cria a conexão em tempo real
+    return onSnapshot(q, (snapshot) => {
+        const transacoes = [];
+        let totalGastos = 0;
+
+        snapshot.forEach((doc) => {
+            const transacao = doc.data();
+            transacoes.push({ id: doc.id, ...transacao });
+            
+            if (transacao.tipo === 'Despesa') {
+                // Calcula gastos acumulados, usando o valor absoluto
+                totalGastos += Math.abs(transacao.valor);
+            }
+        });
+
+        // Dispara um evento customizado para que o script.js (UI) saiba que os dados mudaram.
+        const event = new CustomEvent('transactionsUpdated', { 
+            detail: { 
+                transactions: transacoes, 
+                totalGastos: totalGastos 
+            } 
+        });
+        document.dispatchEvent(event);
+
+        // Atualiza os gastos na tela principal com o valor recalculado
+        const gastosEl = document.getElementById('gastos-atual');
+        if (gastosEl) {
+            gastosEl.textContent = formatBR(totalGastos);
+        }
+        
+        console.log(`[Firestore Listener] ${transacoes.length} transações carregadas/atualizadas em tempo real.`);
+    }, (error) => {
+        console.error("Erro ao carregar transações:", error);
+    });
 }
 
 // === PERFIL ===
@@ -524,59 +673,64 @@ function setupTransactionItems(){
 
 // === DETECTA USUÁRIO LOGADO ===
 onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    currentUser = user;
-    const userRef = doc(db, "usuarios", user.uid);
-    const snap = await getDoc(userRef);
+    if (user) {
+        currentUser = user;
+        
+        // ===================================
+        // NOVO: PREENCHE O CAMPO OCULTO COM O UID
+        // ===================================
+        const inputUidExtrato = document.getElementById('user-uid-input');
+        if (inputUidExtrato) {
+            inputUidExtrato.value = user.uid;
+            console.log(`UID do usuário (${user.uid}) preenchido no formulário de extrato.`);
+        }
+        // ===================================
+        
+        const userRef = doc(db, "usuarios", user.uid);
+        const snap = await getDoc(userRef);
 
-    if (snap.exists()) {
-      const dados = snap.data();
+        if (snap.exists()) {
+            const dados = snap.data();
 
-      // 🔥 Chama a verificação do reset automático aqui
-      await verificarResetMensal(dados, userRef)
-      const limiteDoBanco = snap.data().limiteMensal || 0; // valor do banco ou 0
-  
+            // 🔥 Chama a verificação do reset automático aqui
+            await verificarResetMensal(dados, userRef)
+            const limiteDoBanco = snap.data().limiteMensal || 0; // valor do banco ou 0
+        
+            // Agora atualiza os inputs
+            const rangeInput = document.getElementById('limit-range');
+            const manualInput = document.getElementById('manual-input');
+            const displayValue = document.getElementById('display-value');
 
-      // Agora atualiza os inputs
-      const rangeInput = document.getElementById('limit-range');
-      const manualInput = document.getElementById('manual-input');
-      const displayValue = document.getElementById('display-value');
+            if (rangeInput && manualInput && displayValue) {
+                rangeInput.value = limiteDoBanco;
+                manualInput.value = limiteDoBanco;
+                displayValue.textContent = limiteDoBanco;
 
-      if (rangeInput && manualInput && displayValue) {
-        rangeInput.value = limiteDoBanco;
-        manualInput.value = limiteDoBanco;
-        displayValue.textContent = limiteDoBanco;
+                // Atualiza a barra do slider (aquela cor)
+                const primaryColor = getComputedStyle(document.documentElement)
+                                            .getPropertyValue('--color-primary').trim();
+                const percentage = (limiteDoBanco / rangeInput.max) * 100;
+                rangeInput.style.background = `linear-gradient(to right, ${primaryColor} ${percentage}%, #E0E0E0 ${percentage}%)`;
+            }
+        }
+        
+        await carregarDados(user.uid);
+        await carregarNomeUsuario(user.uid);
 
-        // Atualiza a barra do slider (aquela cor)
-        const primaryColor = getComputedStyle(document.documentElement)
-                              .getPropertyValue('--color-primary').trim();
-        const percentage = (limiteDoBanco / rangeInput.max) * 100;
-        rangeInput.style.background = `linear-gradient(to right, ${primaryColor} ${percentage}%, #E0E0E0 ${percentage}%)`;
-      }
+        if (
+            window.location.href.includes("login.html") ||
+            window.location.href.includes("registrar.html")
+        ) {
+            window.location.href = "index.html";
+        }
+    } else {
+        if (
+            !window.location.href.includes("login.html") &&
+            !window.location.href.includes("registrar.html")
+        ) {
+            window.location.href = "login.html";
+        }
     }
-    
-
-    await carregarDados(user.uid);
-    await carregarNomeUsuario(user.uid);
-
-    if (
-      window.location.href.includes("login.html") ||
-      window.location.href.includes("registrar.html")
-    ) {
-      window.location.href = "index.html";
-    }
-  } else {
-    if (
-      !window.location.href.includes("login.html") &&
-      !window.location.href.includes("registrar.html")
-    ) {
-      window.location.href = "login.html";
-    }
-  }
-
-
-
-  
 });
 
 

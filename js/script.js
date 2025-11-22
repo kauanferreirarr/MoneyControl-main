@@ -130,6 +130,61 @@ document.addEventListener("DOMContentLoaded", () => {
   ajustarAlturaHistorico();
 });
 
+function renderizarHistorico(transacoes) {
+    // Limpa a lista atual
+    historicoList.innerHTML = ''; 
+
+    // Se não houver transações, mostra uma mensagem
+    if (transacoes.length === 0) {
+        historicoList.innerHTML = '<li class="mensagem-vazio" style="text-align: center; color: #666; padding: 20px;">Nenhuma transação registrada. Importe um extrato ou adicione manualmente.</li>';
+        return;
+    }
+    
+    // Cria os elementos do histórico
+    transacoes.forEach(t => {
+        const li = document.createElement('li');
+        // Define a cor com base no tipo
+        const valorClass = t.tipo === 'Receita' ? 'valor-receita' : 'valor-despesa';
+        
+        // Formato da data para exibição (DD/MM/AAAA)
+        let dataFormatada = t.data;
+        if (t.data && typeof t.data === 'string' && t.data.includes('-')) {
+            // Se for string ISO (AAAA-MM-DD), converte para DD/MM/AAAA
+            const [ano, mes, dia] = t.data.split('-');
+            dataFormatada = `${dia}/${mes}/${ano}`;
+        }
+
+        li.innerHTML = `
+            <div class="descricao-data">
+                <span class="descricao">${t.descricao}</span>
+                <span class="data">${dataFormatada} - ${t.fonte || 'Manual'}</span>
+            </div>
+            <span class="${valorClass}">${formatBR(t.valor)}</span>
+        `;
+        historicoList.appendChild(li);
+    });
+
+    // Garante que o container do histórico esteja visível (se necessário)
+    if (historicoContainer) {
+         historicoContainer.style.display = 'block';
+    }
+  }
+
+document.addEventListener('transactionsUpdated', (event) => {
+      const { transactions, totalGastos } = event.detail;
+      
+      // Atualiza a variável global de gastos e a tela (gastos na tela principal)
+      gastos = totalGastos;
+      atualizarTela();
+      
+      // Renderiza o novo histórico na lista
+      renderizarHistorico(transactions);
+      
+      console.log('UI Atualizada com o histórico mais recente.');
+  });
+  // ----------------------------------------------------
+  
+
  // Menu toggle functionality
         document.addEventListener('DOMContentLoaded', function() {
             const menuButton = document.getElementById('menuButton');

@@ -206,26 +206,27 @@
         <p class="descricao">
          Escolha o formato e envie seu historico de transações
         </p>
-       <form method="POST" action="http://localhost:3000/processar_extrato" enctype="multipart/form-data">
+        <form method="POST" action="http://localhost:3000/processar_extrato" enctype="multipart/form-data">
           
-          <input 
-              type="file" 
-              name="arquivo_extrato" 
-              accept=".csv" 
-              required
-              id="csv-file-input"  
-              class="input-file-oculto" 
-          >
-          
-          <label for="csv-file-input" class="label-customizado">
-              <img src="assets/papel.png"  width="50px" height="50px" alt="papel">Clique aqui para escolhe o arquivo CSV
-          </label>
-          
-          <button type="submit" class="btn-submit">
-              Enviar Extrato CSV
-          </button>
+                  <input 
+                      type="file" 
+                      name="arquivo_extrato" 
+                      accept=".csv" 
+                      required
+                      id="csv-file-input"  
+                      class="input-file-oculto" 
+                  >
+                  
+            <label for="csv-file-input" class="label-customizado">
+                <img src="assets/papel.png"  width="50px" height="50px" alt="papel">Clique aqui para escolhe o arquivo CSV
+             </label>
+                  
+                    <input type="hidden" name="user_id" id="user-uid-input"> 
+                    
+                  <button type="submit" class="btn-submit">
+                      Enviar Extrato CSV
+                  </button>
         </form>
-
       </div>
     </div>
     
