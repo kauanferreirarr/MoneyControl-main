@@ -96,31 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Adicionar transação
-  function handleAdd(isDespesa, ev) {
-    if (ev) ev.preventDefault();
-    const raw = String(inputValor.value || "").replace(",", ".").trim();
-    const valor = parseFloat(raw);
-    const descricao = inputDescricao.value.trim() || (isDespesa ? "Despesa" : "Depósito");
 
-    if (isNaN(valor) || valor <= 0) {
-      alert("Insira um valor válido (maior que 0).");
-      return;
-    }
-
-    if (isDespesa) {
-      gastos += valor;
-      saldo -= valor;
-    } else {
-      saldo += valor;
-    }
-
-    criarHistorico(descricao, valor, isDespesa);
-    atualizarTela();
-
-    inputDescricao.value = "";
-    inputValor.value = "";
-    inputValor.focus();
-  }
 
   btnAdicionarDespesa.addEventListener("click", (e) => handleAdd(true, e));
   btnAdicionarSaldo.addEventListener("click", (e) => handleAdd(false, e));

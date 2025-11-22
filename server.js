@@ -1,177 +1,247 @@
 // ==================================================================
-//                      IMPORTS E SETUP INICIAL
+//                      IMPORTS E SETUP FIREBASE
 // ==================================================================
 const express = require('express');
 const multer = require('multer');
 const csv = require('csv-parser');
 const fs = require('fs');
 const path = require('path');
-const admin = require('firebase-admin'); 
-
-// 🔥 CHAVE DE SERVIÇO: Garanta que este arquivo esteja no mesmo diretório!
-const serviceAccount = require('./moneycontrol-e0c85-firebase-adminsdk-fbsvc-37f9cf34e0.json'); 
+const admin = require('firebase-admin'); // 👈 Adicionado para interagir com o Firestore
 
 const app = express();
 const port = 3000;
 
-// --- Middlewares ---
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json()); 
-
-// --- Configuração do Multer para upload de arquivos ---
-const upload = multer({ 
-    dest: 'uploads/',
-    limits: { fileSize: 10 * 1024 * 1024 } 
-});
-
-
-// ==================================================================
-//             🔥 INICIALIZAÇÃO FIREBASE (ADMIN SDK) 🔥
-// ==================================================================
+// 🔥 CONFIGURAÇÃO FIREBASE ADMIN SDK (Assumindo que sua chave está aqui)
+// Substitua o caminho abaixo para o seu arquivo de chave.
+const serviceAccount = require('./moneycontrol-e0c85-firebase-adminsdk-fbsvc-37f9cf34e0.json'); 
 try {
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-    });
-    console.log('[FIREBASE] Admin SDK inicializado com sucesso.');
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+    });
+    console.log('[FIREBASE] Admin SDK inicializado.');
 } catch (e) {
-    // Evita erro se for chamado mais de uma vez (em ambientes de desenvolvimento)
-    if (!/already exists/i.test(e.message)) {
-        console.error('[FIREBASE ERRO FATAL] Falha na inicialização:', e.message);
-        // Em um app real, você pararia o servidor aqui.
-    }
+    if (!/already exists/i.test(e.message)) {
+        console.error('[FIREBASE ERRO FATAL] Falha na inicialização:', e.message);
+    }
 }
-
-
 const db = admin.firestore();
 
-// ID do projeto MoneyControl
-const APP_ID = 'moneycontrol-e0c85'; 
+// --- Middlewares para receber o user_id (via FormData) ---
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
+// Configuração do Multer
+const upload = multer({ dest: 'uploads/' }); 
 
 // ==================================================================
-//                   FUNÇÕES AUXILIARES
+//                   FUNÇÕES AUXILIARES (Parsers do CSV)
+// ==================================================================
+
+// --- 1. Parser para CSV do Banco Inter (Delimitador: Ponto e Vírgula) ---
+function parseInter(filePath) {
+    return new Promise((resolve, reject) => {
+        const transacoesNormalizadas = [];
+        let rowCount = 0;
+        
+        fs.createReadStream(filePath)
+          .pipe(csv({ 
+              separator: ';', // <-- Delimitador Ponto e Vírgula
+              headers: false, 
+              skipLines: 0 
+          }))
+          .on('data', (row) => {
+                rowCount++;
+                
+                // Ignora as 5 primeiras linhas (cabeçalhos do extrato)
+                if (rowCount <= 5) {
+                    return; 
+                }
+                
+                // Mapeamento baseado nas colunas: [0]Data, [1]Histórico, [2]Descrição, [3]Valor
+                const data_lancamento = row[0];
+                // const historico = row[1]; // Não usado no formato final
+                const descricao = row[2];
+                let valor_str = row[3]; 
+                
+                let valor_numerico;
+                try {
+                    // Normaliza: Troca vírgula (,) por ponto (.) e converte para float
+                    // O valor no CSV do Inter já vem negativo para despesas
+                    valor_numerico = parseFloat(valor_str.replace(',', '.'));
+                } catch (e) {
+                    return; 
+                }
+
+                const transacao = {
+                    data: data_lancamento, // Ex: 22/11/2025
+                    descricao: descricao ? descricao.trim() : 'Transação Inter',
+                    valor: valor_numerico, // Valor com sinal
+                    fonte: 'Banco Inter', // Adicionado para rastreamento
+                    referencia_bancaria: null 
+                };
+                
+                transacoesNormalizadas.push(transacao);
+          })
+          .on('end', () => {
+              fs.unlinkSync(filePath); // Limpa o arquivo temporário
+              resolve(transacoesNormalizadas);
+          })
+          .on('error', (error) => {
+              fs.unlinkSync(filePath); 
+              reject(error);
+          });
+    });
+}
+
+// --- 2. Parser para CSV do Nubank (Delimitador: Vírgula) ---
+function parseNubank(filePath) {
+    return new Promise((resolve, reject) => {
+        const transacoesNormalizadas = [];
+        let rowCount = 0; 
+        
+        fs.createReadStream(filePath)
+          .pipe(csv({ 
+              separator: ',', 
+              headers: false, 
+              skipLines: 0 
+          }))
+          .on('data', (row) => {
+                rowCount++;
+                
+                // Pula a primeira linha, que é o cabeçalho
+                if (rowCount === 1) return; 
+
+                // Mapeamento baseado no ÍNDICE (0)Data, (1)Valor, (2)Identificador, (3)Descrição
+                const data_lancamento = row[0];
+                let valor_str = row[1]; 
+                const identificador_unico = row[2];
+                const descricao = row[3];
+
+                let valor_numerico = parseFloat(valor_str);
+                
+                if (!data_lancamento || isNaN(valor_numerico)) return;
+
+                const transacao = {
+                    data: data_lancamento ? data_lancamento.trim() : null, // Ex: 2025-11-22
+                    descricao: descricao ? descricao.trim() : 'Transação Nubank',
+                    valor: valor_numerico, // Valor com sinal
+                    fonte: 'Nubank', // Adicionado para rastreamento
+                    referencia_bancaria: identificador_unico ? identificador_unico.trim() : null
+                };
+                
+                transacoesNormalizadas.push(transacao);
+          })
+          .on('end', () => {
+              fs.unlinkSync(filePath); 
+              resolve(transacoesNormalizadas);
+          })
+          .on('error', (error) => {
+              fs.unlinkSync(filePath); 
+              reject(error);
+          });
+    });
+}
+
+// ==================================================================
+//                   FUNÇÃO DE SALVAMENTO NO FIRESTORE
 // ==================================================================
 
 /**
- * Normaliza uma transação do formato Nubank para o formato universal.
- * @param {object} transacao - O objeto de transação do Nubank.
- * @returns {object} - Objeto de transação normalizado.
+ * Formata as transações para o formato de array do frontend e calcula os totais.
+ * @param {Array<object>} transacoes - Transações normalizadas do parser.
+ * @returns {{transacoesFormatadas: Array<object>, totalSaldoChange: number, totalGastosIncrease: number}}
  */
-function normalizarNubank(transacao) {
-    const valor = parseFloat(transacao.Valor.replace(',', '.'));
-    return {
-        data: transacao.Data,
-        descricao: transacao.Descrição,
-        valor: valor,
-        tipo: valor > 0 ? 'Receita' : 'Despesa',
-        fonte: 'Nubank',
-        identificador: transacao.Identificador
-    };
-}
+function formatarEcalcularTotais(transacoes) {
+    let totalSaldoChange = 0;
+    let totalGastosIncrease = 0;
+    const transacoesFormatadas = transacoes.map(t => {
+        // --- 1. CONVERTE DATA PARA TIMESTAMP ---
+        let dataObj;
+        if (t.data.includes('/')) {
+             // Formato DD/MM/AAAA (Inter)
+             const [dia, mes, ano] = t.data.split('/');
+             // Cria a data no formato ISO, para evitar problemas de fuso horário
+             dataObj = new Date(`${ano}-${mes}-${dia}T00:00:00.000Z`);
+        } else if (t.data.includes('-')) {
+             // Formato AAAA-MM-DD (Nubank)
+             dataObj = new Date(`${t.data}T00:00:00.000Z`);
+        } else {
+             // Se não for um formato reconhecido, usa a data atual
+             dataObj = new Date();
+        }
+        const timestamp = dataObj.getTime(); 
 
-/**
- * Normaliza uma transação do formato Itaú para o formato universal.
- * @param {object} transacao - O objeto de transação do Itaú.
- * @returns {object} - Objeto de transação normalizado.
- */
-function normalizarItau(transacao) {
-    // Detecta se o separador é ';' ou ',' e trata o formato de milhar/decimal
-    const valorRaw = String(transacao.Valor).replace(/\./g, '').replace(/,/g, '.');
-    let valor = parseFloat(valorRaw);
-
-    // Ajusta o sinal com base na coluna Débito/Crédito
-    if (transacao['Débito/Crédito'] === 'D' && valor > 0) {
-        valor = -valor;
-    } else if (transacao['Débito/Crédito'] === 'C' && valor < 0) {
-        valor = Math.abs(valor); 
-    }
-
-    return {
-        data: transacao.Data,
-        descricao: transacao.Histórico,
-        valor: valor,
-        tipo: valor > 0 ? 'Receita' : 'Despesa',
-        fonte: 'Itau',
-        documento: transacao.Documento
-    };
-}
-
-/**
- * Processa o arquivo CSV e normaliza os dados.
- * @param {string} filePath - Caminho para o arquivo CSV temporário.
- * @returns {Promise<Array<object>>} - Array de transações normalizadas.
- */
-function parseAndNormalizeCsv(filePath) {
-    return new Promise((resolve, reject) => {
-        const transacoesNormalizadas = [];
-        let delimiter = ','; // Padrão CSV
-
-        // Detectar o delimitador (vamos assumir Nubank=, e Itau=;)
-        const fileContent = fs.readFileSync(filePath, 'utf8');
-        if (fileContent.includes(';')) {
-            delimiter = ';';
+        // --- 2. DETERMINA O TIPO E VALOR PARA O ARRAY ---
+        let tipo;
+        // O valor que vai para o array é sempre POSITIVO (abs)
+        // O sinal é dado pelo campo 'tipo' (despesa/entrada)
+        let valorParaArray = Math.abs(t.valor); 
+        
+        if (t.valor < 0) {
+            tipo = "despesa";
+            totalGastosIncrease += valorParaArray; // Soma o valor positivo aos gastos
+        } else {
+            tipo = "entrada";
         }
 
-        fs.createReadStream(filePath)
-            .pipe(csv({ separator: delimiter }))
-            .on('data', (data) => {
-                // Heurística para determinar o formato (Nubank ou Itaú)
-                if (data.Identificador && data.Data && data.Valor) {
-                    // Formato Nubank
-                    transacoesNormalizadas.push(normalizarNubank(data));
-                } else if (data.Histórico && data['Débito/Crédito'] && data.Valor) {
-                    // Formato Itaú
-                    transacoesNormalizadas.push(normalizarItau(data));
-                }
-            })
-            .on('end', () => {
-                // Limpamos o arquivo temporário
-                fs.unlinkSync(filePath); 
-                resolve(transacoesNormalizadas);
-            })
-            .on('error', (error) => {
-                reject(error);
-            });
+        // --- 3. SOMA PARA O CÁLCULO DO SALDO ---
+        totalSaldoChange += t.valor;
+
+        return {
+            descricao: t.descricao,
+            valor: valorParaArray, // Valor POSITIVO para o array do Firestore
+            tipo: tipo,
+            data: timestamp,
+            fonte: t.fonte || 'Extrato CSV'
+        };
     });
+    
+    return { transacoesFormatadas, totalSaldoChange, totalGastosIncrease };
 }
 
 
 /**
- * Salva as transações processadas no Firestore, associadas ao ID do usuário.
- * @param {string} userId - O ID do usuário logado.
- * @param {Array<object>} transacoes - Array de transações normalizadas.
+ * 🎯 Função que faz o mesmo que o código do seu frontend, mas no servidor.
+ * Atualiza o 'saldo' e 'gastos' usando FieldValue.increment
+ * Adiciona as transações ao array 'transacoes' usando FieldValue.arrayUnion.
  */
-async function salvarTransacoesNoBancoDeDados(userId, transacoes) {
-    if (!userId) {
-        throw new Error('ID do usuário é obrigatório para salvar transações.');
+async function salvarTransacoesNoFirestoreArray(userId, transacoesNormalizadas) {
+    if (!userId) throw new Error('ID do usuário obrigatório.');
+
+    // 1. Formata e calcula os totais de ajuste
+    const { transacoesFormatadas, totalSaldoChange, totalGastosIncrease } = formatarEcalcularTotais(transacoesNormalizadas);
+
+    const userRef = db.collection('usuarios').doc(userId);
+    
+    // 2. Atualização dos campos de Saldo e Gastos
+    console.log(`[Firestore] Atualizando totais: Saldo +${totalSaldoChange.toFixed(2)}, Gastos +${totalGastosIncrease.toFixed(2)}`);
+
+    try {
+        await userRef.update({
+            saldo: admin.firestore.FieldValue.increment(totalSaldoChange),
+            gastos: admin.firestore.FieldValue.increment(totalGastosIncrease),
+        });
+    } catch (e) {
+        // Se o documento não existir, pode falhar.
+        console.warn(`[Firestore] Documento do usuário ${userId} pode não existir. Tentando criar/salvar apenas array.`);
+    }
+
+    // 3. Adiciona todas as transações ao array 'transacoes'
+    // O arrayUnion tem um limite (cerca de 300 elementos). Se o CSV for muito grande, precisamos dividir.
+    const CHUNK_SIZE = 250; 
+    let totalSalvo = 0;
+
+    for (let i = 0; i < transacoesFormatadas.length; i += CHUNK_SIZE) {
+        const chunk = transacoesFormatadas.slice(i, i + CHUNK_SIZE);
+
+        await userRef.update({
+             transacoes: admin.firestore.FieldValue.arrayUnion(...chunk)
+        });
+        totalSalvo += chunk.length;
     }
-
-    // Caminho: /artifacts/{appId}/users/{userId}/transacoes_bancarias
-    const caminhoTransacoes = db.collection('artifacts')
-        .doc(APP_ID)
-        .collection('users')
-        .doc(userId)
-        .collection('transacoes_bancarias');
-
-    console.log(`[Firestore] Salvando ${transacoes.length} transações para o usuário: ${userId}`);
-    
-    // Usar um Batch para garantir que todas as escritas sejam atômicas
-    const batch = db.batch();
-    let contador = 0;
-
-    for (const transacao of transacoes) {
-        // 🔥 CORREÇÃO DO ERRO DE CAMINHO:
-        // Chamamos .doc() sem argumentos para que o Firestore gere um ID seguro
-        const novoDocRef = caminhoTransacoes.doc(); 
-        batch.set(novoDocRef, transacao);
-        contador++;
-    }
-
-    // A operação 'commit' é onde o primeiro erro de credencial estava ocorrendo
-    await batch.commit(); 
-    
-    console.log(`[Firestore] Sucesso! ${contador} transações salvas.`);
-    return contador;
+    
+    console.log(`[Firestore] ${totalSalvo} transações adicionadas ao array do usuário.`);
+    return totalSalvo;
 }
 
 
@@ -179,61 +249,72 @@ async function salvarTransacoesNoBancoDeDados(userId, transacoes) {
 //                       ROTA PRINCIPAL
 // ==================================================================
 
-// --- Rota de Processamento (/processar_extrato) ---
 app.post('/processar_extrato', upload.single('arquivo_extrato'), async (req, res) => {
-    try {
-        // 1. VALIDAÇÃO DO ARQUIVO
-        if (!req.file) {
-            return res.status(400).json({ erro: 'Nenhum arquivo enviado.' });
-        }
+    try {
+        if (!req.file) {
+            return res.status(400).json({ erro: 'Nenhum arquivo enviado.' });
+        }
 
-        const filePath = req.file.path;
-        
-        // 2. OBTENÇÃO DO USER ID
-        const userId = req.body.user_id;
+        const filePath = req.file.path;
+        
+        // 1. OBTENÇÃO DO USER ID
+        const userId = req.body.user_id; // O ID deve vir como um campo no FormData
+        if (!userId) {
+            fs.unlinkSync(filePath); 
+            return res.status(401).json({ erro: 'ID do usuário não fornecido na requisição.' });
+        }
 
-        if (!userId) {
-            fs.unlinkSync(filePath); 
-            return res.status(401).json({ erro: 'ID do usuário não fornecido na requisição.' });
-        }
-        
-        console.log(`[Servidor] Requisição recebida. User ID: ${userId}`);
+        let dados;
+        let bancoDetectado = 'Não Reconhecido';
 
-        // 3. PROCESSA E NORMALIZA O CSV
-        const dados = await parseAndNormalizeCsv(filePath);
-        
-        console.log(`[Servidor] Arquivo processado. ${dados.length} transações encontradas.`);
+        // 2. LÓGICA DE DETECÇÃO E PARSING
+        const fileContentStart = fs.readFileSync(filePath, 'utf-8').substring(0, 200);
 
-        // 4. SALVAR NO FIRESTORE
-        const totalSalvo = await salvarTransacoesNoBancoDeDados(userId, dados);
-        
-        // 5. RESPOSTA DE SUCESSO
-        res.status(200).json({
-            mensagem: `Arquivo processado e ${totalSalvo} transações salvas com sucesso no Firestore!`,
-            total_transacoes: totalSalvo,
-            usuario: userId
-        });
+        if (fileContentStart.includes(';')) {
+            dados = await parseInter(filePath); 
+            bancoDetectado = 'Banco Inter';
+        } else if (fileContentStart.includes('Data,Valor,Identificador,Descrição')) {
+            dados = await parseNubank(filePath);
+            bancoDetectado = 'Nubank';
+        } else {
+            fs.unlinkSync(filePath);
+            return res.status(400).json({ 
+                erro: 'Formato CSV de banco não reconhecido ou incompatível.',
+                detalhe: 'O arquivo não parece ser um extrato do Inter ou Nubank com a estrutura esperada.'
+            });
+        }
+        
+        console.log(`--- DADOS DO EXTRATO NORMALIZADOS (${bancoDetectado} - ${dados.length} transações) ---`);
+        dados.forEach(item => {
+            // O console log que você queria (agora com o formato final)
+            console.log(item);
+        });
+        console.log("--------------------------------------");
+        
+        // 3. SALVAR NO FIRESTORE (AÇÃO PRINCIPAL)
+        const totalSalvo = await salvarTransacoesNoFirestoreArray(userId, dados);
 
-    } catch (error) {
-        console.error('Erro geral ao processar CSV e salvar no banco:', error);
 
-        // Tenta garantir que o arquivo temporário seja apagado em caso de falha
-        if (req.file && fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
-        }
+        // 4. Retorno para o Front-end
+        res.json({
+            mensagem: `Extrato do ${bancoDetectado} processado e ${totalSalvo} transações salvas!`,
+            total_transacoes: totalSalvo,
+            banco: bancoDetectado,
+        });
 
-        res.status(500).json({ 
-            erro: 'Erro interno ao processar o arquivo.', 
-            detalhe: error.message 
-        });
-    }
+    } catch (error) {
+        console.error('Erro interno ao processar CSV:', error);
+        if (req.file && fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+        }
+        res.status(500).json({ 
+            erro: 'Erro interno no servidor durante o processamento do arquivo.',
+            detalhe: error.message 
+        });
+    }
 });
 
 
-// ==================================================================
-//                     INICIALIZAÇÃO DO SERVIDOR
-// ==================================================================
 app.listen(port, () => {
-    console.log(`Servidor MoneyControl rodando em http://localhost:${port}`);
-    console.log('Aguardando upload de extratos CSV...');
+  console.log(`Servidor rodando em http://localhost:${port}`);
 });
