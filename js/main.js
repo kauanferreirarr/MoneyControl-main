@@ -222,10 +222,6 @@ async function buscarTransacoesExtrato(uid) {
 }
 
 // === FIRESTORE ===
-
-// main.js - FUNÇÃO CARREGARDADOS CORRIGIDA
-// main.js - FUNÇÃO CARREGARDADOS (Versão Final)
-
 async function carregarDados(uid) {
   
   const userRef = doc(db, "usuarios", uid);
@@ -238,74 +234,21 @@ async function carregarDados(uid) {
 
   const dados = snap.data();
 
-  // AQUI: (Sua lógica de reset mensal)
+  // AQUI: só chama depois de pegar os dados
   await verificarResetMensal(dados, userRef);
-  
-  // =========================================================================
-  // ETAPA DE FUSÃO, CÁLCULO E ATUALIZAÇÃO DO SALDO/GASTOS
-  // =========================================================================
-  
-  const transacoesDoExtrato = await buscarTransacoesExtrato(uid);
-  
-  // 1. Normalizar Transações Manuais (dados.transacoes)
-  let transacoesManuais = (dados.transacoes || []).map(t => ({
-    descricao: t.descricao,
-    data: t.data,
-    valor: Math.abs(t.valor), // Valor sempre positivo
-    tipo: t.tipo === "despesa" ? "despesa" : "saldo",
-    data_sort: parseDateToSort(t.data), // Parse seguro
-    origem: 'manual'
-  }));
 
-  // 2. Normalizar Transações de Extrato (Coleção 'transacoes')
-  let transacoesExtratoNormalizadas = transacoesDoExtrato.map(t => ({
-    descricao: t.descricao + (t.banco_origem ? ` (${t.banco_origem})` : ''),
-    data: t.data, // Mantém o formato DD/MM/AAAA para exibição
-    valor: Math.abs(t.valor),
-    tipo: t.valor < 0 ? 'despesa' : 'saldo',
-    data_sort: parseDateToSort(t.data), // Parse seguro
-    origem: 'extrato'
-  }));
-
-  // 3. Fundir, Ordenar e Recalcular
-  let todasTransacoes = [...transacoesManuais, ...transacoesExtratoNormalizadas];
-  todasTransacoes.sort((a, b) => b.data_sort.getTime() - a.data_sort.getTime());
-
-  let novoSaldo = 0;
-  let novosGastos = 0;
-  
-  todasTransacoes.forEach(t => {
-    const valorReal = t.valor;
-    if (t.tipo === 'saldo') {
-      novoSaldo += valorReal;
-    } else if (t.tipo === 'despesa') {
-      novoSaldo -= valorReal;
-      novosGastos += valorReal;
-    }
-  });
-  
-  // 4. Se houver diferença, atualiza o Firestore com os novos totais
-  if (dados.saldo !== novoSaldo || dados.gastos !== novosGastos) {
-    await updateDoc(userRef, { 
-        saldo: novoSaldo,
-        gastos: novosGastos
-    });
-  }
-  
-  // =========================================================================
-  // FIM DO CÁLCULO
-  // =========================================================================
 
   const limiteInput = document.getElementById("limit-range");
   const displayValue = document.getElementById("display-value");
-  
-  // (Sua lógica de limite continua aqui...)
-  if(limiteInput && displayValue){
-    if(dados.limiteMensal !== undefined){
-      limiteInput.value = dados.limiteMensal;
+ 
+  // Carregar valor do banco
+    if(limiteInput && displayValue){
+      if(dados.limiteMensal !== undefined){
+      limiteInput.value = dados.limiteMensal; // atualiza input
       displayValue.textContent = Number(dados.limiteMensal).toLocaleString("pt-BR", {minimumFractionDigits: 2});
     }
 
+    // Atualiza display quando o usuário mexe na barra
     limiteInput.addEventListener("input", () => {
       displayValue.textContent = Number(limiteInput.value).toLocaleString("pt-BR", {minimumFractionDigits: 2});
     });
@@ -315,30 +258,23 @@ async function carregarDados(uid) {
   const gastosAtualEl = document.getElementById("gastos-atual");
   const historicoEl = document.querySelector("#historico ul");
 
-  // ATUALIZA O DISPLAY com os valores RECALCULADOS
-  if (saldoAtualEl) animarSaldo(saldoAtualEl, novoSaldo);
-  if (gastosAtualEl) animarSaldo(gastosAtualEl, novosGastos);
+  if (saldoAtualEl) animarSaldo(saldoAtualEl, dados.saldo);
+  if (gastosAtualEl) animarSaldo(gastosAtualEl, dados.gastos);
 
 
-  // =========================================================================
-  // ETAPA DE RENDERIZAÇÃO DO HISTÓRICO
-  // =========================================================================
+
+  
 
   if (historicoEl) {
     historicoEl.innerHTML = "";
-    
-    // Renderiza a lista fundida e ordenada: 'todasTransacoes'
-    todasTransacoes.forEach((t, index) => {
+    const transacoes = (dados.transacoes || []).slice().reverse();
+    transacoes.forEach((t, index) => {
       const li = document.createElement("li");
-      li.setAttribute('data-index', index); 
-      
-      // Usa sua função formatarDataTransacao (assumindo que lida com o formato DD/MM/AAAA)
-      const dataFormatada = formatarDataTransacao(t.data); 
-
+      li.setAttribute('data-index', dados.transacoes.length - 1 - index);
       li.innerHTML = `
         <div>
           <h3 class="medio-text">${t.descricao}</h3>
-          <p>${dataFormatada}</p>
+          <p>${formatarDataTransacao(t.data)}</p>
         </div>
         <span class="medio-text ${t.tipo === "despesa" ? "red" : "green"}">${formatBR(t.valor)}</span>
         <div class="delete-icon" style="display:none; cursor:pointer;">
@@ -352,7 +288,7 @@ async function carregarDados(uid) {
       `;
       historicoEl.appendChild(li);
 
-      if (index < todasTransacoes.length - 1) {
+      if (index < transacoes.length - 1) {
         const separator = document.createElement("div");
         separator.className = "linha";
         historicoEl.appendChild(separator);
@@ -362,6 +298,7 @@ async function carregarDados(uid) {
   
   setupTransactionItems();
 }
+
 
 function carregarHistoricoDeTransacoes(userId) {
     // Escuta a mesma coleção que o server.js está salvando agora
