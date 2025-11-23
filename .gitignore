@@ -1,0 +1,7 @@
+# Arquivos ignorados pelo Git
+/node_modules
+/uploads
+# ... outros arquivos
+
+# Arquivos de Chave Privada
+moneycontrol-e0c85-firebase-adminsdk-fbsvc-37f9cf34e0.json
