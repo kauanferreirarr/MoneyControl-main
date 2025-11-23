@@ -8,7 +8,7 @@
   ],
   "routes": [
     {
-      "src": "/processar_extrato",
+      "src": "/api/processar_extrato",
       "dest": "/api/index.js"
     }
   ]
