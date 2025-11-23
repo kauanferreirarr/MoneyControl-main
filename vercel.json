@@ -2,8 +2,22 @@
   "version": 2,
   "rewrites": [
     {
-      "source": "(.*)",
-      "destination": "index.js"
+      "source": "/ping",
+      "destination": "/index.js"
+    },
+    {
+      "source": "/processar_extrato",
+      "destination": "/index.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/public/$1"
+    }
+  ],
+  "builds": [
+    {
+      "src": "index.js",
+      "use": "@vercel/node"
     }
   ]
 }
