@@ -9,12 +9,12 @@
   "rewrites": [
 
     {
-      "source": "/api/(.*)",
+      "source": "api/(.*)",
       "destination": "/index.js"
     },
    
     {
-      "source": "/(.*)",
+      "source": "(.*)",
       "destination": "/index.html"
     }
   ]
