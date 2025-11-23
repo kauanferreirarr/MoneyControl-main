@@ -6,13 +6,12 @@ const multer = require('multer');
 const csv = require('csv-parser');
 const fs = require('fs');
 const path = require('path');
-const admin = require('firebase-admin'); // 👈 Adicionado para interagir com o Firestore
+const admin = require('firebase-admin');
 
 const app = express();
 const port = 3000;
 
-// 🔥 CONFIGURAÇÃO FIREBASE ADMIN SDK (Assumindo que sua chave está aqui)
-// Substitua o caminho abaixo para o seu arquivo de chave.
+// 🔥 CONFIGURAÇÃO FIREBASE ADMIN SDK
 const serviceAccount = require('./moneycontrol-e0c85-firebase-adminsdk-fbsvc-37f9cf34e0.json'); 
 try {
     admin.initializeApp({
@@ -69,10 +68,9 @@ function parseInter(filePath) {
                 } catch (e) {
                     return; 
                 }
-                
-                // 🎯 INÍCIO DA CORREÇÃO DE NOME LONGO (INTER)
-                // Regex para pegar a primeira parte (Tipo de Transação) e o nome que vem antes de um CNPJ/CPF ou conta.
-                // Exemplo: "Transferência Recebida - Vitoria Silva Dias - •••.201.123-•• - NU PAGAMENTOS..."
+                
+                // 🎯 INÍCIO DA CORREÇÃO DE NOME LONGO (INTER)
+                // Regex para pegar a primeira parte (Tipo de Transação) e o nome que vem antes de um CNPJ/CPF ou conta.
                 const regex = /^(.*?)\s*-\s*([^-]+?)(?=\s*-\s*(\d{3}\.\d{3}|\d{11}|Conta|Agência|\s*$))/i;
                 const match = descricaoCompleta.match(regex);
                 
@@ -83,10 +81,10 @@ function parseInter(filePath) {
                     const nome = match[2].trim(); // Ex: Vitoria Silva Dias
                     descricaoSimplificada = `${tipo} - ${nome}`;
                 } else if (descricaoCompleta.includes('Débito Automático') || descricaoCompleta.includes('Pagamento de Boleto')) {
-                    // Trata casos mais simples que podem falhar no regex, pegando só a primeira parte.
-                    descricaoSimplificada = descricaoCompleta.split('-')[0].trim();
-                }
-                // 🎯 FIM DA CORREÇÃO DE NOME LONGO
+                    // Trata casos mais simples que podem falhar no regex, pegando só a primeira parte.
+                    descricaoSimplificada = descricaoCompleta.split('-')[0].trim();
+                }
+                // 🎯 FIM DA CORREÇÃO DE NOME LONGO
 
                 const transacao = {
                     data: data_lancamento, // Ex: 22/11/2025
@@ -111,150 +109,150 @@ function parseInter(filePath) {
 
 // --- 2. Parser para CSV do Nubank (Delimitador: Vírgula) ---
 function parseNubank(filePath) {
-    return new Promise((resolve, reject) => {
-        const transacoesNormalizadas = [];
-        let rowCount = 0;
+    return new Promise((resolve, reject) => {
+        const transacoesNormalizadas = [];
+        let rowCount = 0;
 
-        fs.createReadStream(filePath)
-            .pipe(csv({
-                separator: ',',
-                headers: false,
-                skipLines: 0
-            }))
-            .on('data', (row) => {
-                rowCount++;
+        fs.createReadStream(filePath)
+            .pipe(csv({
+                separator: ',',
+                headers: false,
+                skipLines: 0
+            }))
+            .on('data', (row) => {
+                rowCount++;
 
-                // Pula a primeira linha (cabeçalho do Nubank)
-                if (rowCount === 1) return;
+                // Pula a primeira linha (cabeçalho do Nubank)
+                if (rowCount === 1) return;
 
-                // Mapeamento baseado no índice
-                const data_lancamento = row[0];
-                let valor_str = row[1];
-                const identificador_unico = row[2];
-                const descricaoCompleta = row[3];
+                // Mapeamento baseado no índice
+                const data_lancamento = row[0];
+                let valor_str = row[1];
+                const identificador_unico = row[2];
+                const descricaoCompleta = row[3];
 
-                let valor_numerico = parseFloat(valor_str);
+                let valor_numerico = parseFloat(valor_str);
 
-                if (!data_lancamento || isNaN(valor_numerico)) return;
+                if (!data_lancamento || isNaN(valor_numerico)) return;
 
-                // -------------------------------
-                //  🔮 INÍCIO DA LIMPEZA DE DESCRIÇÃO
-                // -------------------------------
+                // -------------------------------
+                //  🔮 INÍCIO DA LIMPEZA DE DESCRIÇÃO
+                // -------------------------------
 
-                let descricaoSimplificada = descricaoCompleta
-                    ? descricaoCompleta.trim()
-                    : 'Transação Nubank';
+                let descricaoSimplificada = descricaoCompleta
+                    ? descricaoCompleta.trim()
+                    : 'Transação Nubank';
 
-                // 1. Remove prefixos comuns chatos do Nubank
-                descricaoSimplificada = descricaoSimplificada
-                    .replace(/compra com débito\s*-\s*/i, '')
-                    .replace(/compra no crédito\s*-\s*/i, '')
-                    .trim();
+                // 1. Remove prefixos comuns chatos do Nubank
+                descricaoSimplificada = descricaoSimplificada
+                    .replace(/compra com débito\s*-\s*/i, '')
+                    .replace(/compra no crédito\s*-\s*/i, '')
+                    .trim();
 
-                // 2. Regex para cortar tudo após o nome
-                // Captura: TIPO - NOME
-                // Corta antes de CPF, CNPJ, contas, cidades, estados etc.
-                const regex = /^(.*?)\s*-\s*([^-]+?)(?=\s*-\s*(?:\d{3}\.\d{3}|NU PAGAMENTOS|Conta|Ag[eê]ncia|IP|\d{2,}|\w{2}$|\s*$))/i;
-                const match = descricaoSimplificada.match(regex);
+                // 2. Regex para cortar tudo após o nome
+                // Captura: TIPO - NOME
+                // Corta antes de CPF, CNPJ, contas, cidades, estados etc.
+                const regex = /^(.*?)\s*-\s*([^-]+?)(?=\s*-\s*(?:\d{3}\.\d{3}|NU PAGAMENTOS|Conta|Ag[eê]ncia|IP|\d{2,}|\w{2}$|\s*$))/i;
+                const match = descricaoSimplificada.match(regex);
 
-                if (match && match[1] && match[2]) {
-                    const tipo = match[1].trim();
-                    const nome = match[2].trim();
-                    descricaoSimplificada = `${tipo} - ${nome}`;
-                } else {
-                    // fallback: se tiver 2 partes, pega só as duas primeiras
-                    const partes = descricaoSimplificada.split(' - ');
-                    if (partes.length >= 2) {
-                        descricaoSimplificada = partes[0] + ' - ' + partes[1];
-                    }
-                }
+                if (match && match[1] && match[2]) {
+                    const tipo = match[1].trim();
+                    const nome = match[2].trim();
+                    descricaoSimplificada = `${tipo} - ${nome}`;
+                } else {
+                    // fallback: se tiver 2 partes, pega só as duas primeiras
+                    const partes = descricaoSimplificada.split(' - ');
+                    if (partes.length >= 2) {
+                        descricaoSimplificada = partes[0] + ' - ' + partes[1];
+                    }
+                }
 
-                // Se ainda restar lixo tipo "São Paulo", corta
-                const lastSep = descricaoSimplificada.lastIndexOf(' - ');
-                const pedacoFinal = descricaoSimplificada.slice(lastSep + 3);
+                // Se ainda restar lixo tipo "São Paulo", corta
+                const lastSep = descricaoSimplificada.lastIndexOf(' - ');
+                const pedacoFinal = descricaoSimplificada.slice(lastSep + 3);
 
-                if (lastSep !== -1 && pedacoFinal.length <= 20 && /[A-Za-z]{2,}/.test(pedacoFinal)) {
-                    descricaoSimplificada = descricaoSimplificada.slice(0, lastSep);
-                }
+                if (lastSep !== -1 && pedacoFinal.length <= 20 && /[A-Za-z]{2,}/.test(pedacoFinal)) {
+                    descricaoSimplificada = descricaoSimplificada.slice(0, lastSep);
+                }
 
-                if (!descricaoSimplificada) descricaoSimplificada = 'Transação Nubank';
+                if (!descricaoSimplificada) descricaoSimplificada = 'Transação Nubank';
 
-                // -------------------------------
-                //  🔮 FIM DA LIMPEZA DE DESCRIÇÃO
-                // -------------------------------
+                // -------------------------------
+                //  🔮 FIM DA LIMPEZA DE DESCRIÇÃO
+                // -------------------------------
 
-                const transacao = {
-                    data: data_lancamento ? data_lancamento.trim() : null,
-                    descricao: descricaoSimplificada,
-                    valor: valor_numerico,
-                    fonte: 'Nubank',
-                    referencia_bancaria: identificador_unico ? identificador_unico.trim() : null
-                };
+                const transacao = {
+                    data: data_lancamento ? data_lancamento.trim() : null,
+                    descricao: descricaoSimplificada,
+                    valor: valor_numerico,
+                    fonte: 'Nubank',
+                    referencia_bancaria: identificador_unico ? identificador_unico.trim() : null
+                };
 
-                transacoesNormalizadas.push(transacao);
-            })
-            .on('end', () => {
-                fs.unlinkSync(filePath);
-                resolve(transacoesNormalizadas);
-            })
-            .on('error', (error) => {
-                fs.unlinkSync(filePath);
-                reject(error);
-            });
-    });
+                transacoesNormalizadas.push(transacao);
+            })
+            .on('end', () => {
+                fs.unlinkSync(filePath);
+                resolve(transacoesNormalizadas);
+            })
+            .on('error', (error) => {
+                fs.unlinkSync(filePath);
+                reject(error);
+            });
+    });
 }
 
 function parseItau(filePath) {
-    return new Promise((resolve, reject) => {
-        const transacoes = [];
-        let rowCount = 0;
+    return new Promise((resolve, reject) => {
+        const transacoes = [];
+        let rowCount = 0;
 
-        fs.createReadStream(filePath)
-        .pipe(csv({
-            separator: ';',
-            headers: false,
-            skipLines: 0
-        }))
-        .on('data', (row) => {
-            rowCount++;
+        fs.createReadStream(filePath)
+        .pipe(csv({
+            separator: ';',
+            headers: false,
+            skipLines: 0
+        }))
+        .on('data', (row) => {
+            rowCount++;
 
-            // Ignora cabeçalho
-            if (rowCount === 1) return;
+            // Ignora cabeçalho
+            if (rowCount === 1) return;
 
-            const data = row[0];             // Data
-            const historico = row[2]?.trim() || "Transação Itaú";
-            let valorStr = row[4];
-            const tipo = row[5];             // D ou C
+            const data = row[0];             // Data
+            const historico = row[2]?.trim() || "Transação Itaú";
+            let valorStr = row[4];
+            const tipo = row[5];             // D ou C
 
-            if (!valorStr) return;
+            if (!valorStr) return;
 
-            // Normaliza valor
-            let valor = parseFloat(valorStr.replace('.', '').replace(',', '.'));
-            if (isNaN(valor)) return;
+            // Normaliza valor
+            let valor = parseFloat(valorStr.replace('.', '').replace(',', '.'));
+            if (isNaN(valor)) return;
 
-            // Aplica sinal conforme D/C
-            if (tipo === 'D') valor = -Math.abs(valor);
-            if (tipo === 'C') valor = Math.abs(valor);
+            // Aplica sinal conforme D/C
+            if (tipo === 'D') valor = -Math.abs(valor);
+            if (tipo === 'C') valor = Math.abs(valor);
 
-            const transacao = {
-                data: data, 
-                descricao: historico,
-                valor: valor,
-                fonte: "Itaú",
-                referencia_bancaria: row[3] || null
-            };
+            const transacao = {
+                data: data, 
+                descricao: historico,
+                valor: valor,
+                fonte: "Itaú",
+                referencia_bancaria: row[3] || null
+            };
 
-            transacoes.push(transacao);
-        })
-        .on('end', () => {
-            fs.unlinkSync(filePath);
-            resolve(transacoes);
-        })
-        .on('error', (err) => {
-            fs.unlinkSync(filePath);
-            reject(err);
-        });
-    });
+            transacoes.push(transacao);
+        })
+        .on('end', () => {
+            fs.unlinkSync(filePath);
+            resolve(transacoes);
+        })
+        .on('error', (err) => {
+            fs.unlinkSync(filePath);
+            reject(err);
+        });
+    });
 }
 
 
@@ -323,12 +321,17 @@ function formatarEcalcularTotais(transacoes) {
 async function salvarTransacoesNoFirestoreArray(userId, transacoesNormalizadas) {
     if (!userId) throw new Error('ID do usuário obrigatório.');
 
-    // 1. Formata e calcula os totais de ajuste
-    const { transacoesFormatadas, totalSaldoChange, totalGastosIncrease } = formatarEcalcularTotais(transacoesNormalizadas);
+    // 1. Formata e calcula os totais
+    const { transacoesFormatadas, totalSaldoChange, totalGastosIncrease } =
+        formatarEcalcularTotais(transacoesNormalizadas);
+
+    // 2. ORDENAÇÃO REAL E FUNCIONAL
+    // Esta linha garante que SEMPRE fiquem do MAIS NOVO para o MAIS ANTIGO (DEC)
+    transacoesFormatadas.sort((a, b) => b.data - a.data); // ✅ OK: b - a garante ordem decrescente (novo primeiro)
 
     const userRef = db.collection('usuarios').doc(userId);
-    
-    // 2. Atualização dos campos de Saldo e Gastos
+
+    // 3. Atualização dos totais (saldo e gastos)
     console.log(`[Firestore] Atualizando totais: Saldo +${totalSaldoChange.toFixed(2)}, Gastos +${totalGastosIncrease.toFixed(2)}`);
 
     try {
@@ -337,107 +340,107 @@ async function salvarTransacoesNoFirestoreArray(userId, transacoesNormalizadas) 
             gastos: admin.firestore.FieldValue.increment(totalGastosIncrease),
         });
     } catch (e) {
-        // Se o documento não existir, pode falhar.
-        console.warn(`[Firestore] Documento do usuário ${userId} pode não existir. Tentando criar/salvar apenas array.`);
+        console.warn(`[Firestore] Documento do usuário ${userId} pode não existir. Criando apenas array.`);
     }
 
-    // 3. Adiciona todas as transações ao array 'transacoes'
-    // O arrayUnion tem um limite. Dividimos para evitar erros.
-    const CHUNK_SIZE = 250; 
+    // 4. Adição ao array 'transacoes'
+    const CHUNK_SIZE = 250;
     let totalSalvo = 0;
 
     for (let i = 0; i < transacoesFormatadas.length; i += CHUNK_SIZE) {
         const chunk = transacoesFormatadas.slice(i, i + CHUNK_SIZE);
 
         await userRef.update({
-             transacoes: admin.firestore.FieldValue.arrayUnion(...chunk)
+            transacoes: admin.firestore.FieldValue.arrayUnion(...chunk)
         });
+
         totalSalvo += chunk.length;
     }
-    
+
     console.log(`[Firestore] ${totalSalvo} transações adicionadas ao array do usuário.`);
     return totalSalvo;
 }
 
 
 // ==================================================================
-//                       ROTA PRINCIPAL
+//                       ROTA PRINCIPAL (LIMPA)
 // ==================================================================
-
 app.post('/processar_extrato', upload.single('arquivo_extrato'), async (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({ erro: 'Nenhum arquivo enviado.' });
-        }
+    try {
+        if (!req.file) {
+            return res.status(400).json({ erro: 'Nenhum arquivo enviado.' });
+        }
 
-        const filePath = req.file.path;
+        const filePath = req.file.path;
 
-        // 1. OBTENÇÃO DO USER ID
-        const userId = req.body.user_id; 
-        if (!userId) {
-            fs.unlinkSync(filePath); 
-            return res.status(401).json({ erro: 'ID do usuário não fornecido na requisição.' });
-        }
+        // 1. PEGAR USER ID
+        const userId = req.body.user_id; 
+        if (!userId) {
+            fs.unlinkSync(filePath); 
+            return res.status(401).json({ erro: 'ID do usuário não fornecido na requisição.' });
+        }
 
-        let dados;
-        let bancoDetectado = 'Não Reconhecido';
+        let dados;
+        let bancoDetectado = 'Não Reconhecido';
 
-        // 2. LÓGICA DE DETECÇÃO E PARSING
-        const fileContentStart = fs.readFileSync(filePath, 'utf-8').substring(0, 400);
+        // 2. DETECÇÃO E PARSING DO BANCO
+        const fileContentStart = fs.readFileSync(filePath, 'utf-8').substring(0, 400);
 
-        // Detecta ITAÚ primeiro (estrutura única)
-        if (
-            fileContentStart.includes('Data;Data de Balancete;Histórico;Documento;Valor;Débito/Crédito') ||
-            fileContentStart.includes('Histórico;Documento;Valor;Débito/Crédito')
-        ) {
-            dados = await parseItau(filePath);
-            bancoDetectado = 'Itaú';
+        // Itaú
+        if (
+            fileContentStart.includes('Data;Data de Balancete;Histórico;Documento;Valor;Débito/Crédito') ||
+            fileContentStart.includes('Histórico;Documento;Valor;Débito/Crédito')
+        ) {
+            dados = await parseItau(filePath);
+            bancoDetectado = 'Itaú';
 
-        // Detecta NUBANK
-        } else if (fileContentStart.includes('Data,Valor,Identificador,Descrição')) {
-            dados = await parseNubank(filePath);
-            bancoDetectado = 'Nubank';
+        // Nubank
+        } else if (fileContentStart.includes('Data,Valor,Identificador,Descrição')) {
+            dados = await parseNubank(filePath);
+            bancoDetectado = 'Nubank';
 
-        // Detecta INTER por último (usa ; mas não é Itaú)
-        } else if (fileContentStart.includes(';')) {
-            dados = await parseInter(filePath);
-            bancoDetectado = 'Banco Inter';
+        // Inter (usa ;)
+        } else if (fileContentStart.includes(';')) {
+            dados = await parseInter(filePath);
+            bancoDetectado = 'Banco Inter';
 
-        } else {
-            fs.unlinkSync(filePath);
-            return res.status(400).json({
-                erro: 'Formato CSV de banco não reconhecido.',
-                detalhe: 'O arquivo não parece ser Itaú, Inter ou Nubank.'
-            });
-        }
+        } else {
+            fs.unlinkSync(filePath);
+            return res.status(400).json({
+                erro: 'Formato CSV de banco não reconhecido.',
+                detalhe: 'O arquivo não parece ser Itaú, Inter ou Nubank.'
+            });
+        }
 
-        console.log(`--- DADOS DO EXTRATO NORMALIZADOS (${bancoDetectado} - ${dados.length} transações) ---`);
-        dados.forEach(item => console.log(item));
-        console.log("--------------------------------------");
+        console.log(`--- DADOS NORMALIZADOS (${bancoDetectado}) ---`);
+        dados.forEach(item => console.log(item));
+        console.log("--------------------------------------");
 
-        // 3. SALVAR NO FIRESTORE
-        const totalSalvo = await salvarTransacoesNoFirestoreArray(userId, dados);
+        // 3. SALVAR NO FIRESTORE
+        // A ordenação é feita aqui para garantir que o array 'transacoes'
+        // no Firestore tenha o item mais recente no índice 0.
+        const totalSalvo = await salvarTransacoesNoFirestoreArray(userId, dados);
 
-        // 4. Retorno
-        res.json({
-            mensagem: `Extrato do ${bancoDetectado} processado e ${totalSalvo} transações salvas!`,
-            total_transacoes: totalSalvo,
-            banco: bancoDetectado,
-        });
+        res.json({
+            mensagem: `Extrato do ${bancoDetectado} processado e ${totalSalvo} transações salvas!`,
+            total_transacoes: totalSalvo,
+            banco: bancoDetectado,
+        });
 
-    } catch (error) {
-        console.error('Erro interno ao processar CSV:', error);
+    } catch (error) {
+        console.error('Erro interno ao processar CSV:', error);
 
-        if (req.file && fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
-        }
+        if (req.file && fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+        }
 
-        res.status(500).json({
-            erro: 'Erro interno no servidor durante o processamento do arquivo.',
-            detalhe: error.message
-        });
-    }
+        res.status(500).json({
+            erro: 'Erro interno no servidor durante o processamento do arquivo.',
+            detalhe: error.message
+        });
+    }
 });
+
 
 
 app.listen(port, () => {

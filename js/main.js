@@ -223,80 +223,101 @@ async function buscarTransacoesExtrato(uid) {
 
 // === FIRESTORE ===
 async function carregarDados(uid) {
-  
-  const userRef = doc(db, "usuarios", uid);
-  const snap = await getDoc(userRef);
+    
+    const userRef = doc(db, "usuarios", uid);
+    const snap = await getDoc(userRef);
 
-  if (!snap.exists()) {
-    await setDoc(userRef, { saldo: 0, gastos: 0, transacoes: [], nome: "Usuário" });
-    return carregarDados(uid);
-  }
-
-  const dados = snap.data();
-
-  // AQUI: só chama depois de pegar os dados
-  await verificarResetMensal(dados, userRef);
-
-
-  const limiteInput = document.getElementById("limit-range");
-  const displayValue = document.getElementById("display-value");
- 
-  // Carregar valor do banco
-    if(limiteInput && displayValue){
-      if(dados.limiteMensal !== undefined){
-      limiteInput.value = dados.limiteMensal; // atualiza input
-      displayValue.textContent = Number(dados.limiteMensal).toLocaleString("pt-BR", {minimumFractionDigits: 2});
+    if (!snap.exists()) {
+        await setDoc(userRef, { saldo: 0, gastos: 0, transacoes: [], nome: "Usuário" });
+        return carregarDados(uid);
     }
 
-    // Atualiza display quando o usuário mexe na barra
-    limiteInput.addEventListener("input", () => {
-      displayValue.textContent = Number(limiteInput.value).toLocaleString("pt-BR", {minimumFractionDigits: 2});
-    });
-  }
+    const dados = snap.data();
 
-  const saldoAtualEl = document.getElementById("saldo-atual");
-  const gastosAtualEl = document.getElementById("gastos-atual");
-  const historicoEl = document.querySelector("#historico ul");
-
-  if (saldoAtualEl) animarSaldo(saldoAtualEl, dados.saldo);
-  if (gastosAtualEl) animarSaldo(gastosAtualEl, dados.gastos);
+    // AQUI: só chama depois de pegar os dados
+    await verificarResetMensal(dados, userRef);
 
 
+    const limiteInput = document.getElementById("limit-range");
+    const displayValue = document.getElementById("display-value");
+    
+    // Carregar valor do banco
+    if(limiteInput && displayValue){
+        if(dados.limiteMensal !== undefined){
+        limiteInput.value = dados.limiteMensal; // atualiza input
+        displayValue.textContent = Number(dados.limiteMensal).toLocaleString("pt-BR", {minimumFractionDigits: 2});
+        }
 
-  
+        // Atualiza display quando o usuário mexe na barra
+        limiteInput.addEventListener("input", () => {
+        displayValue.textContent = Number(limiteInput.value).toLocaleString("pt-BR", {minimumFractionDigits: 2});
+        });
+    }
 
-  if (historicoEl) {
-    historicoEl.innerHTML = "";
-    const transacoes = (dados.transacoes || []).slice().reverse();
-    transacoes.forEach((t, index) => {
-      const li = document.createElement("li");
-      li.setAttribute('data-index', dados.transacoes.length - 1 - index);
-      li.innerHTML = `
-        <div>
-          <h3 class="medio-text">${t.descricao}</h3>
-          <p>${formatarDataTransacao(t.data)}</p>
-        </div>
-        <span class="medio-text ${t.tipo === "despesa" ? "red" : "green"}">${formatBR(t.valor)}</span>
-        <div class="delete-icon" style="display:none; cursor:pointer;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"></polyline>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            <line x1="10" y1="11" x2="10" y2="17"></line>
-            <line x1="14" y1="11" x2="14" y2="17"></line>
-          </svg>
-        </div>
-      `;
-      historicoEl.appendChild(li);
+    const saldoAtualEl = document.getElementById("saldo-atual");
+    const gastosAtualEl = document.getElementById("gastos-atual");
+    const historicoEl = document.querySelector("#historico ul");
 
-      if (index < transacoes.length - 1) {
-        const separator = document.createElement("div");
-        separator.className = "linha";
-        historicoEl.appendChild(separator);
-      }
-    });
-  }
-  
-  setupTransactionItems();
+    if (saldoAtualEl) animarSaldo(saldoAtualEl, dados.saldo);
+    if (gastosAtualEl) animarSaldo(gastosAtualEl, dados.gastos);
+
+
+    // -----------------------------------------------------
+    // ✅ CORREÇÃO APLICADA AQUI
+    // -----------------------------------------------------
+
+    if (historicoEl) {
+        historicoEl.innerHTML = "";
+        
+        // 1. Cria uma cópia, ordena pelo timestamp (Mais Novo -> Mais Antigo)
+        // Isso garante que, independente de como o arrayUnion salvou, a exibição está correta.
+        const transacoesOrdenadas = (dados.transacoes || []).slice().sort((a, b) => b.data - a.data);
+
+        transacoesOrdenadas.forEach((t, index) => {
+            const li = document.createElement("li");
+            
+            // 2. O índice de exclusão DEVE ser o índice no array original (dados.transacoes)
+            // Para fazer a exclusão, precisamos encontrar a posição da transação 't'
+            // dentro do array original 'dados.transacoes'.
+            const originalIndex = dados.transacoes.findIndex(
+                (originalT) => originalT.data === t.data && originalT.descricao === t.descricao && originalT.valor === t.valor
+            );
+
+            // Se o índice original foi encontrado, usamos ele para exclusão.
+            if(originalIndex !== -1) {
+                li.setAttribute('data-index', originalIndex);
+            } else {
+                // Caso extremo (transação duplicada ou não encontrada), 
+                // usamos o índice atual (apenas para exibição, exclusão pode falhar)
+                li.setAttribute('data-index', -1); 
+            }
+            
+            li.innerHTML = `
+                <div>
+                    <h3 class="medio-text">${t.descricao}</h3>
+                    <p>${formatarDataTransacao(t.data)}</p>
+                </div>
+                <span class="medio-text ${t.tipo === "despesa" ? "red" : "green"}">${formatBR(t.valor)}</span>
+                <div class="delete-icon" style="display:none; cursor:pointer;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                    </svg>
+                </div>
+            `;
+            historicoEl.appendChild(li);
+
+            if (index < transacoesOrdenadas.length - 1) {
+                const separator = document.createElement("div");
+                separator.className = "linha";
+                historicoEl.appendChild(separator);
+            }
+        });
+    }
+    
+    setupTransactionItems();
 }
 
 
