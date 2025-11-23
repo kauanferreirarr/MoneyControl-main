@@ -450,4 +450,4 @@ app.post('/processar_extrato', upload.single('arquivo_extrato'), async (req, res
 });
 
 
-module.exports = app;
+module.exports = (req, res) => app(req, res);
