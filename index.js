@@ -376,9 +376,8 @@ async function salvarTransacoesNoFirestoreArray(userId, transacoesNormalizadas) 
 // ==================================================================
 
 // Rota de Sanidade (Health Check) - Resolve o "Cannot GET /"
-
 // Rota Principal para Upload e Processamento
-app.post('/processar_extrato', upload.single('arquivo_extrato'), async (req, res) => {
+app.post('api/processar_extrato', upload.single('arquivo_extrato'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ 
