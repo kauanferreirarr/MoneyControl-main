@@ -2,11 +2,11 @@
   "version": 2,
   "rewrites": [
     {
-      "source": "/ping",
+      "source": "/processar_extrato",
       "destination": "/index.js"
     },
     {
-      "source": "/processar_extrato",
+      "source": "/ping",
       "destination": "/index.js"
     },
     {
