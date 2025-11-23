@@ -684,3 +684,31 @@
 .btn-submit:hover {
     background-color: #0056b3;
 }
+/* Estilo para garantir que o label não empurre os elementos */
+.label-customizado {
+    display: flex; /* Garante que os itens internos fiquem alinhados */
+    align-items: center;
+    gap: 10px;
+ 
+    /* Certifique-se de que tenha uma largura ou max-width definida se o overflow ocorrer */
+    width: 100%; 
+    box-sizing: border-box; /* Inclui padding e border na largura */
+    
+}
+
+/* 🎯 Regras para o nome do arquivo longo */
+.file-name-display {
+    /* Ocupa o espaço restante */
+    flex-grow: 1; 
+    /* Define a largura máxima como 100% do espaço disponível */
+    min-width: 0; 
+    /* OBRIGATÓRIO: Força o texto a não quebrar */
+    white-space: nowrap; 
+    /* OBRIGATÓRIO: Esconde o texto que ultrapassa o limite */
+    overflow: hidden; 
+    /* OBRIGATÓRIO: Adiciona as reticências (...) no corte */
+    text-overflow: ellipsis; 
+    
+    /* Estilo visual opcional */
+    font-weight: 600; 
+}

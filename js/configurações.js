@@ -243,3 +243,148 @@ function fecharNotifCard() {
   document.getElementById("notifcard").style.display = "none";
 }
 
+
+document.addEventListener('DOMContentLoaded', () => {
+    // ESTE É O INÍCIO DO SEU CÓDIGO
+    // ... [Seu código existente aqui, como inicialização do Firebase e outras funções] ...
+
+    // --- VARIÁVEIS PARA LÓGICAS DE FORMULÁRIO ---
+    const fileInput = document.getElementById('csv-file-input');
+    const fileLabel = document.querySelector('.label-customizado');
+    const formExtrato = document.getElementById('form-extrato-csv');
+    // ATENÇÃO: Verifique se a variável 'currentUser' está definida no seu código.
+    // Ela é usada para chamar carregarDados(currentUser.uid)
+    
+    // Captura o conteúdo HTML original do label (incluindo a imagem)
+    const defaultLabelContent = fileLabel ? fileLabel.innerHTML : '';
+
+    // =========================================================
+    // 1. LÓGICA DE ATUALIZAÇÃO DO RÓTULO DE ARQUIVO (Feedback visual)
+    // =========================================================
+    if (fileInput && fileLabel) {
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                const fileName = fileInput.files[0].name;
+                
+                // Atualiza o conteúdo do rótulo
+                fileLabel.innerHTML = `
+                    <img src="assets/papel.png" width="50px" height="50px" alt="papel">
+                    Arquivo selecionado: 
+                    <span class="file-name-display">${fileName}</span>
+                `;
+                
+                fileLabel.classList.add('file-selected');
+                
+            } else {
+                // Se o arquivo for deselecionado, volta ao texto padrão
+                fileLabel.innerHTML = defaultLabelContent;
+                fileLabel.classList.remove('file-selected');
+            }
+        });
+    }
+
+    // =========================================================
+    // 2. LÓGICA DE SUBMISSÃO ASSÍNCRONA (Mensagens Otimizadas)
+    // =========================================================
+
+    if (formExtrato && typeof Swal !== 'undefined') {
+        formExtrato.addEventListener('submit', async (e) => {
+            
+            e.preventDefault(); 
+
+            if (!fileInput || fileInput.files.length === 0) {
+                Swal.fire('Atenção', 'Por favor, selecione um arquivo de extrato (.csv) para enviar.', 'warning');
+                return;
+            }
+
+            const formData = new FormData(formExtrato);
+            
+            // SweetAlert de carregamento com timer
+            Swal.fire({
+                title: 'Processando Extrato...', // Título simples
+                text: 'Aguarde um momento. Estamos lendo e salvando suas transações.', // Texto menos técnico
+                timer: 1500,
+                timerProgressBar: true,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            try {
+                const response = await fetch(formExtrato.action, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                // Lógica para AGUARDAR o tempo restante do timer
+                if (Swal.getTimerLeft() > 0) {
+                    await new Promise(resolve => setTimeout(resolve, Swal.getTimerLeft()));
+                }
+                
+                // --- Leitura de Resposta Mais Robusta ---
+                let result;
+                let responseText = await response.text(); 
+
+                try {
+                    result = JSON.parse(responseText); 
+                } catch (jsonError) {
+                    // ERRO ESPECÍFICO: Resposta do servidor não é JSON (ex: erro HTML interno no Node.js)
+                    Swal.close();
+                    Swal.fire({
+                        title: 'Falha no Servidor!',
+                        html: `O servidor não conseguiu nos dar uma resposta clara após o processamento.
+                                <p>Tente novamente mais tarde ou verifique se o arquivo CSV está no formato correto. (Código: 500)</p>`,
+                        icon: 'error'
+                    });
+                    console.error("ERRO ESPECÍFICO (JSON Inválido):", responseText);
+                    return;
+                }
+                // ------------------------------------------
+
+                Swal.close(); // Fecha o carregamento
+
+                // 4. Verifica o status da operação
+                if (response.ok && result.success) {
+                    Swal.fire({
+                        title: 'Sucesso Total! ✨',
+                        html: `Seu extrato foi salvo! Foram adicionadas ${result.transacoes_salvas} novas transações ao seu histórico.`,
+                        icon: 'success'
+                    }).then(() => {
+                        // Recarrega os dados (Verifique se 'currentUser' está definido)
+                        if (typeof carregarDados === 'function' && typeof currentUser !== 'undefined' && currentUser) {
+                            carregarDados(currentUser.uid); 
+                        }
+                    });
+                    
+                    // Limpar o formulário e resetar o label
+                    formExtrato.reset();
+                    if (fileLabel) {
+                        fileLabel.innerHTML = defaultLabelContent;
+                        fileLabel.classList.remove('file-selected');
+                    }
+
+                } else {
+                    // Trata erros retornados pelo servidor (ex: arquivo mal formatado, user_id faltando)
+                    Swal.fire({
+                        title: 'Arquivo Inválido 📄',
+                        text: result.erro || result.detalhe || result.message || 'O formato do arquivo enviado não foi reconhecido pelo sistema. Por favor, verifique se é um extrato CSV válido do seu banco.',
+                        icon: 'warning'
+                    });
+                }
+            } catch (error) { 
+                // 🛑 BLOCO DE ERRO FATAL (Problemas de Rede/Conexão)
+                console.error("ERRO FATAL INESPERADO (Copie esta mensagem):", error);
+                
+                Swal.fire({
+                    title: 'Falha na Conexão 🔌',
+                    text: 'Não foi possível se comunicar com o servidor. Verifique sua conexão com a internet ou tente novamente em alguns instantes.',
+                    icon: 'error'
+                });
+            }
+        }); 
+    }
+
+    // ... [Restante do seu código DOMContentLoaded] ...
+
+}); // Fim do DOMContentLoaded);
