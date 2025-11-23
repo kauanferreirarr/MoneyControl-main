@@ -379,17 +379,6 @@ async function salvarTransacoesNoFirestoreArray(userId, transacoesNormalizadas) 
 // ** NOVO: Adiciona rotas de GET para servir o HTML (Apenas se o vercel.json falhar) **
 const path = require('path');
 
-// 1. Servir o arquivo 'config.html' quando o usuário navega para /config.html
-app.get('/config.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'config.html'));
-});
-
-// 2. Servir o 'index.html' na raiz (/)
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-
 // Rota Principal para Upload e Processamento
 app.post('/processar_extrato', upload.single('arquivo_extrato'), async (req, res) => {
     try {
