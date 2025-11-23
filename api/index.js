@@ -13,22 +13,33 @@ const app = express();
 const port = 3000;
 
 app.use(cors({
-    origin: '*', 
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    preflightContinue: false,
-    optionsSuccessStatus: 204
+    origin: '*', 
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    preflightContinue: false,
+    optionsSuccessStatus: 204
 }));
 
 // 🔥 CONFIGURAÇÃO FIREBASE ADMIN SDK
-const serviceAccount = require('./moneycontrol-e0c85-firebase-adminsdk-fbsvc-37f9cf34e0.json'); 
+// 🎯 MUDANÇA: Lendo a chave privada da VARIÁVEL DE AMBIENTE do Vercel
+let serviceAccount;
 try {
+    // A variável de ambiente FIREBASE_SERVICE_ACCOUNT contém o JSON como uma string.
+    const serviceAccountJsonString = process.env.FIREBASE_SERVICE_ACCOUNT;
+    
+    if (!serviceAccountJsonString) {
+        throw new Error("FIREBASE_SERVICE_ACCOUNT não encontrado nas variáveis de ambiente. A aplicação não funcionará corretamente em produção.");
+    }
+
+    serviceAccount = JSON.parse(serviceAccountJsonString);
+
     admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
     });
-    console.log('[FIREBASE] Admin SDK inicializado.');
+    console.log('[FIREBASE] Admin SDK inicializado com sucesso.');
 } catch (e) {
     if (!/already exists/i.test(e.message)) {
         console.error('[FIREBASE ERRO FATAL] Falha na inicialização:', e.message);
+        console.error('Verifique se a variável FIREBASE_SERVICE_ACCOUNT está preenchida corretamente no Vercel.');
     }
 }
 const db = admin.firestore();
@@ -374,92 +385,92 @@ async function salvarTransacoesNoFirestoreArray(userId, transacoesNormalizadas) 
 //                       ROTA PRINCIPAL (LIMPA)
 // ==================================================================
 app.post('/processar_extrato', upload.single('arquivo_extrato'), async (req, res) => {
-    try {
-        if (!req.file) {
-            // Garante que a resposta de erro seja consistente (HTTP 400)
-            return res.status(400).json({ 
-                success: false, 
-                erro: 'Nenhum arquivo enviado.' 
-            });
-        }
+    try {
+        if (!req.file) {
+            // Garante que a resposta de erro seja consistente (HTTP 400)
+            return res.status(400).json({ 
+                success: false, 
+                erro: 'Nenhum arquivo enviado.' 
+            });
+        }
 
-        const filePath = req.file.path;
+        const filePath = req.file.path;
 
-        // 1. PEGAR USER ID
-        const userId = req.body.user_id; 
-        if (!userId) {
-            fs.unlinkSync(filePath); 
-            // Garante que a resposta de erro seja consistente (HTTP 401)
-            return res.status(401).json({ 
-                success: false, 
-                erro: 'ID do usuário não fornecido na requisição.' 
-            });
-        }
+        // 1. PEGAR USER ID
+        const userId = req.body.user_id; 
+        if (!userId) {
+            fs.unlinkSync(filePath); 
+            // Garante que a resposta de erro seja consistente (HTTP 401)
+            return res.status(401).json({ 
+                success: false, 
+                erro: 'ID do usuário não fornecido na requisição.' 
+            });
+        }
 
-        let dados;
-        let bancoDetectado = 'Não Reconhecido';
+        let dados;
+        let bancoDetectado = 'Não Reconhecido';
 
-        // 2. DETECÇÃO E PARSING DO BANCO (Lógica inalterada)
-        const fileContentStart = fs.readFileSync(filePath, 'utf-8').substring(0, 400);
+        // 2. DETECÇÃO E PARSING DO BANCO (Lógica inalterada)
+        const fileContentStart = fs.readFileSync(filePath, 'utf-8').substring(0, 400);
 
-        // Itaú
-        if (
-            fileContentStart.includes('Data;Data de Balancete;Histórico;Documento;Valor;Débito/Crédito') ||
-            fileContentStart.includes('Histórico;Documento;Valor;Débito/Crédito')
-        ) {
-            dados = await parseItau(filePath);
-            bancoDetectado = 'Itaú';
+        // Itaú
+        if (
+            fileContentStart.includes('Data;Data de Balancete;Histórico;Documento;Valor;Débito/Crédito') ||
+            fileContentStart.includes('Histórico;Documento;Valor;Débito/Crédito')
+        ) {
+            dados = await parseItau(filePath);
+            bancoDetectado = 'Itaú';
 
-        // Nubank
-        } else if (fileContentStart.includes('Data,Valor,Identificador,Descrição')) {
-            dados = await parseNubank(filePath);
-            bancoDetectado = 'Nubank';
+        // Nubank
+        } else if (fileContentStart.includes('Data,Valor,Identificador,Descrição')) {
+            dados = await parseNubank(filePath);
+            bancoDetectado = 'Nubank';
 
-        // Inter (usa ;)
-        } else if (fileContentStart.includes(';')) {
-            dados = await parseInter(filePath);
-            bancoDetectado = 'Banco Inter';
+        // Inter (usa ;)
+        } else if (fileContentStart.includes(';')) {
+            dados = await parseInter(filePath);
+            bancoDetectado = 'Banco Inter';
 
-        } else {
-            fs.unlinkSync(filePath);
-            // Garante que a resposta de erro seja consistente (HTTP 400)
-            return res.status(400).json({
-                success: false,
-                erro: 'Formato CSV de banco não reconhecido.',
-                detalhe: 'O arquivo não parece ser Itaú, Inter ou Nubank.'
-            });
-        }
+        } else {
+            fs.unlinkSync(filePath);
+            // Garante que a resposta de erro seja consistente (HTTP 400)
+            return res.status(400).json({
+                success: false,
+                erro: 'Formato CSV de banco não reconhecido.',
+                detalhe: 'O arquivo não parece ser Itaú, Inter ou Nubank.'
+            });
+        }
 
-        console.log(`--- DADOS NORMALIZADOS (${bancoDetectado}) ---`);
-        dados.forEach(item => console.log(item));
-        console.log("--------------------------------------");
+        console.log(`--- DADOS NORMALIZADOS (${bancoDetectado}) ---`);
+        dados.forEach(item => console.log(item));
+        console.log("--------------------------------------");
 
-        // 3. SALVAR NO FIRESTORE
-        // Esta função agora LÊ o array antigo, COMBINA, ORDENA e SALVA o array COMPLETO.
-        const totalSalvo = await salvarTransacoesNoFirestoreArray(userId, dados);
+        // 3. SALVAR NO FIRESTORE
+        // Esta função agora LÊ o array antigo, COMBINA, ORDENA e SALVA o array COMPLETO.
+        const totalSalvo = await salvarTransacoesNoFirestoreArray(userId, dados);
 
-        // ✅ Resposta de SUCESSO com a chave 'success: true'
-        res.json({
-            success: true, // Chave necessária para o SweetAlert de sucesso
-            mensagem: `Extrato do ${bancoDetectado} processado e ${totalSalvo} transações salvas!`,
-            transacoes_salvas: totalSalvo, // Nome mais claro para o frontend
-            banco: bancoDetectado,
-        });
+        // ✅ Resposta de SUCESSO com a chave 'success: true'
+        res.json({
+            success: true, // Chave necessária para o SweetAlert de sucesso
+            mensagem: `Extrato do ${bancoDetectado} processado e ${totalSalvo} transações salvas!`,
+            transacoes_salvas: totalSalvo, // Nome mais claro para o frontend
+            banco: bancoDetectado,
+        });
 
-    } catch (error) {
-        console.error('Erro interno ao processar CSV:', error);
+    } catch (error) {
+        console.error('Erro interno ao processar CSV:', error);
 
-        if (req.file && fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
-        }
+        if (req.file && fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+        }
 
-        // ✅ Resposta de ERRO com a chave 'success: false' e status 500
-        res.status(500).json({
-            success: false, // Chave necessária para o SweetAlert de erro
-            erro: 'Erro interno no servidor durante o processamento do arquivo.',
-            detalhe: error.message
-        });
-    }
+        // ✅ Resposta de ERRO com a chave 'success: false' e status 500
+        res.status(500).json({
+            success: false, // Chave necessária para o SweetAlert de erro
+            erro: 'Erro interno no servidor durante o processamento do arquivo.',
+            detalhe: error.message
+        });
+    }
 });
 
 
