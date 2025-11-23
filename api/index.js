@@ -377,11 +377,8 @@ async function salvarTransacoesNoFirestoreArray(userId, transacoesNormalizadas) 
 
 // Rota de Sanidade (Health Check) - Resolve o "Cannot GET /"
 app.get('/', (req, res) => {
-    res.status(200).json({ 
-        success: true, 
-        mensagem: 'API de Processamento de Extrato está online e funcionando.', 
-        endpoints: ['POST /processar_extrato'] 
-    });
+    // Isso é o que você está vendo no seu navegador
+    res.json({"success":true,"mensagem":"API de Processamento de Extrato está online e funcionando.","endpoints":["POST /processar_extrato"]});
 });
 
 // Rota Principal para Upload e Processamento
