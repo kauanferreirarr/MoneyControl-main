@@ -376,8 +376,13 @@ async function salvarTransacoesNoFirestoreArray(userId, transacoesNormalizadas) 
 // ==================================================================
 
 // Rota de Sanidade (Health Check) - Resolve o "Cannot GET /"
-// ** NOVO: Adiciona rotas de GET para servir o HTML (Apenas se o vercel.json falhar) **
-const path = require('path');
+app.get('/', (req, res) => {
+    res.status(200).json({ 
+        success: true, 
+        mensagem: 'API de Processamento de Extrato está online e funcionando.', 
+        endpoints: ['POST /processar_extrato'] 
+    });
+});
 
 // Rota Principal para Upload e Processamento
 app.post('/processar_extrato', upload.single('arquivo_extrato'), async (req, res) => {
