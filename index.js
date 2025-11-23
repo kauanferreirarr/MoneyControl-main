@@ -12,7 +12,7 @@ const admin = require('firebase-admin');
 const app = express();
 
 // --- 1. Rota Estática para Servir o Frontend ---
-// O Vercel lida bem com isso se a pasta 'public' existir.
+// Mantemos esta linha, mas o roteamento principal será feito pelo vercel.json.
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Configuração CORS permissiva para Vercel
@@ -296,7 +296,7 @@ async function salvarTransacoesNoFirestoreArray(userId, transacoesNormalizadas) 
 //                      ROTAS DA API
 // ==================================================================
 
-// ROTA 1: Teste de Sanidade (Health Check) - Use /api/ping se precisar de logs mais claros
+// ROTA 1: Teste de Sanidade (Health Check)
 app.get('/ping', (req, res) => {
     console.log(">>> [ROTA] /ping acessada.");
     res.json({ 
