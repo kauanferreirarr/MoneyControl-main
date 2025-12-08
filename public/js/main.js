@@ -144,41 +144,51 @@ function formatarDataTransacao(timestamp){
 async function verificarResetMensal(dadosUsuario, userRef) {
   if (!dadosUsuario.dataReinicio) return;
 
-  const diaHoje = new Date().getDate(); // pega o dia do mês atual
-  const ultimoReset = dadosUsuario.ultimoReset || 0; // último reset feito
+  const hoje = new Date();
+  const diaHoje = hoje.getDate();
+  const mes = hoje.getMonth();
+  const ano = hoje.getFullYear();
 
-  if (diaHoje === Number(dadosUsuario.dataReinicio) && ultimoReset !== diaHoje) {
-    try {
-      await updateDoc(userRef, {
-        gastos: 0, // zera gastos
-        ultimoReset: diaHoje, // marca que já fez reset
-      });
+  const chaveMesAtual = `${ano}-${mes}`; // ex: 2025-8
+  const ultimoReset = dadosUsuario.ultimoReset || null;
 
-      const gastosEl = document.getElementById("gastos-atual");
-      if (gastosEl) gastosEl.textContent = "R$ 0,00";
+  // ❌ não é o dia configurado
+  if (diaHoje !== Number(dadosUsuario.dataReinicio)) return;
 
-      console.log("[resetMensal] Gastos zerados automaticamente no dia certo!");
+  // ❌ já resetou neste mês
+  if (ultimoReset === chaveMesAtual) return;
 
-      // 🔔 Notificação aqui
+  try {
+    await updateDoc(userRef, {
+      gastos: 0,
+      ultimoReset: chaveMesAtual
+    });
+
+    const gastosEl = document.getElementById("gastos-atual");
+    if (gastosEl) gastosEl.textContent = "R$ 0,00";
+
+    console.log("[resetMensal] Reset mensal executado corretamente ✅");
+
+    // 🔔 Notificação
+    if ("Notification" in window) {
       if (Notification.permission === "granted") {
         new Notification("MoneyControl", {
-          body: "Seus gastos foram resetados automaticamente hoje.",
-          icon: "../assets/logo.png"// opcional, coloca um ícone se quiser
+          body: "Seus gastos mensais foram reiniciados automaticamente.",
+          icon: "../assets/logo.png"
         });
       } else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then((perm) => {
-          if (perm === "granted") {
-            new Notification("MoneyControl", {
-              body: "Seus gastos foram resetados automaticamente hoje.",
-              icon: "../assets/logo.png",
-            });
-          }
-        });
+        const perm = await Notification.requestPermission();
+        if (perm === "granted") {
+          new Notification("MoneyControl", {
+            body: "Seus gastos mensais foram reiniciados automaticamente.",
+            icon: "../assets/logo.png"
+          });
+        }
       }
-
-    } catch (err) {
-      console.error("[resetMensal] erro ao resetar automaticamente:", err);
     }
+
+  } catch (err) {
+    console.error("[resetMensal] erro ao resetar automaticamente:", err);
   }
 }
 
