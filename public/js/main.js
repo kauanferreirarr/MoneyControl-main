@@ -149,48 +149,70 @@ async function verificarResetMensal(dadosUsuario, userRef) {
   const mes = hoje.getMonth();
   const ano = hoje.getFullYear();
 
-  const chaveMesAtual = `${ano}-${mes}`; // ex: 2025-8
+  const chaveMesAtual = `${ano}-${mes}`;
   const ultimoReset = dadosUsuario.ultimoReset || null;
 
-  // ❌ não é o dia configurado
+  // não é o dia configurado
   if (diaHoje !== Number(dadosUsuario.dataReinicio)) return;
 
-  // ❌ já resetou neste mês
+  // já processou este mês
   if (ultimoReset === chaveMesAtual) return;
 
   try {
+    const transacoes = dadosUsuario.transacoes || [];
+
+    let totalGastos = 0;
+
+    transacoes.forEach(t => {
+      if (!t || !t.data) return;
+
+      const data = t.data.seconds
+        ? new Date(t.data.seconds * 1000)
+        : new Date(t.data);
+
+      if (isNaN(data.getTime())) return;
+
+      if (
+        data.getMonth() === mes &&
+        data.getFullYear() === ano &&
+        String(t.tipo).toLowerCase() === "despesa"
+      ) {
+        totalGastos += Number(t.valor) || 0;
+      }
+    });
+
     await updateDoc(userRef, {
-      gastos: 0,
+      gastos: totalGastos,
       ultimoReset: chaveMesAtual
     });
 
     const gastosEl = document.getElementById("gastos-atual");
-    if (gastosEl) gastosEl.textContent = "R$ 0,00";
+    if (gastosEl) {
+      gastosEl.textContent = totalGastos.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+      });
+    }
 
-    console.log("[resetMensal] Reset mensal executado corretamente ✅");
+    console.log("[resetMensal] mês processado corretamente ✅");
 
-    // 🔔 Notificação
-    if ("Notification" in window) {
-      if (Notification.permission === "granted") {
-        new Notification("MoneyControl", {
-          body: "Seus gastos mensais foram reiniciados automaticamente.",
-          icon: "../assets/logo.png"
-        });
-      } else if (Notification.permission !== "denied") {
-        const perm = await Notification.requestPermission();
-        if (perm === "granted") {
-          new Notification("MoneyControl", {
-            body: "Seus gastos mensais foram reiniciados automaticamente.",
-            icon: "../assets/logo.png"
-          });
-        }
-      }
+    // ⚠️ notificação só funciona se a aba estiver ativa
+    if (
+      document.visibilityState === "visible" &&
+      "Notification" in window &&
+      Notification.permission === "granted"
+    ) {
+      new Notification("MoneyControl", {
+        body: "Seus gastos do mês foram atualizados.",
+        icon: "../assets/logo.png"
+      });
     }
 
   } catch (err) {
-    console.error("[resetMensal] erro ao resetar automaticamente:", err);
+    console.error("[resetMensal] erro:", err);
   }
 }
+
 
 
 // main.js - NOVO BLOCO (antes da sua função carregarDados)

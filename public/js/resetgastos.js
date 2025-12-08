@@ -1,15 +1,13 @@
-// resetgastos.js
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-import {
-  getAuth,
-  onAuthStateChanged
+import { 
+  getAuth, 
+  onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-import {
-  getFirestore,
-  doc,
-  getDoc,
-  updateDoc
+import { 
+  getFirestore, 
+  doc, 
+  getDoc, 
+  updateDoc 
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
 // === CONFIG FIREBASE ===
@@ -26,123 +24,95 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// ======================================================
-// CALCULA GASTOS DO MÊS BASEADO NO HISTÓRICO
-// ======================================================
-function calcularGastosDoMes(transacoes = [], dataReinicio) {
-  if (!dataReinicio) return 0;
+// ================= UTIL =================
+function normalizarData(data) {
+  if (!data) return null;
 
-  const hoje = new Date();
-
-  let inicioPeriodo;
-  if (hoje.getDate() >= dataReinicio) {
-    inicioPeriodo = new Date(
-      hoje.getFullYear(),
-      hoje.getMonth(),
-      dataReinicio,
-      0, 0, 0
-    );
-  } else {
-    inicioPeriodo = new Date(
-      hoje.getFullYear(),
-      hoje.getMonth() - 1,
-      dataReinicio,
-      0, 0, 0
-    );
+  // Timestamp Firestore
+  if (typeof data === "object" && data.seconds) {
+    return new Date(data.seconds * 1000);
   }
 
-  let total = 0;
-
-  transacoes.forEach(t => {
-    if (t.tipo !== "despesa") return;
-
-    const data = new Date(t.data);
-    if (data >= inicioPeriodo) {
-      total += Number(t.valor) || 0;
-    }
-  });
-
-  return total;
+  // String ou Date
+  const d = new Date(data);
+  return isNaN(d.getTime()) ? null : d;
 }
 
-// ======================================================
-// ATUALIZA GASTOS NO FIRESTORE (SEM TOCAR NO SALDO)
-// ======================================================
-async function atualizarGastosDoMes(userRef) {
+// ============ RECALCULA GASTOS ============
+async function recalcularGastosDoMes(userRef) {
   const snap = await getDoc(userRef);
   if (!snap.exists()) return;
 
   const dados = snap.data();
+  const transacoes = dados.transacoes || [];
 
-  const gastosCalculados = calcularGastosDoMes(
-    dados.transacoes || [],
-    Number(dados.dataReinicio)
-  );
+  const hoje = new Date();
+  const mesAtual = hoje.getMonth();
+  const anoAtual = hoje.getFullYear();
+
+  let totalGastos = 0;
+
+  transacoes.forEach(t => {
+    const data = normalizarData(t.data);
+    if (!data) return;
+
+    if (
+      data.getMonth() === mesAtual &&
+      data.getFullYear() === anoAtual &&
+      String(t.tipo).toLowerCase() === "despesa"
+    ) {
+      totalGastos += Number(t.valor) || 0;
+    }
+  });
 
   await updateDoc(userRef, {
-    gastos: gastosCalculados
+    gastos: totalGastos
   });
 
   const gastosEl = document.getElementById("gastos-atual");
   if (gastosEl) {
-    gastosEl.textContent = formatBR(gastosCalculados);
+    gastosEl.textContent = totalGastos.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
   }
 
-  console.log(
-    "[resetgastos] gastos corrigidos pelo histórico:",
-    gastosCalculados
-  );
+  console.log("[resetMensal] gastos recalculados:", totalGastos);
 }
 
-// ======================================================
-// VERIFICA RESET NO DIA CERTO (SEM ZERAR NADA NA MARRA)
-// ======================================================
+// ============ RESET MENSAL ============
 async function verificarResetMensal(userRef) {
   const snap = await getDoc(userRef);
   if (!snap.exists()) return;
 
   const dados = snap.data();
+  const hoje = new Date();
+
   if (!dados.dataReinicio) return;
 
-  const hoje = new Date();
   const diaHoje = hoje.getDate();
-  const ultimoReset = dados.ultimoReset || "";
+  const ultimoReset = dados.ultimoReset;
 
-  const chaveHoje =
-    `${hoje.getFullYear()}-${hoje.getMonth()}-${diaHoje}`;
-
-  if (
-    diaHoje === Number(dados.dataReinicio) &&
-    ultimoReset !== chaveHoje
-  ) {
-    await atualizarGastosDoMes(userRef);
-
+  if (diaHoje === Number(dados.dataReinicio) && ultimoReset !== diaHoje) {
     await updateDoc(userRef, {
-      ultimoReset: chaveHoje
+      ultimoReset: diaHoje
     });
 
-    console.log("[resetgastos] reset mensal aplicado corretamente");
+    await recalcularGastosDoMes(userRef);
 
-    if (Notification.permission === "granted") {
-      new Notification("MoneyControl", {
-        body: "Gastos do mês recalculados automaticamente.",
-        icon: "../assets/logo.png"
-      });
-    }
+    console.log("[resetMensal] reset aplicado no dia correto");
   }
 }
 
-// ======================================================
-// LOGIN → CORRIGE A CAGADA AUTOMATICAMENTE
-// ======================================================
+// ============ INIT ============
 onAuthStateChanged(auth, async (user) => {
   if (!user) return;
 
   const userRef = doc(db, "usuarios", user.uid);
 
-  // 1️⃣ Corrige gastos (caso tenham sido zerados)
-  await atualizarGastosDoMes(userRef);
+  // ✅ corrige IMEDIATAMENTE (resolve a cagada já feita)
+  await recalcularGastosDoMes(userRef);
 
-  // 2️⃣ Verifica se hoje é dia de reinício
+  // ✅ depois cuida do reset mensal
   await verificarResetMensal(userRef);
 });
