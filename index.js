@@ -10,10 +10,14 @@ const cors = require('cors');
 const admin = require('firebase-admin');
 
 const app = express();
+require("dotenv").config();
+console.log("DEBUG FIREBASE:", process.env.FIREBASE_SERVICE_ACCOUNT ? "OK" : "NADA");
+
 
 // --- 1. Rota Estática para Servir o Frontend ---
 // Mantemos esta linha, mas o roteamento principal será feito pelo vercel.json.
 app.use(express.static(path.join(__dirname, 'public')));
+
 
 // Configuração CORS permissiva para Vercel
 app.use(cors({
@@ -74,46 +78,73 @@ const upload = multer({ dest: '/tmp/uploads/' });
 
 // --- 1. Parser para CSV do Banco Inter ---
 function parseInter(filePath) {
-    return new Promise((resolve, reject) => {
-        const transacoesNormalizadas = [];
-        let rowCount = 0;
-        
-        fs.createReadStream(filePath)
-          .pipe(csv({ separator: ';', headers: false }))
-          .on('data', (row) => {
-                rowCount++;
-                if (rowCount <= 5) return; 
-                
-                const data_lancamento = row[0];
-                const descricaoCompleta = row[2] ? row[2].trim() : 'Transação Inter';
-                let valor_str = row[3]; 
-                
-                let valor_numerico;
-                try {
-                    valor_numerico = parseFloat(valor_str.replace(',', '.'));
-                } catch (e) { return; }
-                
-                const regex = /^(.*?)\s*-\s*([^-]+?)(?=\s*-\s*(\d{3}\.\d{3}|\d{11}|Conta|Agência|\s*$))/i;
-                const match = descricaoCompleta.match(regex);
-                let descricaoSimplificada = descricaoCompleta; 
-                
-                if (match && match[1] && match[2]) {
-                    descricaoSimplificada = `${match[1].trim()} - ${match[2].trim()}`;
-                } else if (descricaoCompleta.includes('Débito Automático') || descricaoCompleta.includes('Pagamento de Boleto')) {
-                    descricaoSimplificada = descricaoCompleta.split('-')[0].trim();
-                }
+    return new Promise((resolve, reject) => {
+        const transacoesNormalizadas = [];
+        let rowCount = 0;
+        
+        fs.createReadStream(filePath)
+          .pipe(csv({ 
+              separator: ';', // <-- Delimitador Ponto e Vírgula
+              headers: false, 
+              skipLines: 0 
+          }))
+          .on('data', (row) => {
+                rowCount++;
+                
+                // Ignora as 5 primeiras linhas (cabeçalhos do extrato)
+                if (rowCount <= 5) {
+                    return; 
+                }
+                
+                // Mapeamento baseado nas colunas: [0]Data, [1]Histórico, [2]Descrição, [3]Valor
+                const data_lancamento = row[0];
+                const descricaoCompleta = row[2] ? row[2].trim() : 'Transação Inter';
+                let valor_str = row[3]; 
+                
+                let valor_numerico;
+                try {
+                    // Normaliza: Troca vírgula (,) por ponto (.) e converte para float
+                    valor_numerico = parseFloat(valor_str.replace(',', '.'));
+                } catch (e) {
+                    return; 
+                }
+                
+                // 🎯 INÍCIO DA CORREÇÃO DE NOME LONGO (INTER)
+                // Regex para pegar a primeira parte (Tipo de Transação) e o nome que vem antes de um CNPJ/CPF ou conta.
+                const regex = /^(.*?)\s*-\s*([^-]+?)(?=\s*-\s*(\d{3}\.\d{3}|\d{11}|Conta|Agência|\s*$))/i;
+                const match = descricaoCompleta.match(regex);
+                
+                let descricaoSimplificada = descricaoCompleta; // Fallback
+                
+                if (match && match[1] && match[2]) {
+                    const tipo = match[1].trim(); // Ex: Transferência Recebida
+                    const nome = match[2].trim(); // Ex: Vitoria Silva Dias
+                    descricaoSimplificada = `${tipo} - ${nome}`;
+                } else if (descricaoCompleta.includes('Débito Automático') || descricaoCompleta.includes('Pagamento de Boleto')) {
+                    // Trata casos mais simples que podem falhar no regex, pegando só a primeira parte.
+                    descricaoSimplificada = descricaoCompleta.split('-')[0].trim();
+                }
+                // 🎯 FIM DA CORREÇÃO DE NOME LONGO
 
-                transacoesNormalizadas.push({
-                    data: data_lancamento,
-                    descricao: descricaoSimplificada, 
-                    valor: valor_numerico, 
-                    fonte: 'Banco Inter', 
-                    referencia_bancaria: null 
-                });
-          })
-          .on('end', () => { fs.unlinkSync(filePath); resolve(transacoesNormalizadas); })
-          .on('error', (error) => { fs.unlinkSync(filePath); reject(error); });
-    });
+                const transacao = {
+                    data: data_lancamento, // Ex: 22/11/2025
+                    descricao: descricaoSimplificada, // <--- USA A VERSÃO SIMPLIFICADA
+                    valor: valor_numerico, // Valor com sinal
+                    fonte: 'Banco Inter', // Adicionado para rastreamento
+                    referencia_bancaria: null 
+                };
+                
+                transacoesNormalizadas.push(transacao);
+          })
+          .on('end', () => {
+              fs.unlinkSync(filePath); // Limpa o arquivo temporário
+              resolve(transacoesNormalizadas);
+          })
+          .on('error', (error) => {
+              fs.unlinkSync(filePath); 
+              reject(error);
+          });
+    });
 }
 
 // --- 2. Parser para CSV do Nubank ---
@@ -360,3 +391,13 @@ app.post('/processar_extrato', upload.single('arquivo_extrato'), async (req, res
 });
 
 module.exports = app;
+
+// ===================================================
+//          EXECUTAR LOCALMENTE (IGNORADO NA VERCEL)
+// ===================================================
+if (require.main === module) {
+    const port = process.env.PORT || 3000;
+    app.listen(port, () => {
+        console.log("Servidor local rodando em http://localhost:" + port);
+    });
+}
