@@ -1,108 +1,148 @@
-// resetMensal.js
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-import { 
-  doc, 
-  getDoc, 
-  updateDoc 
+// resetgastos.js
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  updateDoc
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
-import { auth, db } from "./main.js"; // ajuste o caminho se necessário
+// === CONFIG FIREBASE ===
+const firebaseConfig = {
+  apiKey: "AIzaSyAFqvulIgDvpk7ukasWMeEpq_BFUCt94Lo",
+  authDomain: "moneycontrol-e0c85.firebaseapp.com",
+  projectId: "moneycontrol-e0c85",
+  storageBucket: "moneycontrol-e0c85.firebasestorage.app",
+  messagingSenderId: "1059412393084",
+  appId: "1:1059412393084:web:1d0b058345372277709df9"
+};
 
-// =======================================================
-// UTIL
-// =======================================================
-function isMesmoMes(dataA, dataB) {
-  const a = new Date(dataA);
-  const b = new Date(dataB);
-  return (
-    a.getMonth() === b.getMonth() &&
-    a.getFullYear() === b.getFullYear()
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// ======================================================
+// CALCULA GASTOS DO MÊS BASEADO NO HISTÓRICO
+// ======================================================
+function calcularGastosDoMes(transacoes = [], dataReinicio) {
+  if (!dataReinicio) return 0;
+
+  const hoje = new Date();
+
+  let inicioPeriodo;
+  if (hoje.getDate() >= dataReinicio) {
+    inicioPeriodo = new Date(
+      hoje.getFullYear(),
+      hoje.getMonth(),
+      dataReinicio,
+      0, 0, 0
+    );
+  } else {
+    inicioPeriodo = new Date(
+      hoje.getFullYear(),
+      hoje.getMonth() - 1,
+      dataReinicio,
+      0, 0, 0
+    );
+  }
+
+  let total = 0;
+
+  transacoes.forEach(t => {
+    if (t.tipo !== "despesa") return;
+
+    const data = new Date(t.data);
+    if (data >= inicioPeriodo) {
+      total += Number(t.valor) || 0;
+    }
+  });
+
+  return total;
+}
+
+// ======================================================
+// ATUALIZA GASTOS NO FIRESTORE (SEM TOCAR NO SALDO)
+// ======================================================
+async function atualizarGastosDoMes(userRef) {
+  const snap = await getDoc(userRef);
+  if (!snap.exists()) return;
+
+  const dados = snap.data();
+
+  const gastosCalculados = calcularGastosDoMes(
+    dados.transacoes || [],
+    Number(dados.dataReinicio)
+  );
+
+  await updateDoc(userRef, {
+    gastos: gastosCalculados
+  });
+
+  const gastosEl = document.getElementById("gastos-atual");
+  if (gastosEl) {
+    gastosEl.textContent = formatBR(gastosCalculados);
+  }
+
+  console.log(
+    "[resetgastos] gastos corrigidos pelo histórico:",
+    gastosCalculados
   );
 }
 
-// =======================================================
-// RESET MENSAL REAL (NÃO ESSA PALHAÇADA DE ZERAR SEM PENSAR)
-// =======================================================
-async function verificarResetMensal(user, dadosUsuario) {
-  if (!dadosUsuario.dataReinicio) return;
+// ======================================================
+// VERIFICA RESET NO DIA CERTO (SEM ZERAR NADA NA MARRA)
+// ======================================================
+async function verificarResetMensal(userRef) {
+  const snap = await getDoc(userRef);
+  if (!snap.exists()) return;
+
+  const dados = snap.data();
+  if (!dados.dataReinicio) return;
 
   const hoje = new Date();
   const diaHoje = hoje.getDate();
-  const diaReinicio = Number(dadosUsuario.dataReinicio);
-  const ultimoReset = dadosUsuario.ultimoReset || null;
+  const ultimoReset = dados.ultimoReset || "";
 
-  // ✅ já resetou hoje? então vaza
+  const chaveHoje =
+    `${hoje.getFullYear()}-${hoje.getMonth()}-${diaHoje}`;
+
   if (
-    ultimoReset &&
-    new Date(ultimoReset).getDate() === diaHoje &&
-    isMesmoMes(ultimoReset, hoje)
+    diaHoje === Number(dados.dataReinicio) &&
+    ultimoReset !== chaveHoje
   ) {
-    return;
-  }
-
-  // ✅ só executa no dia certo
-  if (diaHoje !== diaReinicio) return;
-
-  console.log("[resetMensal] Dia de reinício detectado.");
-
-  const transacoes = dadosUsuario.transacoes || [];
-  const transacoesMesAtual = transacoes.filter(t =>
-    t.tipo === "despesa" && isMesmoMes(t.data, hoje)
-  );
-
-  let novoValorGastos = 0;
-
-  if (transacoesMesAtual.length > 0) {
-    novoValorGastos = transacoesMesAtual.reduce(
-      (acc, t) => acc + Number(t.valor || 0),
-      0
-    );
-    console.log("[resetMensal] Gastos recalculados do mês:", novoValorGastos);
-  } else {
-    console.log("[resetMensal] Nenhuma transação no mês. ZERANDO.");
-  }
-
-  try {
-    const userRef = doc(db, "usuarios", user.uid);
+    await atualizarGastosDoMes(userRef);
 
     await updateDoc(userRef, {
-      gastos: novoValorGastos,
-      ultimoReset: hoje.toISOString()
+      ultimoReset: chaveHoje
     });
 
-    const gastosEl = document.getElementById("gastos-atual");
-    if (gastosEl) {
-      gastosEl.textContent = `R$ ${novoValorGastos.toFixed(2).replace('.', ',')}`;
-    }
+    console.log("[resetgastos] reset mensal aplicado corretamente");
 
-    // 🔔 Notificação
     if (Notification.permission === "granted") {
       new Notification("MoneyControl", {
-        body: "Seu mês financeiro foi reiniciado corretamente.",
+        body: "Gastos do mês recalculados automaticamente.",
         icon: "../assets/logo.png"
       });
     }
-
-    console.log("[resetMensal] Reset mensal aplicado com sucesso.");
-  } catch (err) {
-    console.error("[resetMensal] Erro ao aplicar reset mensal:", err);
   }
 }
 
-// =======================================================
-// OBSERVA LOGIN E DISPARA O RESET
-// =======================================================
+// ======================================================
+// LOGIN → CORRIGE A CAGADA AUTOMATICAMENTE
+// ======================================================
 onAuthStateChanged(auth, async (user) => {
   if (!user) return;
 
-  try {
-    const userRef = doc(db, "usuarios", user.uid);
-    const snap = await getDoc(userRef);
-    if (!snap.exists()) return;
+  const userRef = doc(db, "usuarios", user.uid);
 
-    const dadosUsuario = snap.data();
-    await verificarResetMensal(user, dadosUsuario);
-  } catch (err) {
-    console.error("[resetMensal] erro geral:", err);
-  }
+  // 1️⃣ Corrige gastos (caso tenham sido zerados)
+  await atualizarGastosDoMes(userRef);
+
+  // 2️⃣ Verifica se hoje é dia de reinício
+  await verificarResetMensal(userRef);
 });
