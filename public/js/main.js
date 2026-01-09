@@ -39,29 +39,59 @@ const firebaseConfig = {
   measurementId: "G-HJKNFEJV9P"
 };
 
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 setPersistence(auth, browserLocalPersistence);
 
+// main.js
+window.db = db;   // Torna o banco de dados acessível globalmente
+window.auth = auth; // Torna o auth acessível globalmente
+
 let currentUser = null;
 let notyf;
+
 (function initNotyfSafe() {
   try {
     if (window && window.Notyf) {
       notyf = new Notyf({
         duration: 3500,
-        position: { x: "right", y: "top" }
+        position: { x: "right", y: "top" },
+        types: [
+          {
+            type: "warning",
+            background: "#facc15",
+            icon: {
+              className: "notyf__icon--warning",
+              tagName: "i"
+            }
+          },
+          {
+            type: "error",
+            background: "#ef4444",
+            icon: {
+              className: "notyf__icon--error",
+              tagName: "i"
+            }
+          }
+        ]
       });
+
+      notyf.warning = (msg) =>
+        notyf.open({ type: "warning", message: msg });
+
+      notyf.error = (msg) =>
+        notyf.open({ type: "error", message: msg });
+
     } else {
       notyf = {
-        success: (m) => { console.log("[notyf success]", m); alert("✅ " + m); },
-        error: (m) => { console.log("[notyf error]", m); alert("❌ " + m); },
-        warning: (m) => { console.log("[notyf warn]", m); alert("⚠️ " + m); }
+        success: (m) => alert("✅ " + m),
+        error: (m) => alert("❌ " + m),
+        warning: (m) => alert("⚠️ " + m)
       };
     }
   } catch (e) {
-    console.error("Erro inicializando Notyf (fallback ativado):", e);
     notyf = {
       success: (m) => alert("✅ " + m),
       error: (m) => alert("❌ " + m),
@@ -70,43 +100,78 @@ let notyf;
   }
 })();
 
+
+
+
+// Variável global para não repetir o alerta da MESMA porcentagem
+let ultimaPorcentagemNotificada = 0;
+
+function checarLimite(gastos, limite) {
+    const g = parseFloat(gastos);
+    const l = parseFloat(limite);
+
+    if (!l || l <= 0) {
+        ultimaPorcentagemNotificada = 0;
+        return;
+    }
+
+    const porcentagemReal = Math.floor((g / l) * 100);
+
+    // Se a porcentagem não mudou desde o último gasto, não faz nada (evita spam)
+    if (porcentagemReal === ultimaPorcentagemNotificada) return;
+
+    // Busca configurações
+    const storage = localStorage.getItem('notificacoes');
+    const notifConfig = storage ? JSON.parse(storage) : { chk50: true, chk80: true, chk100: true, chkNone: false };
+
+    // Se o usuário desativou tudo, sai fora
+    if (notifConfig.chkNone) return;
+
+    let disparar = false;
+    let tipoMsg = ""; // warning ou error
+
+    // Lógica de Gatilhos Dinâmicos
+    if (porcentagemReal >= 100 && notifConfig.chk100) {
+        disparar = true;
+        tipoMsg = "error";
+    } else if (porcentagemReal >= 80 && notifConfig.chk80) {
+        disparar = true;
+        tipoMsg = "error";
+    } else if (porcentagemReal >= 50 && notifConfig.chk50) {
+        disparar = true;
+        tipoMsg = "warning";
+    }
+
+    if (disparar) {
+        ultimaPorcentagemNotificada = porcentagemReal; // Salva que já avisamos sobre essa % específica
+        
+        const mensagem = `Você atingiu ${porcentagemReal}% do seu limite mensal!`;
+        
+        if (tipoMsg === "error") {
+            notyf.error(`🚨 ${mensagem}`);
+        } else {
+            notyf.warning(`ℹ️ ${mensagem}`);
+        }
+        
+        console.log(`Notificação disparada: ${porcentagemReal}%`);
+    }
+}
+// No local do main.js onde você processa o extrato ou saldo:
+function atualizarInterface(gastosTotais) {
+    // 1. Pega o limite que salvamos no configuracoes.js
+    const limiteSalvo = localStorage.getItem('valorMeta');
+    const limiteNumerico = limiteSalvo ? parseFloat(limiteSalvo) : 0;
+
+    // 2. Chama a sua função de checar (que já usa o localStorage para as chk50, etc)
+    checarLimite(gastosTotais, limiteNumerico);
+
+    // ... restante da sua lógica de animar saldo, etc.
+}
+
 // === FUNÇÕES AUXILIARES ===
 function formatBR(n) {
   return "R$ " + Number(n).toFixed(2).replace(".", ",");
 }
-
-
-let ultimaNotificacaoNivel = null;
-
-function checarLimite(gastos, limite) {
-  if (!limite || limite <= 0) {
-    ultimaNotificacaoNivel = null;
-    return;
-  }
-
-  const porcentagem = (gastos / limite) * 100;
-  let nivel = 0;
-
-  if (porcentagem >= 100) nivel = 100;
-  else if (porcentagem >= 80) nivel = 80;
-  else if (porcentagem >= 50) nivel = 50;
-
-  if (ultimaNotificacaoNivel === nivel) return;
-
-  // Carrega configuração salva
-  const notifConfig = JSON.parse(localStorage.getItem('notificacoes')) || {};
-  
-  if ((nivel === 50 && notifConfig.chk50) ||
-      (nivel === 80 && notifConfig.chk80) ||
-      (nivel === 100 && notifConfig.chk100)) {
-    if (nivel === 50) notyf.error("Você atingiu 50% do seu limite mensal!");
-    else if (nivel === 80) notyf.error("Cuidado! 80% do limite mensal atingido!");
-    else if (nivel === 100) notyf.error("Limite mensal atingido! Pare de gastar!");
-  }
-
-  ultimaNotificacaoNivel = nivel;
-}
-
 
 
 function animarSaldo(element, valorFinal) {
@@ -255,7 +320,6 @@ async function buscarTransacoesExtrato(uid) {
 
 // === FIRESTORE ===
 async function carregarDados(uid) {
-    
     const userRef = doc(db, "usuarios", uid);
     const snap = await getDoc(userRef);
 
@@ -266,63 +330,86 @@ async function carregarDados(uid) {
 
     const dados = snap.data();
 
-    // AQUI: só chama depois de pegar os dados
-    await verificarResetMensal(dados, userRef);
+    // 1. SINCRONIZAÇÃO DA META (FIREBASE -> UI -> LOCALSTORAGE)
+    const displayValueEl = document.getElementById('display-value');
+    const rangeInputEl = document.getElementById('limit-range');
+    const manualInputEl = document.getElementById('manual-input');
+    const noLimitCheckbox = document.getElementById('no-limit');
 
+    console.log("📊 Dados brutos do Firebase:", dados); // LOG 1: Ver o que veio do banco
 
-    const limiteInput = document.getElementById("limit-range");
-    const displayValue = document.getElementById("display-value");
-    
-    // Carregar valor do banco
-    if(limiteInput && displayValue){
-        if(dados.limiteMensal !== undefined){
-        limiteInput.value = dados.limiteMensal; // atualiza input
-        displayValue.textContent = Number(dados.limiteMensal).toLocaleString("pt-BR", {minimumFractionDigits: 2});
-        }
+    if (dados.limiteMensal !== undefined) {
+    const limiteBanco = dados.limiteMensal || 0;
+    console.log("🎯 Valor do Limite extraído:", limiteBanco); // LOG 2: Ver o valor processado
 
-        // Atualiza display quando o usuário mexe na barra
-        limiteInput.addEventListener("input", () => {
-        displayValue.textContent = Number(limiteInput.value).toLocaleString("pt-BR", {minimumFractionDigits: 2});
+    // Localiza os elementos
+    const displayValueEl = document.getElementById('display-value');
+    const rangeInputEl = document.getElementById('limit-range');
+    const manualInputEl = document.getElementById('manual-input');
+
+    console.log("🔍 Elementos encontrados:", {
+        display: !!displayValueEl,
+        range: !!rangeInputEl,
+        manual: !!manualInputEl
+    }); // LOG 3: Ver se o JS achou os campos no HTML
+
+    // 1. Injeta o valor no texto (O que o usuário vê primeiro)
+    if (displayValueEl) {
+        displayValueEl.textContent = Number(limiteBanco).toLocaleString("pt-BR", {
+            minimumFractionDigits: 2 
         });
+        console.log("✅ Texto atualizado no display-value");
     }
+
+    // 2. Injeta no Slider
+    if (rangeInputEl) {
+        rangeInputEl.value = limiteBanco;
+        const percentage = (limiteBanco / rangeInputEl.max) * 100;
+        rangeInputEl.style.background = `linear-gradient(to right, var(--color-primary) ${percentage}%, #E0E0E0 ${percentage}%)`;
+    }
+
+    // 3. Injeta no Input de digitar
+    if (manualInputEl) {
+        manualInputEl.value = limiteBanco;
+    }
+
+    // Sincroniza o LocalStorage
+    localStorage.setItem('valorMeta', limiteBanco);
+    } else {
+        console.warn("⚠️ O campo 'limiteMensal' não existe para este usuário no Firebase!");
+    }
+    if (dados.limiteMensal) {
+    localStorage.setItem('valorMeta', dados.limiteMensal); // Salva no "estoque"
+    }
+
+    
+
+    // 2. RESETS E INTERFACE PRINCIPAL
+    await verificarResetMensal(dados, userRef);
 
     const saldoAtualEl = document.getElementById("saldo-atual");
     const gastosAtualEl = document.getElementById("gastos-atual");
     const historicoEl = document.querySelector("#historico ul");
 
     if (saldoAtualEl) animarSaldo(saldoAtualEl, dados.saldo);
-    if (gastosAtualEl) animarSaldo(gastosAtualEl, dados.gastos);
+    if (gastosAtualEl) {
+        animarSaldo(gastosAtualEl, dados.gastos);
+        // Dispara a checagem de limites (Notificações)
+        atualizarInterface(dados.gastos);
+    }
 
-
-    // -----------------------------------------------------
-    // ✅ CORREÇÃO APLICADA AQUI
-    // -----------------------------------------------------
-
+    // 3. RENDERIZAÇÃO DO HISTÓRICO (ORDENADO)
     if (historicoEl) {
         historicoEl.innerHTML = "";
-        
-        // 1. Cria uma cópia, ordena pelo timestamp (Mais Novo -> Mais Antigo)
-        // Isso garante que, independente de como o arrayUnion salvou, a exibição está correta.
         const transacoesOrdenadas = (dados.transacoes || []).slice().sort((a, b) => b.data - a.data);
 
         transacoesOrdenadas.forEach((t, index) => {
             const li = document.createElement("li");
-            
-            // 2. O índice de exclusão DEVE ser o índice no array original (dados.transacoes)
-            // Para fazer a exclusão, precisamos encontrar a posição da transação 't'
-            // dentro do array original 'dados.transacoes'.
             const originalIndex = dados.transacoes.findIndex(
                 (originalT) => originalT.data === t.data && originalT.descricao === t.descricao && originalT.valor === t.valor
             );
 
-            // Se o índice original foi encontrado, usamos ele para exclusão.
-            if(originalIndex !== -1) {
-                li.setAttribute('data-index', originalIndex);
-            } else {
-                // Caso extremo (transação duplicada ou não encontrada), 
-                // usamos o índice atual (apenas para exibição, exclusão pode falhar)
-                li.setAttribute('data-index', -1); 
-            }
+            li.setAttribute('data-index', originalIndex !== -1 ? originalIndex : -1);
             
             li.innerHTML = `
                 <div>
@@ -352,6 +439,47 @@ async function carregarDados(uid) {
     setupTransactionItems();
 }
 
+// Função para preencher o modal de metas com o que já está no LocalStorage ou Firebase
+function sincronizarModalMetas() {
+    const limiteSalvo = localStorage.getItem('valorMeta') || 0;
+    
+    console.log("🔄 Sincronizando campos do modal com o valor:", limiteSalvo);
+
+    const displayValue = document.getElementById('display-value');
+    const rangeInput = document.getElementById('limit-range');
+    const manualInput = document.getElementById('manual-input');
+
+    if (displayValue) {
+        displayValue.textContent = Number(limiteSalvo).toLocaleString("pt-BR", {
+            minimumFractionDigits: 2 
+        });
+    }
+
+    if (rangeInput) {
+        rangeInput.value = limiteSalvo;
+        // Atualiza a cor da barra
+        const percentage = (limiteSalvo / rangeInput.max) * 100;
+        rangeInput.style.background = `linear-gradient(to right, var(--color-primary) ${percentage}%, #E0E0E0 ${percentage}%)`;
+    }
+
+    if (manualInput) {
+        manualInput.value = limiteSalvo;
+    }
+}
+// Torna a função global para o outro arquivo enxergar
+// No topo ou meio do main.js, mas fora de outras funções
+window.spon_sincronizarModalMetas = function() {
+    const limiteSalvo = localStorage.getItem('valorMeta') || 0;
+    const displayValue = document.getElementById('display-value');
+    const rangeInput = document.getElementById('limit-range');
+    const manualInput = document.getElementById('manual-input');
+
+    if (displayValue) displayValue.textContent = Number(limiteSalvo).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+    if (rangeInput) rangeInput.value = limiteSalvo;
+    if (manualInput) manualInput.value = limiteSalvo;
+    
+    console.log("🔄 Valores injetados no modal vindo do LocalStorage:", limiteSalvo);
+};
 
 function carregarHistoricoDeTransacoes(userId) {
     // Escuta a mesma coleção que o server.js está salvando agora
@@ -580,34 +708,37 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const inputDescricao = document.getElementById("descricao");
 
   if(btnAddDespesa){
-    btnAddDespesa.addEventListener("click", async ()=>{
-      if(!currentUser) return alert("Usuário não logado!");
-      const valor = parseFloat(inputValor.value.replace(",", "."));
-      const descricao = inputDescricao.value.trim() || "Despesa";
-      if(!valor || !descricao) return alert("Preencha valor e descrição");
+      btnAddDespesa.addEventListener("click", async ()=>{
+        if(!currentUser) return alert("Usuário não logado!");
+        
+        const valor = parseFloat(inputValor.value.replace(",", "."));
+        const descricao = inputDescricao.value.trim() || "Despesa";
+        
+        if(!valor || isNaN(valor)) return alert("Preencha um valor válido");
 
-      const userRef = doc(db, "usuarios", currentUser.uid);
-      const snap = await getDoc(userRef);
-      const dados = snap.data();
-      await updateDoc(userRef, {
-        saldo: dados.saldo - valor,
-        gastos: dados.gastos + valor,
-        transacoes: arrayUnion({ descricao, valor, tipo:"despesa", data:Date.now() })
+        const userRef = doc(db, "usuarios", currentUser.uid);
+        const snap = await getDoc(userRef);
+        const dados = snap.data();
+        
+        // Pega o limite do banco ou do localStorage como plano B
+        const limite = dados.limiteMensal || localStorage.getItem('valorMeta') || 0;
+        const novosGastos = (Number(dados.gastos) || 0) + valor;
+
+        await updateDoc(userRef, {
+          saldo: (Number(dados.saldo) || 0) - valor,
+          gastos: novosGastos,
+          transacoes: arrayUnion({ descricao, valor, tipo:"despesa", data:Date.now() })
+        });
+
+        // 1. Limpa campos e recarrega UI
+        inputValor.value = '';
+        inputDescricao.value = '';
+        await carregarDados(currentUser.uid);
+
+        // 2. CHAMA A NOTIFICAÇÃO (Garantindo que os valores são números)
+        console.log(`Verificando: Gasto ${novosGastos} de Limite ${limite}`);
+        checarLimite(novosGastos, limite);
       });
-      await carregarDados(currentUser.uid);
-      inputValor.value = '';
-      inputDescricao.value = '';
-      inputValor.focus();
-
-
-
-    // chama aqui a checagem de limite
-    checarLimite(dados.gastos + valor, dados.limiteMensal);
-  });
-
-
-
-
   }
 
   if(btnAddSaldo){
@@ -685,6 +816,9 @@ onAuthStateChanged(auth, async (user) => {
             // 🔥 Chama a verificação do reset automático aqui
             await verificarResetMensal(dados, userRef)
             const limiteDoBanco = snap.data().limiteMensal || 0; // valor do banco ou 0
+            
+            // Sincroniza LocalStorage com Banco ao logar
+            localStorage.setItem('valorMeta', limiteDoBanco);
         
             // Agora atualiza os inputs
             const rangeInput = document.getElementById('limit-range');
@@ -725,29 +859,6 @@ onAuthStateChanged(auth, async (user) => {
 
 
 const btnSalvarMeta = document.getElementById("btn-salvar-meta");
-
-btnSalvarMeta.addEventListener("click", async () => {
-  if (!currentUser) return alert("Usuário não logado!");
-
-  const limiteInput = document.getElementById("limit-range");
-  const noLimitCheckbox = document.getElementById("no-limit");
-  let limiteMensal = null; // padrão null se não definir limite
-
-  if (!noLimitCheckbox.checked) {
-    limiteMensal = parseFloat(limiteInput.value);
-    if (isNaN(limiteMensal)) return alert("Valor inválido!");
-  }
-
-  const userRef = doc(db, "usuarios", currentUser.uid);
-
-  try {
-    await updateDoc(userRef, { limiteMensal: limiteMensal });
-    alert("Limite mensal salvo com sucesso!");
-  } catch (err) {
-    console.error("Erro ao salvar limite:", err);
-    alert("Erro ao salvar limite: " + err.message);
-  }
-});
 
 
 

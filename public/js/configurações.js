@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // 1. Último botão inicia com 30
   const botoes = diasGrid.querySelectorAll(".dia");
   const ultimo = botoes[botoes.length - 1];
-  ultimo.textContent = "30";
+  ultimo.textContent = "30";      
 
   // 2. Abrir card
   configItem.addEventListener("click", () => {
@@ -68,9 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-function abrirMetas() {
-  document.getElementById("menumetas").style.display = "flex";
-}
+
 
 function fecharMetas() {
   document.getElementById("menumetas").style.display = "none";
@@ -89,9 +87,7 @@ function salvarMeta() {
 // --- JAVASCRIPT PARA O CARD DE METAS (Colocar em js/configurações.js ou similar) ---
 
 // Função para abrir o modal de metas (sugestão de link no HTML)
-function abrirMetas() {
-  document.getElementById("menumetas").style.display = "flex";
-}
+
 
 function abrirexport() {
   document.getElementById("menuexport").style.display = "flex";
@@ -168,7 +164,22 @@ function salvarMeta() {
 
 // Funções de abrir/fechar modal
 function abrirMetas() {
-  document.getElementById("menumetas").style.display = "flex";
+    // 1. Abre o modal
+    document.getElementById("menumetas").style.display = "flex";
+
+    // 2. Pega o valor que o main.js deixou guardado no localStorage
+    const valorGuardado = localStorage.getItem('valorMeta') || 0;
+
+    // 3. Joga direto na tela
+    const display = document.getElementById('display-value');
+    const range = document.getElementById('limit-range');
+    const manual = document.getElementById('manual-input');
+
+    if (display) display.textContent = Number(valorGuardado).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+    if (range) range.value = valorGuardado;
+    if (manual) manual.value = valorGuardado;
+    
+    console.log("Valor carregado do LocalStorage:", valorGuardado);
 }
 
 function fecharMetas() {
@@ -177,72 +188,168 @@ function fecharMetas() {
 
 // --- CONFIGURAÇÕES DE NOTIFICAÇÕES (configurações.js) ---
 
-// Elementos
+// --- ELEMENTOS ---
 const chk50 = document.getElementById('chk50');
 const chk80 = document.getElementById('chk80');
 const chk100 = document.getElementById('chk100');
 const chkNone = document.getElementById('chkNone');
 const btnSalvarNotif = document.getElementById('btn-salvar-nofif');
 
-// Carrega estado salvo
-function carregarNotificacoes() {
-  const data = JSON.parse(localStorage.getItem('notificacoes')) || {
-    chk50: true,
-    chk80: true,
-    chk100: true,
-    chkNone: false
-  };
+const noLimitCheckbox = document.getElementById('no-limit');
+const rangeInput = document.getElementById('range-input'); // Certifique-se que esse ID existe no HTML
+const displayValue = document.getElementById('display-value');
 
-  chk50.checked = data.chk50;
-  chk80.checked = data.chk80;
-  chk100.checked = data.chk100;
-  chkNone.checked = data.chkNone;
+// --- LÓGICA DOS CHECKBOXES (NOTIFICAÇÕES) ---
 
-  atualizarDesativar();
-}
+// Quando clica em "Desativar notificações"
+chkNone.addEventListener('change', () => {
+    if (chkNone.checked) {
+        chk50.checked = false;
+        chk80.checked = false;
+        chk100.checked = false;
+    }
+});
 
-// Atualiza o estado do "Desativar notificações"
-function atualizarDesativar() {
-  if (chkNone.checked) {
-    chk50.checked = false;
-    chk80.checked = false;
-    chk100.checked = false;
-  } else if (!chk50.checked && !chk80.checked && !chk100.checked) {
-    chkNone.checked = true;
-  }
-}
-
-// Event listeners para comportamento automático
-chkNone.addEventListener('change', atualizarDesativar);
+// Quando clica em qualquer porcentagem (50, 80 ou 100)
 [chk50, chk80, chk100].forEach(chk => {
-  chk.addEventListener('change', atualizarDesativar);
+    chk.addEventListener('change', () => {
+        if (chk.checked) {
+            chkNone.checked = false; // Desmarca o "Desativar" automaticamente
+        }
+    });
 });
 
-// Salvar estado quando clicar no botão
+// --- SALVAR E CARREGAR NOTIFICAÇÕES ---
+
+function carregarNotificacoes() {
+    const data = JSON.parse(localStorage.getItem('notificacoes')) || {
+        chk50: true, chk80: true, chk100: true, chkNone: false
+    };
+    chk50.checked = data.chk50;
+    chk80.checked = data.chk80;
+    chk100.checked = data.chk100;
+    chkNone.checked = data.chkNone;
+}
+
 btnSalvarNotif.addEventListener('click', () => {
-  const data = {
-    chk50: chk50.checked,
-    chk80: chk80.checked,
-    chk100: chk100.checked,
-    chkNone: chkNone.checked
-  };
-  localStorage.setItem('notificacoes', JSON.stringify(data));
-  alert('Configurações de notificações salvas!');
-  fecharNotifCard();
+    const data = {
+        chk50: chk50.checked,
+        chk80: chk80.checked,
+        chk100: chk100.checked,
+        chkNone: chkNone.checked
+    };
+    localStorage.setItem('notificacoes', JSON.stringify(data));
+    alert('Configurações de notificações salvas!');
+    fecharNotifCard();
 });
 
-// Inicializa os checkboxes na carga da página
+// --- LÓGICA DE LIMITE/META ---
+async function salvarMeta() {
+    console.log("1. Função salvarMeta iniciada");
+    
+    const noLimitCheckbox = document.getElementById('no-limit');
+    const manualInput = document.getElementById('manual-input');
+    const rangeInput = document.getElementById('limit-range');
+
+    let valorParaSalvar = null;
+    if (!noLimitCheckbox.checked) {
+        valorParaSalvar = parseFloat(manualInput.value || rangeInput.value);
+        if (isNaN(valorParaSalvar) || valorParaSalvar < 0) {
+            alert("Por favor, insira um valor válido.");
+            return;
+        }
+    }
+    console.log("2. Valor processado:", valorParaSalvar);
+    try {
+        // BUSCA INSTÂNCIA SE SEGURANÇA
+        let database = window.db;
+        let authInstancia = window.auth;
+
+        // Se as globais falharem, tentamos importar e pegar a instância ativa
+        if (!database) {
+            console.log("Tentando recuperação de emergência do Firebase...");
+            const { getFirestore } = await import("https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js");
+            const { getAuth } = await import("https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js");
+            const { getApp } = await import("https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js");
+            
+            try {
+                const app = getApp();
+                database = getFirestore(app);
+                authInstancia = getAuth(app);
+            } catch(e) {
+                console.error("Firebase ainda não inicializado no sistema.");
+            }
+        }
+
+        const usuarioLogado = authInstancia?.currentUser;
+        console.log("3. Verificando Firebase:", { database: !!database, user: !!usuarioLogado });
+
+        if (database && usuarioLogado) {
+            const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js");
+            const userRef = doc(database, "usuarios", usuarioLogado.uid);
+            
+            console.log("4. Gravando no Firebase para o UID:", usuarioLogado.uid);
+            await updateDoc(userRef, { 
+                limiteMensal: valorParaSalvar 
+            });
+            
+            // ATUALIZA O LOCALSTORAGE TAMBÉM
+            if (valorParaSalvar === null) localStorage.removeItem('valorMeta');
+            else localStorage.setItem('valorMeta', valorParaSalvar.toString());
+
+            alert("✅ Limite salvo com sucesso!");
+            location.reload(); // Recarrega para o main.js ler o valor novo
+        } else {
+            alert("❌ Erro: O sistema ainda está carregando os dados do usuário. Aguarde 2 segundos e tente novamente.");
+        }
+
+    } catch (error) {
+        console.error("❌ Erro fatal:", error);
+        alert("Erro técnico: " + error.message);
+    }
+}
+
+// --- SISTEMA DE NOTIFICAÇÃO REAL ---
+// Chame esta função sempre que o valor gasto total do usuário mudar
+// --- SISTEMA DE NOTIFICAÇÃO ATUALIZADO ---
+function verificarEAlertar(valorGastoTotal) {
+    const metaStr = localStorage.getItem('valorMeta');
+    const config = JSON.parse(localStorage.getItem('notificacoes'));
+
+    // Se não tiver meta ou se as notificações estiverem desativadas, para aqui
+    if (!metaStr || !config || config.chkNone) return;
+
+    const meta = parseFloat(metaStr);
+    if (meta <= 0) return; // Evita divisão por zero
+
+    const porcentagemGasta = Math.floor((valorGastoTotal / meta) * 100);
+    
+    console.log(`📊 Checagem de gastos: ${porcentagemGasta}% de R$ ${meta}`);
+
+    // Lógica de Gatilhos (Trigger)
+    // 1. Caso 100% ou mais
+    if (porcentagemGasta >= 100 && config.chk100) {
+        alert(`🚨 ALERTA: Você atingiu ${porcentagemGasta}% da sua meta! (Limite: R$ ${meta})`);
+    } 
+    // 2. Caso entre 80% e 99%
+    else if (porcentagemGasta >= 80 && config.chk80) {
+        alert(`⚠️ ATENÇÃO: Você já gastou ${porcentagemGasta}% da sua meta.`);
+    } 
+    // 3. Caso entre 50% e 79% (Só avisa se o chk50 estiver marcado)
+    else if (porcentagemGasta >= 50 && config.chk50) {
+        alert(`ℹ️ AVISO: Você atingiu ${porcentagemGasta}% dos seus gastos planejados.`);
+    }
+}
+
+// --- FUNÇÕES DE INTERFACE ---
+
+function abrirNotifCard() { document.getElementById("notifcard").style.display = "flex"; }
+function fecharNotifCard() { document.getElementById("notifcard").style.display = "none"; }
+
+function fecharMetas() { document.getElementById("menumetas").style.display = "none"; }
+
+// Inicialização
 carregarNotificacoes();
-
-// Funções de abrir/fechar card
-function abrirNotifCard() {
-  document.getElementById("notifcard").style.display = "flex";
-}
-
-function fecharNotifCard() {
-  document.getElementById("notifcard").style.display = "none";
-}
-
 
 document.addEventListener('DOMContentLoaded', () => {
     // ESTE É O INÍCIO DO SEU CÓDIGO
