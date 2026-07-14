@@ -227,10 +227,6 @@
 
 }
 
-header{
-  padding-top: 400px;
-}
-
 .topo{
     display: flex;
     justify-content: space-between; /* logo à esquerda, botão à direita */

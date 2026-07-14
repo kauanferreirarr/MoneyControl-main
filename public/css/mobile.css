@@ -6,10 +6,6 @@
     display: block; /* tira o flex que tava torto */
   }
 
-  header{
-     padding-top: 20px;
-  }
-
   /* SALDO */
   #saldo {
     margin-top: 400px;
