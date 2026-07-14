@@ -3,212 +3,363 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="css/config.css">
-  <link rel="stylesheet" href="css/style.css">
+  <title>Configuracoes - MoneyControl</title>
   <link rel="shortcut icon" href="assets/logo.png" type="image/x-icon">
- 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            slate: {
+              50: '#F8FAFC', 100: '#F1F5F9', 200: '#E2E8F0',
+              300: '#CBD5E1', 400: '#94A3B8', 500: '#64748B',
+              600: '#475569', 700: '#334155', 800: '#1E293B', 900: '#0F172A',
+            }
+          },
+          borderRadius: { '2xl': '16px', '3xl': '20px' }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { font-family: 'Inter', sans-serif; }
 
-  <title>Configurações - MoneyControl</title>
+    .config-row { transition: background-color 0.2s ease, padding-left 0.2s ease; }
+    .config-row:hover { background-color: #F8FAFC; padding-left: 12px; }
+
+    .modal-overlay { transition: opacity 0.2s ease; }
+    .modal-panel { animation: modalIn 0.25s ease; }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.95) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .day-btn { transition: all 0.2s ease; }
+    .day-btn:hover { transform: scale(1.08); }
+    .day-btn.ativo { background: #6366F1; color: white; border-color: #6366F1; }
+
+    .input-focus { transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+    .input-focus:focus { border-color: #6366F1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); outline: none; }
+
+    input[type="range"] { -webkit-appearance: none; appearance: none; height: 6px; border-radius: 3px; background: #E2E8F0; cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #6366F1; cursor: pointer; box-shadow: 0 2px 6px rgba(99,102,241,0.4); }
+
+    .checkbox-custom { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border: 2px solid #CBD5E1; border-radius: 6px; cursor: pointer; position: relative; transition: all 0.2s ease; flex-shrink: 0; }
+    .checkbox-custom:checked { background: #6366F1; border-color: #6366F1; }
+    .checkbox-custom:checked::after { content: ''; position: absolute; top: 50%; left: 50%; width: 5px; height: 9px; border: solid white; border-width: 0 2px 2px 0; transform: translate(-50%, -60%) rotate(45deg); }
+  </style>
 </head>
-<body class="bodyconfig">
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4 sm:p-6">
 
-  <section id="config">
-    <!-- Cabeçalho -->
-    <div class="config-header">
-      <a href="index.html" class="btn-back">
-        <img class="icon1" src="assets/seta-esquerda.png" alt="voltar">
+  <section id="config" class="bg-white rounded-2xl shadow-sm border border-slate-100 w-full max-w-lg overflow-hidden">
+
+    <!-- Header -->
+    <div class="relative flex items-center justify-center px-6 py-5 border-b border-slate-100">
+      <a href="index.html" class="absolute left-5 w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 transition-colors duration-200 text-slate-400 hover:text-slate-600">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
       </a>
-      <h2 class="medio-text">Configurações</h2>
+      <h2 class="text-lg font-bold text-slate-800">Configuracoes</h2>
     </div>
 
-    <!-- Opção de reinício -->
-    <div class="config-item">
-      <img class="icon2" src="assets/calendario.png" alt="calendario">
-      <div class="config-text">
-        <h2 class="medio-text">Reinício do saldo mensal</h2>
-        <p>Defina quando seu saldo e histórico do mês vão reiniciar automaticamente</p>
+    <div class="px-4 sm:px-6 py-2">
+
+      <!-- Reinicio do saldo mensal -->
+      <div class="config-row flex items-center gap-4 px-3 py-4 rounded-xl cursor-pointer" onclick="abrirReinicio()">
+        <div class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h3 class="text-sm font-semibold text-slate-700">Reinicio do saldo mensal</h3>
+          <p class="text-xs text-slate-400 mt-0.5">Defina quando seu saldo e historico vao reiniciar</p>
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-300 shrink-0">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
       </div>
-      <img class="icon1 arrow" src="assets/setas-direitas.png" alt="seta direita">
-    </div>
 
-    <!-- Menu de reinício -->
-    <div id="menureinicio" class="menureinicio">
-      <div class="card">
-        <div class="card-header">
-          <a href="config.html" class="btn-back">
-            <img class="icon1" src="assets/seta-esquerda.png" alt="voltar">
-          </a>
-          <h2 class="medio-text">Configurações > Reset do saldo mensal</h2>
+      <!-- Meta de Gastos -->
+      <div class="config-row flex items-center gap-4 px-3 py-4 rounded-xl cursor-pointer" onclick="abrirMetas()">
+        <div class="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500">
+            <line x1="12" y1="20" x2="12" y2="10"></line>
+            <line x1="18" y1="20" x2="18" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="16"></line>
+          </svg>
         </div>
-
-        <p class="descricao">
-          Nessa data, o saldo e o histórico mensal serão reiniciados automaticamente 
-          (as transações permanecem salvas).
-        </p>
-
-        <div class="select-group">
-          <select id="dia-reinicio" class="select-reinicio" required>
-            <option value="" disabled selected></option>
-            <option value="6">6</option>
-            <option value="8">8</option>
-            <option value="10">10</option>
-            <option value="12">12</option>
-            <option value="14">14</option>
-            <option value="16">16</option>
-            <option value="18">18</option>
-            <option value="20">20</option>
-            <option value="22">22</option>
-            <option value="24">24</option>
-            <option value="25">25</option>
-          </select>
-          <label for="dia-reinicio">Dia do reinício</label>
+        <div class="flex-1 min-w-0">
+          <h3 class="text-sm font-semibold text-slate-700">Meta de Gastos</h3>
+          <p class="text-xs text-slate-400 mt-0.5">Defina um limite mensal e receba alertas</p>
         </div>
-
-        <div class="dias-grid">
-          <button class="dia">1</button>
-          <button class="dia">2</button>
-          <button class="dia">3</button>
-          <button class="dia">4</button>
-          <button class="dia">5</button>
-          <button class="dia">26</button>
-          <button class="dia">27</button>
-          <button class="dia">28</button>
-          <button class="dia">29</button>
-          <button class="dia">30</button>
-        </div>
-
-        <button class="btn-salvar">Salvar</button>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-300 shrink-0">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
       </div>
-    </div>
 
-    <!-- Opção de Meta -->
-    <div class="config-item" onclick="abrirMetas()"> 
-        <img class="icon2" src="assets/metas.png" alt="Meta">
-    <div class="config-text">
-        <h2 class="medio-text">Meta de Gastos</h2>
-        <p>Defina um limite mensal para seus gastos e receba alertas</p>
-    </div>
-        <img class="icon1 arrow" src="assets/setas-direitas.png" alt="seta direita">
-    </div>
-
-        <!-- Menu de Metas -->
-    <div id="menumetas" class="menucard">
-      <div class="card">
-        <div class="card-header">
-            <a href="#" class="btn-back" onclick="fecharMetas()">
-              <img class="icon1" src="assets/seta-esquerda.png" alt="voltar">
-            </a>
-            <h2 class="medio-text">Configurações > Meta de gastos</h2>
+      <!-- Notificacoes -->
+      <div class="config-row flex items-center gap-4 px-3 py-4 rounded-xl cursor-pointer" onclick="abrirNotifCard()">
+        <div class="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
         </div>
-
-        <p class="descricao">
-          Defina um limite mensal para seus gastos e receba alertas quando estiver se aproximando dele.
-        </p>
-
-        <div class="select-group">
-          <label for="limit-range" class="label-range">Limite mensal (R$):</label>
-          <input type="range" id="limit-range" min="0" max="2000" step="5">
+        <div class="flex-1 min-w-0">
+          <h3 class="text-sm font-semibold text-slate-700">Notificacoes</h3>
+          <p class="text-xs text-slate-400 mt-0.5">Configure alertas sobre seus gastos</p>
         </div>
-
-
-        <div class="current-value">
-          R$ <span id="display-value"></span>
-        </div>
-
-        <div class="select-group">
-          <label class="selecg-label" for="manual-input">Ou digite o valor:</label>
-          <input type="number" id="manual-input" min="0" max="2000" value="200" >
-        </div>
-
-        <div class="checkbox-container">
-          <input type="checkbox" id="no-limit">
-          <label for="no-limit">Não definir limite</label>
-        </div>
-
-        <button id="btn-salvar-meta" class="btn-salvar" onclick="salvarMeta()">Salvar</button>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-300 shrink-0">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
       </div>
-    </div>
 
-    <!-- Opção de notificações -->
-    <div class="config-item" onclick="abrirNotifCard()">
-      <img class="icon2" src="assets/notificacao.png" alt="notificacao">
-      <div class="config-text">
-        <h2 class="medio-text">Notificações</h2>
-        <p>Configure quando deseja receber alertas sobre seus gastos</p>
-      </div>
-      <img class="icon1 arrow" src="assets/setas-direitas.png" alt="seta direita">
-    </div>
-
-    <div class="notifcard" id="notifcard">
-      <div class="card">
-        <div class="card-header">
-          <a href="#" class="btn-back" onclick="fecharNotifCard()">
-            <img class="icon1" src="assets/seta-esquerda.png" alt="voltar">
-          </a>
-          <h2 class="medio-text">Configurações > Notificações</h2>
+      <!-- Importar historico -->
+      <div class="config-row flex items-center gap-4 px-3 py-4 rounded-xl cursor-pointer" onclick="abrirImportar()">
+        <div class="w-11 h-11 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-violet-500">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
         </div>
-
-        <p class="descricao">
-          Escolha quando deseja receber alertas sobre seus gastos em relação à meta definida.
-        </p>
-
-        <div class="checkbox-container-notif">
-          <label class="notif-option">
-            <input type="checkbox" class="chk" id="chk50" checked>
-            <span>Notificar em 50% da meta</span>
-          </label>
-          <div class="separator"></div>
-
-          <label class="notif-option">
-            <input type="checkbox" class="chk" id="chk80" checked>
-            <span>Notificar em 80% da meta</span>
-          </label>
-          <div class="separator"></div>
-
-          <label class="notif-option">
-            <input type="checkbox" class="chk" id="chk100" checked>
-            <span>Notificar em 100% da meta</span>
-          </label>
-          <div class="separator"></div>
-
-          <label class="notif-option">
-            <input type="checkbox" id="chkNone">
-            <span>Desativar notificações</span>
-          </label>
+        <div class="flex-1 min-w-0">
+          <h3 class="text-sm font-semibold text-slate-700">Importar historico</h3>
+          <p class="text-xs text-slate-400 mt-0.5">Importe transacoes de um arquivo CSV</p>
         </div>
-
-        <button id="btn-salvar-nofif" class="btn-salvar" onclick="">Salvar</button>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-300 shrink-0">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
       </div>
-    </div>
 
-
-
-    <!-- Opção de Exportar -->
-    <div class="config-item">
-      <img class="icon2" src="assets/exportar.png" alt="Exportar">
-      <div class="config-text">
-        <h2 class="medio-text">Exportar histórico</h2>
-        <p>Baixe o histórico de transaçẽos do seu banco e exporte para nosso site</p>
+      <!-- Perfil do usuario -->
+      <div class="config-row flex items-center gap-4 px-3 py-4 rounded-xl cursor-pointer" onclick="abrirPerfil()">
+        <div class="w-11 h-11 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-rose-400">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h3 class="text-sm font-semibold text-slate-700">Perfil do usuario</h3>
+          <p class="text-xs text-slate-400 mt-0.5">Edite suas informacoes pessoais</p>
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-300 shrink-0">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
       </div>
-      <img class="icon1 arrow" src="assets/setas-direitas.png" alt="seta direita">
-    </div>
 
-    <!-- Opção de Perfil -->
-    <div class="config-item">
-      <img class="icon2" src="assets/perfil.png" alt="perfil">
-      <div class="config-text">
-        <h2 class="medio-text">Perfil do usuário</h2>
-        <p>Edite suas informaçẽos pessoais e altere sua senha</p>
-      </div>
-      <img class="icon1 arrow" src="assets/setas-direitas.png" alt="seta direita">
     </div>
   </section>
 
+  <!-- ============ MODAL: REINICIO ============ -->
+  <div id="menureinicio" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[1000] items-center justify-center p-4" style="display: none;">
+    <div class="modal-panel bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
+      <div class="flex items-center gap-3 mb-5">
+        <a href="config.html" class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 transition-colors duration-200 text-slate-400 hover:text-slate-600">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </a>
+        <h2 class="text-base font-bold text-slate-800">Reset do saldo mensal</h2>
+      </div>
+      <p class="text-sm text-slate-400 mb-5 leading-relaxed">
+        Nessa data, o saldo e o historico mensal serao reiniciados automaticamente (as transacoes permanecem salvas).
+      </p>
+      <div class="relative mb-4">
+        <select id="dia-reinicio" class="input-focus w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 appearance-none cursor-pointer">
+          <option value="" disabled selected>Selecione o dia</option>
+          <option value="6">6</option>
+          <option value="8">8</option>
+          <option value="10">10</option>
+          <option value="12">12</option>
+          <option value="14">14</option>
+          <option value="16">16</option>
+          <option value="18">18</option>
+          <option value="20">20</option>
+          <option value="22">22</option>
+          <option value="24">24</option>
+          <option value="25">25</option>
+        </select>
+        <svg class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </div>
+      <div class="dias-grid grid grid-cols-5 gap-2 mb-5">
+        <button class="day-btn px-3 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-sm font-medium text-slate-600 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600">1</button>
+        <button class="day-btn px-3 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-sm font-medium text-slate-600 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600">2</button>
+        <button class="day-btn px-3 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-sm font-medium text-slate-600 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600">3</button>
+        <button class="day-btn px-3 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-sm font-medium text-slate-600 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600">4</button>
+        <button class="day-btn px-3 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-sm font-medium text-slate-600 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600">5</button>
+        <button class="day-btn px-3 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-sm font-medium text-slate-600 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600">26</button>
+        <button class="day-btn px-3 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-sm font-medium text-slate-600 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600">27</button>
+        <button class="day-btn px-3 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-sm font-medium text-slate-600 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600">28</button>
+        <button class="day-btn px-3 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-sm font-medium text-slate-600 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600">29</button>
+        <button class="day-btn px-3 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-sm font-medium text-slate-600 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600">30</button>
+      </div>
+      <button class="btn-salvar w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold rounded-xl transition-all duration-200 shadow-sm shadow-indigo-200">Salvar</button>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: METAS ============ -->
+  <div id="menumetas" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[1000] items-center justify-center p-4" style="display: none;">
+    <div class="modal-panel bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
+      <div class="flex items-center gap-3 mb-5">
+        <a href="#" class="btn-back w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 transition-colors duration-200 text-slate-400 hover:text-slate-600" onclick="fecharMetas()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </a>
+        <h2 class="text-base font-bold text-slate-800">Meta de gastos</h2>
+      </div>
+      <p class="text-sm text-slate-400 mb-5 leading-relaxed">
+        Defina um limite mensal para seus gastos e receba alertas quando estiver se aproximando dele.
+      </p>
+      <div class="mb-3">
+        <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Limite mensal (R$)</label>
+        <input type="range" id="limit-range" min="0" max="2000" step="5" class="w-full">
+      </div>
+      <div class="text-center mb-4">
+        <span class="text-3xl font-bold text-slate-800">R$ <span id="display-value">0</span></span>
+      </div>
+      <div class="mb-4">
+        <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5" for="manual-input">Ou digite o valor</label>
+        <input type="number" id="manual-input" min="0" max="2000" value="200"
+          class="input-focus w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700">
+      </div>
+      <label class="flex items-center gap-3 mb-5 cursor-pointer">
+        <input type="checkbox" id="no-limit" class="checkbox-custom">
+        <span class="text-sm font-medium text-slate-600">Nao definir limite</span>
+      </label>
+      <button id="btn-salvar-meta" class="btn-salvar w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold rounded-xl transition-all duration-200 shadow-sm shadow-indigo-200" onclick="salvarMeta()">Salvar</button>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: NOTIFICACOES ============ -->
+  <div id="notifcard" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[999] items-center justify-center p-4" style="display: none;">
+    <div class="modal-panel bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
+      <div class="flex items-center gap-3 mb-5">
+        <a href="#" class="btn-back w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 transition-colors duration-200 text-slate-400 hover:text-slate-600" onclick="fecharNotifCard()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </a>
+        <h2 class="text-base font-bold text-slate-800">Notificacoes</h2>
+      </div>
+      <p class="text-sm text-slate-400 mb-5 leading-relaxed">
+        Escolha quando deseja receber alertas sobre seus gastos em relacao a meta definida.
+      </p>
+      <div class="space-y-1 mb-5">
+        <label class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors duration-200">
+          <input type="checkbox" class="chk checkbox-custom" id="chk50" checked>
+          <span class="text-sm font-medium text-slate-600">Notificar em 50% da meta</span>
+        </label>
+        <div class="border-b border-slate-100 mx-3"></div>
+        <label class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors duration-200">
+          <input type="checkbox" class="chk checkbox-custom" id="chk80" checked>
+          <span class="text-sm font-medium text-slate-600">Notificar em 80% da meta</span>
+        </label>
+        <div class="border-b border-slate-100 mx-3"></div>
+        <label class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors duration-200">
+          <input type="checkbox" class="chk checkbox-custom" id="chk100" checked>
+          <span class="text-sm font-medium text-slate-600">Notificar em 100% da meta</span>
+        </label>
+        <div class="border-b border-slate-100 mx-3"></div>
+        <label class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors duration-200">
+          <input type="checkbox" id="chkNone" class="checkbox-custom">
+          <span class="text-sm font-medium text-slate-600">Desativar notificacoes</span>
+        </label>
+      </div>
+      <button id="btn-salvar-nofif" class="btn-salvar w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold rounded-xl transition-all duration-200 shadow-sm shadow-indigo-200">Salvar</button>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: IMPORTAR ============ -->
+  <div id="menuimportar" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[1000] items-center justify-center p-4" style="display: none;">
+    <div class="modal-panel bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
+      <div class="flex items-center gap-3 mb-5">
+        <a href="#" class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 transition-colors duration-200 text-slate-400 hover:text-slate-600" onclick="fecharImportar(); return false;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </a>
+        <h2 class="text-base font-bold text-slate-800">Importar historico</h2>
+      </div>
+      <p class="text-sm text-slate-400 mb-5 leading-relaxed">
+        Selecione um arquivo CSV com suas transacoes. O formato deve ser: Data, Descricao, Valor, Tipo (despesa/saldo)
+      </p>
+      <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-violet-400 hover:bg-violet-50 transition-all duration-200 mb-5">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-300 mb-2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+        <span class="text-sm text-slate-400">Clique para selecionar CSV</span>
+        <input type="file" id="input-csv" accept=".csv" class="hidden" onchange="lerCSV(this)">
+      </label>
+      <div id="csv-preview" class="hidden mb-5 max-h-40 overflow-y-auto"></div>
+      <button class="btn-salvar w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold rounded-xl transition-all duration-200 shadow-sm shadow-indigo-200" onclick="confirmarImportacao()">Importar</button>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: PERFIL ============ -->
+  <div id="menuperfil" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[1000] items-center justify-center p-4" style="display: none;">
+    <div class="modal-panel bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
+      <div class="flex items-center gap-3 mb-5">
+        <a href="#" class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 transition-colors duration-200 text-slate-400 hover:text-slate-600" onclick="fecharPerfil(); return false;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </a>
+        <h2 class="text-base font-bold text-slate-800">Perfil do usuario</h2>
+      </div>
+
+      <!-- Avatar -->
+      <div class="flex flex-col items-center mb-5">
+        <div id="perfil-avatar" class="relative w-24 h-24 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 text-white flex items-center justify-center text-3xl font-bold shadow-lg shadow-indigo-200 ring-4 ring-white overflow-hidden mb-3">
+          <img id="perfil-foto" class="hidden w-full h-full object-cover" alt="Foto de perfil">
+          <span id="perfil-iniciais"></span>
+        </div>
+        <label class="text-xs text-indigo-500 font-semibold cursor-pointer hover:text-indigo-700 transition-colors">
+          Alterar foto
+          <input type="file" id="input-foto" accept="image/*" class="hidden" onchange="carregarFoto(event)">
+        </label>
+      </div>
+
+      <!-- Nome -->
+      <div class="mb-5">
+        <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">Nome</label>
+        <input type="text" id="input-nome-perfil" placeholder="Seu nome"
+          class="input-focus w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700">
+      </div>
+
+      <!-- Email (somente leitura) -->
+      <div class="mb-5">
+        <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">Email</label>
+        <input type="email" id="input-email-perfil" readonly
+          class="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-xl text-sm text-slate-400 cursor-not-allowed">
+      </div>
+
+      <button class="btn-salvar w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold rounded-xl transition-all duration-200 shadow-sm shadow-indigo-200" onclick="salvarPerfil()">Salvar</button>
+    </div>
+  </div>
 
   <script src="js/configurações.js"></script>
   <script type="module" src="js/resetgastos.js"></script>
   <script type="module" src="js/main.js"></script>
- 
-
 </body>
 </html>

@@ -1,33 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
   // Elementos do DOM
-  const saldoEl = document.getElementById("saldo-atual");
-  const gastosEl = document.getElementById("gastos-atual");
   const inputValor = document.getElementById("valor");
   const inputDescricao = document.getElementById("descricao");
-  const btnAdicionarDespesa = document.getElementById("ad-dispesas");
-  const btnAdicionarSaldo = document.getElementById("ad-saldo");
   const botoesSugestivos = document.querySelectorAll(".butoes-sugestivos button");
-  const historicoContainer = document.getElementById("historico");
   const historicoList = document.getElementById("historico-list");
 
   // Funções de formatação
-  function parseBRToNumber(text) {
-    if (!text) return 0;
-    const cleaned = String(text).replace(/\s/g, "").replace("R$", "").replace(/\./g, "").replace(",", ".");
-    const n = parseFloat(cleaned);
-    return isNaN(n) ? 0 : n;
-  }
   function formatBR(n) {
-    return "R$ " + n.toFixed(2).replace(".", ",");
-  }
-
-  // Estado inicial
-  let saldo = parseBRToNumber(saldoEl?.textContent);
-  let gastos = parseBRToNumber(gastosEl?.textContent);
-
-  function atualizarTela() {
-    saldoEl.textContent = formatBR(saldo);
-    gastosEl.textContent = formatBR(gastos);
+    return "R$ " + Number(n).toFixed(2).replace(".", ",");
   }
 
   function mesmaData(a, b) {
@@ -45,15 +25,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return `ontem, ${d.getHours()}h:${minutos}`;
     }
     return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
-  }
-
-  // Ajusta altura do histórico
-  function ajustarAlturaHistorico() {
-    const itens = historicoList.querySelectorAll("li");
-    const alturaBase = 64;
-    const novaAltura = Math.min(400, 80 + itens.length * alturaBase);
-    historicoContainer.style.height = novaAltura + "px";
-    historicoContainer.scrollTop = historicoContainer.scrollHeight;
   }
 
   // Cria item no histórico
@@ -83,8 +54,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const separator = document.createElement("div");
     separator.className = "linha";
     historicoList.appendChild(separator);
-
-    ajustarAlturaHistorico();
   }
 
   // Sugestões
@@ -94,40 +63,6 @@ document.addEventListener("DOMContentLoaded", () => {
       inputDescricao.focus();
     });
   });
-
-  // Adicionar transação
-  function handleAdd(isDespesa, ev) {
-    if (ev) ev.preventDefault();
-    const raw = String(inputValor.value || "").replace(",", ".").trim();
-    const valor = parseFloat(raw);
-    const descricao = inputDescricao.value.trim() || (isDespesa ? "Despesa" : "Depósito");
-
-    if (isNaN(valor) || valor <= 0) {
-      alert("Insira um valor válido (maior que 0).");
-      return;
-    }
-
-    if (isDespesa) {
-      gastos += valor;
-      saldo -= valor;
-    } else {
-      saldo += valor;
-    }
-
-    criarHistorico(descricao, valor, isDespesa);
-    atualizarTela();
-
-    inputDescricao.value = "";
-    inputValor.value = "";
-    inputValor.focus();
-  }
-
-  btnAdicionarDespesa.addEventListener("click", (e) => handleAdd(true, e));
-  btnAdicionarSaldo.addEventListener("click", (e) => handleAdd(false, e));
-
-  // Inicialização
-  atualizarTela();
-  ajustarAlturaHistorico();
 });
 
  // Menu toggle functionality
@@ -287,27 +222,32 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     
                     try {
-                        // Aqui você chamaria a função atualizarNomeUsuario do seu main.js
-                        // Como estamos no HTML, vamos simular a atualização para demonstração
                         const userNameEl = document.querySelector('.user-name');
-                        const userAvatarEl = document.querySelector('.user-avatar');
+                        const userInitialsEl = document.getElementById('user-initials');
                         
                         if (userNameEl) {
                             userNameEl.textContent = novoNome;
                         }
                         
-                        if (userAvatarEl) {
-                            const iniciais = novoNome.split(' ')
-                                .map(nome => nome.charAt(0))
-                                .join('')
-                                .substring(0, 2)
-                                .toUpperCase();
-                            userAvatarEl.textContent = iniciais;
+                        if (userInitialsEl) {
+                            const userPhotoEl = document.getElementById('user-photo');
+                            if (userPhotoEl && userPhotoEl.src && !userPhotoEl.classList.contains('hidden')) {
+                                // mantem a foto
+                            } else {
+                                const iniciais = novoNome.split(' ')
+                                    .map(nome => nome.charAt(0))
+                                    .join('')
+                                    .substring(0, 2)
+                                    .toUpperCase();
+                                userInitialsEl.textContent = iniciais;
+                            }
                         }
+                        
+                        localStorage.setItem("userName", novoNome);
                         
                         alert('Nome atualizado com sucesso!');
                         modalTrocarNome.classList.remove('active');
-                        document.body.style.overflow = ''; // Permitir rolagem
+                        document.body.style.overflow = '';
                     } catch (error) {
                         console.error("Erro ao atualizar nome:", error);
                         alert('Erro ao atualizar o nome. Tente novamente.');

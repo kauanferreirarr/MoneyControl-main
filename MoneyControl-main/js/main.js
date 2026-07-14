@@ -103,17 +103,42 @@ function checarLimite(gastos, limite) {
 
 
 
-function animarSaldo(element, valorFinal) {
-  let valorAtual = 0;
-  const incremento = valorFinal / 50;
-  const intervalo = setInterval(() => {
-    valorAtual += incremento;
-    if (valorAtual >= valorFinal) {
-      valorAtual = valorFinal;
-      clearInterval(intervalo);
-    }
+let animacaoSaldoId = null;
+let animacaoGastosId = null;
+
+function parseValorElemento(text) {
+  if (!text) return 0;
+  const cleaned = text.replace(/\s/g, "").replace("R$", "").replace(/\./g, "").replace(",", ".");
+  const n = parseFloat(cleaned);
+  return isNaN(n) ? 0 : n;
+}
+
+function animarSaldo(element, valorFinal, tipo) {
+  if (tipo === 'saldo' && animacaoSaldoId) clearInterval(animacaoSaldoId);
+  if (tipo === 'gastos' && animacaoGastosId) clearInterval(animacaoGastosId);
+
+  const valorInicial = parseValorElemento(element.textContent);
+  const diff = valorFinal - valorInicial;
+  if (diff === 0) {
+    element.textContent = formatBR(valorFinal);
+    return;
+  }
+
+  const passos = 30;
+  let frame = 0;
+  const id = setInterval(() => {
+    frame++;
+    const progresso = frame / passos;
+    const valorAtual = valorInicial + diff * progresso;
     element.textContent = "R$ " + valorAtual.toFixed(2).replace(".", ",");
-  }, 15);
+    if (frame >= passos) {
+      element.textContent = formatBR(valorFinal);
+      clearInterval(id);
+    }
+  }, 16);
+
+  if (tipo === 'saldo') animacaoSaldoId = id;
+  if (tipo === 'gastos') animacaoGastosId = id;
 }
 
 
@@ -195,15 +220,17 @@ async function carregarDados(uid) {
   // AQUI: só chama depois de pegar os dados
   await verificarResetMensal(dados, userRef);
 
+  const snapRefresh = await getDoc(userRef);
+  const dadosAtualizados = snapRefresh.data();
 
   const limiteInput = document.getElementById("limit-range");
   const displayValue = document.getElementById("display-value");
  
   // Carregar valor do banco
     if(limiteInput && displayValue){
-      if(dados.limiteMensal !== undefined){
-      limiteInput.value = dados.limiteMensal; // atualiza input
-      displayValue.textContent = Number(dados.limiteMensal).toLocaleString("pt-BR", {minimumFractionDigits: 2});
+      if(dadosAtualizados.limiteMensal !== undefined){
+      limiteInput.value = dadosAtualizados.limiteMensal; // atualiza input
+      displayValue.textContent = Number(dadosAtualizados.limiteMensal).toLocaleString("pt-BR", {minimumFractionDigits: 2});
     }
 
     // Atualiza display quando o usuário mexe na barra
@@ -216,8 +243,8 @@ async function carregarDados(uid) {
   const gastosAtualEl = document.getElementById("gastos-atual");
   const historicoEl = document.querySelector("#historico ul");
 
-  if (saldoAtualEl) animarSaldo(saldoAtualEl, dados.saldo);
-  if (gastosAtualEl) animarSaldo(gastosAtualEl, dados.gastos);
+  if (saldoAtualEl) animarSaldo(saldoAtualEl, dadosAtualizados.saldo, 'saldo');
+  if (gastosAtualEl) animarSaldo(gastosAtualEl, dadosAtualizados.gastos, 'gastos');
 
 
 
@@ -225,16 +252,18 @@ async function carregarDados(uid) {
 
   if (historicoEl) {
     historicoEl.innerHTML = "";
-    const transacoes = (dados.transacoes || []).slice().reverse();
+    const transacoes = (dadosAtualizados.transacoes || []).slice().reverse();
     transacoes.forEach((t, index) => {
       const li = document.createElement("li");
-      li.setAttribute('data-index', dados.transacoes.length - 1 - index);
+      li.setAttribute('data-index', transacoes.length - 1 - index);
+      li.className = "txn-item";
+      const cor = t.tipo === "despesa" ? "red" : "green";
       li.innerHTML = `
         <div>
           <h3 class="medio-text">${t.descricao}</h3>
           <p>${formatarDataTransacao(t.data)}</p>
         </div>
-        <span class="medio-text ${t.tipo === "despesa" ? "red" : "green"}">${formatBR(t.valor)}</span>
+        <span class="medio-text ${cor}">${formatBR(t.valor)}</span>
         <div class="delete-icon" style="display:none; cursor:pointer;">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="3 6 5 6 21 6"></polyline>
@@ -252,6 +281,8 @@ async function carregarDados(uid) {
         historicoEl.appendChild(separator);
       }
     });
+
+    historicoEl.scrollTop = historicoEl.scrollHeight;
   }
   
   setupTransactionItems();
@@ -267,13 +298,29 @@ async function carregarNomeUsuario(uid) {
 
   const userNameEl = document.querySelector(".user-name");
   const userEmailEl = document.querySelector(".user-email");
-  const userAvatarEl = document.querySelector(".user-avatar");
+  const userPhotoEl = document.getElementById("user-photo");
+  const userInitialsEl = document.getElementById("user-initials");
 
   if (userNameEl) userNameEl.textContent = nome;
   if (userEmailEl && currentUser) userEmailEl.textContent = currentUser.email;
-  if (userAvatarEl) {
-    const iniciais = nome.split(' ').map(n => n.charAt(0)).join('').substring(0,2).toUpperCase();
-    userAvatarEl.textContent = iniciais;
+
+  localStorage.setItem("userName", nome);
+  if (currentUser) localStorage.setItem("userEmail", currentUser.email);
+
+  const userPhoto = dados.foto || null;
+  if (userPhoto) {
+    localStorage.setItem("userPhoto", userPhoto);
+    if (userPhotoEl) {
+      userPhotoEl.src = userPhoto;
+      userPhotoEl.classList.remove("hidden");
+      if (userInitialsEl) userInitialsEl.classList.add("hidden");
+    }
+  } else if (userPhotoEl) {
+    userPhotoEl.classList.add("hidden");
+    if (userInitialsEl) {
+      userInitialsEl.classList.remove("hidden");
+      userInitialsEl.textContent = nome.split(' ').map(n => n.charAt(0)).join('').substring(0, 2).toUpperCase();
+    }
   }
 }
 
@@ -282,6 +329,15 @@ async function atualizarNomeUsuario(uid, novoNome) {
   await updateDoc(userRef, { nome: novoNome });
   await carregarNomeUsuario(uid);
 }
+
+async function salvarFotoFirebase(base64) {
+  if (!currentUser) return;
+  const userRef = doc(db, "usuarios", currentUser.uid);
+  await updateDoc(userRef, { foto: base64 });
+  localStorage.setItem("userPhoto", base64);
+}
+
+window.salvarFotoFirebase = salvarFotoFirebase;
 
 
 

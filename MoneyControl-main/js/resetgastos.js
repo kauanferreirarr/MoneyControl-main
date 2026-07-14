@@ -60,10 +60,10 @@ async function carregarDados(uid) {
 
   if (historicoEl) {
     historicoEl.innerHTML = "";
-    const transacoes = (dados.transacoes || []).slice().reverse();
+    const transacoes = dados.transacoes || [];
     transacoes.forEach((t, index) => {
       const li = document.createElement("li");
-      li.setAttribute('data-index', dados.transacoes.length - 1 - index);
+      li.setAttribute('data-index', index);
       li.innerHTML = `
         <div>
           <h3 class="medio-text">${t.descricao}</h3>
@@ -87,6 +87,8 @@ async function carregarDados(uid) {
         historicoEl.appendChild(separator);
       }
     });
+
+    historicoEl.scrollTop = historicoEl.scrollHeight;
   }
 
   setupTransactionItems();
