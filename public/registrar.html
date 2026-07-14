@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar conta - MoneyControl</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="css/login.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="shortcut icon" href="assets/logo.png" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo-container">
+            <div class="logo-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 1v22"></path>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+            </div>
+            <h1>MoneyControl</h1>
+        </div>
+        
+        <div class="login-card">
+            <div class="login-header">
+                <h2>Crie sua conta</h2>
+            </div>
+            
+            <form class="create-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <div class="input-container">
+                        <span class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                        </span>
+                        <input type="email" id="email" placeholder="seu@email.com" autocomplete="email" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <div class="input-container">
+                        <span class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                        </span>
+                        <input type="password" id="password" placeholder="••••••••" autocomplete="new-password" required minlength="6">
+                    </div>
+                </div>
+                
+                <!-- CORRIGIDO: Elemento de feedback movido para antes do botão (melhor UX) -->
+                <div id="feedback" class="feedback"></div>
+                
+                <button type="submit" id="btn-registrar" class="login-btn botao-criar">Criar conta</button>
+            </form>
+            
+            <div class="divider">ou</div>
+            
+            <div class="signup-link">
+                <!-- CORRIGIDO: Texto com acento correto -->
+                Já tem uma conta? <a href="login.html">Faça seu login</a>
+            </div>
+        </div>
+        
+        <div class="app-info">
+            <p>Gerencie suas finanças de forma simples e eficiente</p>
+            <div class="footer-links">
+                <a href="#">Termos de Uso</a>
+                <a href="#">Política de Privacidade</a>
+                <a href="#">Ajuda</a>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
