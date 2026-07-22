@@ -205,50 +205,20 @@ async function verificarResetMensal(dadosUsuario, userRef) {
 
 
 // === FIRESTORE ===
-async function carregarDados(uid) {
-  
-  const userRef = doc(db, "usuarios", uid);
-  const snap = await getDoc(userRef);
+function getCachedData(uid) {
+  try { return JSON.parse(localStorage.getItem('mc_cache_' + uid)); } catch { return null; }
+}
+function setCachedData(uid, data) {
+  try { localStorage.setItem('mc_cache_' + uid, JSON.stringify(data)); } catch {}
+}
 
-  if (!snap.exists()) {
-    await setDoc(userRef, { saldo: 0, gastos: 0, transacoes: [], nome: "Usuário" });
-    return carregarDados(uid);
-  }
-
-  const dados = snap.data();
-
-  // AQUI: só chama depois de pegar os dados
-  await verificarResetMensal(dados, userRef);
-
-  const snapRefresh = await getDoc(userRef);
-  const dadosAtualizados = snapRefresh.data();
-
-  const limiteInput = document.getElementById("limit-range");
-  const displayValue = document.getElementById("display-value");
- 
-  // Carregar valor do banco
-    if(limiteInput && displayValue){
-      if(dadosAtualizados.limiteMensal !== undefined){
-      limiteInput.value = dadosAtualizados.limiteMensal; // atualiza input
-      displayValue.textContent = Number(dadosAtualizados.limiteMensal).toLocaleString("pt-BR", {minimumFractionDigits: 2});
-    }
-
-    // Atualiza display quando o usuário mexe na barra
-    limiteInput.addEventListener("input", () => {
-      displayValue.textContent = Number(limiteInput.value).toLocaleString("pt-BR", {minimumFractionDigits: 2});
-    });
-  }
-
+function renderDados(dadosAtualizados) {
   const saldoAtualEl = document.getElementById("saldo-atual");
   const gastosAtualEl = document.getElementById("gastos-atual");
   const historicoEl = document.querySelector("#historico ul");
 
-  if (saldoAtualEl) animarSaldo(saldoAtualEl, dadosAtualizados.saldo, 'saldo');
-  if (gastosAtualEl) animarSaldo(gastosAtualEl, dadosAtualizados.gastos, 'gastos');
-
-
-
-  
+  if (saldoAtualEl) saldoAtualEl.textContent = formatBR(dadosAtualizados.saldo);
+  if (gastosAtualEl) gastosAtualEl.textContent = formatBR(dadosAtualizados.gastos);
 
   if (historicoEl) {
     historicoEl.innerHTML = "";
@@ -281,8 +251,85 @@ async function carregarDados(uid) {
         historicoEl.appendChild(separator);
       }
     });
+  }
+}
 
-    historicoEl.scrollTop = historicoEl.scrollHeight;
+async function carregarDados(uid) {
+  
+  const userRef = doc(db, "usuarios", uid);
+  const snap = await getDoc(userRef);
+
+  if (!snap.exists()) {
+    await setDoc(userRef, { saldo: 0, gastos: 0, transacoes: [], nome: "Usuário" });
+    return carregarDados(uid);
+  }
+
+  const dados = snap.data();
+
+  // AQUI: só chama depois de pegar os dados
+  await verificarResetMensal(dados, userRef);
+
+  const snapRefresh = await getDoc(userRef);
+  const dadosAtualizados = snapRefresh.data();
+
+  // Salva cache
+  setCachedData(uid, dadosAtualizados);
+
+  const limiteInput = document.getElementById("limit-range");
+  const displayValue = document.getElementById("display-value");
+ 
+  // Carregar valor do banco
+    if(limiteInput && displayValue){
+      if(dadosAtualizados.limiteMensal !== undefined){
+      limiteInput.value = dadosAtualizados.limiteMensal; // atualiza input
+      displayValue.textContent = Number(dadosAtualizados.limiteMensal).toLocaleString("pt-BR", {minimumFractionDigits: 2});
+    }
+
+    // Atualiza display quando o usuário mexe na barra
+    limiteInput.addEventListener("input", () => {
+      displayValue.textContent = Number(limiteInput.value).toLocaleString("pt-BR", {minimumFractionDigits: 2});
+    });
+  }
+
+  const saldoAtualEl = document.getElementById("saldo-atual");
+  const gastosAtualEl = document.getElementById("gastos-atual");
+
+  if (saldoAtualEl) animarSaldo(saldoAtualEl, dadosAtualizados.saldo, 'saldo');
+  if (gastosAtualEl) animarSaldo(gastosAtualEl, dadosAtualizados.gastos, 'gastos');
+
+  const historicoEl = document.querySelector("#historico ul");
+
+  if (historicoEl) {
+    historicoEl.innerHTML = "";
+    const transacoes = (dadosAtualizados.transacoes || []).slice().reverse();
+    transacoes.forEach((t, index) => {
+      const li = document.createElement("li");
+      li.setAttribute('data-index', transacoes.length - 1 - index);
+      li.className = "txn-item";
+      const cor = t.tipo === "despesa" ? "red" : "green";
+      li.innerHTML = `
+        <div>
+          <h3 class="medio-text">${t.descricao}</h3>
+          <p>${formatarDataTransacao(t.data)}</p>
+        </div>
+        <span class="medio-text ${cor}">${formatBR(t.valor)}</span>
+        <div class="delete-icon" style="display:none; cursor:pointer;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            <line x1="10" y1="11" x2="10" y2="17"></line>
+            <line x1="14" y1="11" x2="14" y2="17"></line>
+          </svg>
+        </div>
+      `;
+      historicoEl.appendChild(li);
+
+      if (index < transacoes.length - 1) {
+        const separator = document.createElement("div");
+        separator.className = "linha";
+        historicoEl.appendChild(separator);
+      }
+    });
   }
   
   setupTransactionItems();
@@ -582,6 +629,14 @@ function setupTransactionItems(){
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
+
+    // Mostra dados do cache instantaneamente
+    const cached = getCachedData(user.uid);
+    if (cached) {
+      renderDados(cached);
+      setupTransactionItems();
+    }
+
     const userRef = doc(db, "usuarios", user.uid);
     const snap = await getDoc(userRef);
 
@@ -614,6 +669,11 @@ onAuthStateChanged(auth, async (user) => {
 
     await carregarDados(user.uid);
     await carregarNomeUsuario(user.uid);
+
+    // Atualiza nome do cache se disponível
+    const cachedName = localStorage.getItem("userName");
+    const userNameEl = document.querySelector(".user-name");
+    if (cachedName && userNameEl && !userNameEl.textContent) userNameEl.textContent = cachedName;
 
     if (
       window.location.href.includes("login.html") ||
