@@ -26,33 +26,7 @@
       }
     }
   </script>
-  <style>
-    * { font-family: 'Inter', sans-serif; }
-
-    .config-row { transition: background-color 0.2s ease, padding-left 0.2s ease; }
-    .config-row:hover { background-color: #F8FAFC; padding-left: 12px; }
-
-    .modal-overlay { transition: opacity 0.2s ease; }
-    .modal-panel { animation: modalIn 0.25s ease; }
-    @keyframes modalIn {
-      from { opacity: 0; transform: scale(0.95) translateY(10px); }
-      to { opacity: 1; transform: scale(1) translateY(0); }
-    }
-
-    .day-btn { transition: all 0.2s ease; }
-    .day-btn:hover { transform: scale(1.08); }
-    .day-btn.ativo { background: #6366F1; color: white; border-color: #6366F1; }
-
-    .input-focus { transition: border-color 0.2s ease, box-shadow 0.2s ease; }
-    .input-focus:focus { border-color: #6366F1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); outline: none; }
-
-    input[type="range"] { -webkit-appearance: none; appearance: none; height: 6px; border-radius: 3px; background: #E2E8F0; cursor: pointer; }
-    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #6366F1; cursor: pointer; box-shadow: 0 2px 6px rgba(99,102,241,0.4); }
-
-    .checkbox-custom { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border: 2px solid #CBD5E1; border-radius: 6px; cursor: pointer; position: relative; transition: all 0.2s ease; flex-shrink: 0; }
-    .checkbox-custom:checked { background: #6366F1; border-color: #6366F1; }
-    .checkbox-custom:checked::after { content: ''; position: absolute; top: 50%; left: 50%; width: 5px; height: 9px; border: solid white; border-width: 0 2px 2px 0; transform: translate(-50%, -60%) rotate(45deg); }
-  </style>
+  <link rel="stylesheet" href="css/config-components.css">
 </head>
 <body class="bg-slate-50 min-h-screen flex items-center justify-center p-4 sm:p-6">
 
@@ -164,7 +138,7 @@
   </section>
 
   <!-- ============ MODAL: REINICIO ============ -->
-  <div id="menureinicio" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[1000] items-center justify-center p-4" style="display: none;">
+  <div id="menureinicio" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[1000] items-center justify-center p-4">
     <div class="modal-panel bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
       <div class="flex items-center gap-3 mb-5">
         <a href="config.html" class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 transition-colors duration-200 text-slate-400 hover:text-slate-600">
@@ -212,7 +186,7 @@
   </div>
 
   <!-- ============ MODAL: METAS ============ -->
-  <div id="menumetas" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[1000] items-center justify-center p-4" style="display: none;">
+  <div id="menumetas" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[1000] items-center justify-center p-4">
     <div class="modal-panel bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
       <div class="flex items-center gap-3 mb-5">
         <a href="#" class="btn-back w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 transition-colors duration-200 text-slate-400 hover:text-slate-600" onclick="fecharMetas()">
@@ -247,7 +221,7 @@
   </div>
 
   <!-- ============ MODAL: NOTIFICACOES ============ -->
-  <div id="notifcard" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[999] items-center justify-center p-4" style="display: none;">
+  <div id="notifcard" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[999] items-center justify-center p-4">
     <div class="modal-panel bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
       <div class="flex items-center gap-3 mb-5">
         <a href="#" class="btn-back w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 transition-colors duration-200 text-slate-400 hover:text-slate-600" onclick="fecharNotifCard()">
@@ -287,7 +261,7 @@
   </div>
 
   <!-- ============ MODAL: IMPORTAR ============ -->
-  <div id="menuimportar" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[1000] items-center justify-center p-4" style="display: none;">
+  <div id="menuimportar" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[1000] items-center justify-center p-4">
     <div class="modal-panel bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
       <div class="flex items-center gap-3 mb-5">
         <a href="#" class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 transition-colors duration-200 text-slate-400 hover:text-slate-600" onclick="fecharImportar(); return false;">
@@ -316,7 +290,7 @@
   </div>
 
   <!-- ============ MODAL: PERFIL ============ -->
-  <div id="menuperfil" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[1000] items-center justify-center p-4" style="display: none;">
+  <div id="menuperfil" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[1000] items-center justify-center p-4">
     <div class="modal-panel bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
       <div class="flex items-center gap-3 mb-5">
         <a href="#" class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 transition-colors duration-200 text-slate-400 hover:text-slate-600" onclick="fecharPerfil(); return false;">
@@ -359,7 +333,6 @@
   </div>
 
   <script src="js/configurações.js"></script>
-  <script type="module" src="js/resetgastos.js"></script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

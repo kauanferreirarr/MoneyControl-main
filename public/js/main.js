@@ -481,7 +481,7 @@ if(menuSair){
       if(currentUser){
         await signOut(auth);
         currentUser = null;
-        window.location.href = "/login.html";
+        window.location.href = "login.html";
       }
     } catch(err){
       console.error("Erro ao sair:", err);
@@ -638,6 +638,7 @@ onAuthStateChanged(auth, async (user) => {
 
 const btnSalvarMeta = document.getElementById("btn-salvar-meta");
 
+if (btnSalvarMeta) {
 btnSalvarMeta.addEventListener("click", async () => {
   if (!currentUser) return alert("Usuário não logado!");
 
@@ -660,6 +661,33 @@ btnSalvarMeta.addEventListener("click", async () => {
     alert("Erro ao salvar limite: " + err.message);
   }
 });
+}
+
+// === SALVAR DATA REINICIO NO FIRESTORE ===
+window.salvarDataReinicio = async function(dia) {
+  if (!currentUser) return;
+  try {
+    const userRef = doc(db, "usuarios", currentUser.uid);
+    await updateDoc(userRef, { dataReinicio: Number(dia) });
+  } catch (err) {
+    console.error("Erro ao salvar dataReinicio:", err);
+  }
+};
+
+// === CARREGAR DATA REINICIO DO FIRESTORE ===
+window.carregarDataReinicio = async function() {
+  if (!currentUser) return 30;
+  try {
+    const userRef = doc(db, "usuarios", currentUser.uid);
+    const snap = await getDoc(userRef);
+    if (snap.exists()) {
+      return Number(snap.data().dataReinicio) || 30;
+    }
+  } catch (err) {
+    console.error("Erro ao carregar dataReinicio:", err);
+  }
+  return 30;
+};
 
 
 

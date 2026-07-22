@@ -1,0 +1,106 @@
+/* ============================================
+   Estilos extraídos do index.html
+   ============================================ */
+
+/* Utilitários que o JS usa */
+.medio-text { font-size: 15px; font-weight: 600; color: #1E293B; }
+.litle-text { font-size: 12px; font-weight: 400; color: #94A3B8; }
+.red { color: #E11D48 !important; }
+.green { color: #059669 !important; }
+.linha { width: 100%; height: 1px; background: #F1F5F9; margin: 0; }
+
+/* Extrato - layout dos itens criados pelo JS */
+#historico-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    gap: 12px;
+    border-bottom: 1px solid #F1F5F9;
+    transition: background-color 0.15s ease;
+}
+#historico-list li:last-child { border-bottom: none; }
+#historico-list li:hover { background-color: #F8FAFC; }
+#historico-list li div { text-align: left; }
+#historico-list li h3 { font-size: 15px; font-weight: 600; margin: 0; }
+#historico-list li p { font-size: 12px; font-weight: 400; color: #94A3B8; margin: 2px 0 0 0; }
+#historico-list li span { font-size: 16px; font-weight: 700; white-space: nowrap; }
+
+/* Sparkline */
+.sparkline-path { stroke-dasharray: 200; stroke-dashoffset: 200; animation: drawLine 1.5s ease-out forwards; }
+@keyframes drawLine { to { stroke-dashoffset: 0; } }
+
+/* Card hover */
+.card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.card-hover:hover { transform: translateY(-3px); }
+
+/* Chips */
+.chip { transition: all 0.2s ease; }
+.chip:hover { transform: scale(1.05); }
+.chip.active { transform: scale(1.05); }
+
+/* Sidebar */
+.sidebar-panel { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.sidebar-panel.active { transform: translateX(0) !important; }
+
+/* Overlay */
+.overlay-bg { transition: opacity 0.3s ease; }
+.overlay-bg.active { opacity: 1 !important; pointer-events: auto !important; }
+
+/* Transaction slide */
+.txn-item { opacity: 0; transform: translateY(10px); animation: txnSlideIn 0.4s ease forwards; }
+@keyframes txnSlideIn { to { opacity: 1; transform: translateY(0); } }
+.txn-item.sumindo { animation: txnFadeOut 0.4s ease forwards; }
+@keyframes txnFadeOut { to { opacity: 0; transform: translateX(-20px) scale(0.95); height: 0; padding: 0; margin: 0; overflow: hidden; } }
+.txn-item.selected-for-delete { background-color: rgba(244, 63, 94, 0.08); }
+
+/* Scrollbar */
+.custom-scroll::-webkit-scrollbar { width: 5px; }
+.custom-scroll::-webkit-scrollbar-track { background: transparent; }
+.custom-scroll::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+
+/* Input focus */
+.input-focus { transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+.input-focus:focus { border-color: #6366F1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); outline: none; }
+
+/* Top bar */
+.top-bar { transition: top 0.3s ease; }
+
+/* Balance */
+.balance-animate { transition: transform 0.2s ease; }
+.balance-animate.animating { transform: scale(1.15); }
+
+/* Modal */
+.modal-overlay { transition: opacity 0.2s ease; }
+.modal-overlay.active { display: flex !important; }
+
+/* Extrato empty state */
+.extrato-empty { padding: 40px 20px; text-align: center; }
+
+/* Delete icon in extrato */
+#historico-list li .delete-icon { display: none; }
+#historico-list li.selected-for-delete { background-color: rgba(244, 63, 94, 0.06); }
+#historico-list li.selected-for-delete .delete-icon { display: flex; align-items: center; justify-content: center; color: #E11D48; cursor: pointer; animation: fadeIn 0.3s ease; }
+#historico-list li.selected-for-delete > span { display: none; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* Card saldo verde */
+.card-saldo {
+    background: linear-gradient(135deg, #047857 0%, #059669 50%, #34D399 100%);
+}
+
+/* Card gastos vermelho */
+.card-gastos {
+    background: linear-gradient(135deg, #BE123C 0%, #E11D48 50%, #FB7185 100%);
+}
+
+/* Histórico lista com scroll */
+#historico-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Modal trocar nome */
+#modal-trocar-nome {
+    display: none;
+}

@@ -212,6 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       localStorage.setItem("diaReinicio", dia);
+      if (window.salvarDataReinicio) window.salvarDataReinicio(dia);
       alert("Dia de reinício salvo: dia " + dia);
       fecharReinicio();
     });
@@ -221,6 +222,18 @@ document.addEventListener("DOMContentLoaded", () => {
       selectDia.value = diaSalvo;
       botoes.forEach(btn => {
         if (btn.textContent === diaSalvo) ativarBotao(btn);
+      });
+    }
+
+    // Carregar do Firestore se disponível
+    if (window.carregarDataReinicio) {
+      window.carregarDataReinicio().then((dia) => {
+        if (dia) {
+          selectDia.value = String(dia);
+          botoes.forEach(btn => {
+            if (btn.textContent === String(dia)) ativarBotao(btn);
+          });
+        }
       });
     }
   }
