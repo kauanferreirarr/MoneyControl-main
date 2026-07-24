@@ -1,0 +1,322 @@
+/* ============================================
+   Gerenciamento Financeiro - Estilos v2
+   ============================================ */
+
+/* ---------- Sidebar / Overlay (reusados do index) ---------- */
+.sidebar-panel { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.sidebar-panel.active { transform: translateX(0) !important; }
+.overlay-bg { transition: opacity 0.3s ease; }
+.overlay-bg.active { opacity: 1 !important; pointer-events: auto !important; }
+.top-bar { transition: top 0.3s ease; }
+
+/* ---------- Card Base ---------- */
+section.bg-white {
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06);
+    border: 1px solid #E8ECF1;
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+section.bg-white:hover {
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08);
+}
+
+/* ---------- Toggle Button Group ---------- */
+.toggle-btn {
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.toggle-btn.active {
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+/* ---------- Donut Chart ---------- */
+.donut-container {
+    position: relative;
+    width: 260px;
+    height: 260px;
+}
+.donut-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+}
+
+/* ---------- Category Item ---------- */
+.categoria-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+    cursor: default;
+}
+.categoria-item:hover {
+    background-color: #F8FAFC;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.categoria-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+.categoria-item:hover .categoria-icon {
+    transform: scale(1.08);
+}
+.categoria-info {
+    flex: 1;
+    min-width: 0;
+}
+.categoria-nome {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1E293B;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+.categoria-barra-bg {
+    width: 100%;
+    height: 5px;
+    background: #E8ECF1;
+    border-radius: 5px;
+    margin-top: 7px;
+    overflow: hidden;
+}
+.categoria-barra-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.categoria-valor {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0F172A;
+    white-space: nowrap;
+    letter-spacing: -0.02em;
+}
+.categoria-porcentagem {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748B;
+    margin-top: 2px;
+    text-align: right;
+}
+
+/* ---------- Progress Bar (Meta) ---------- */
+.progress-bar-track {
+    width: 100%;
+    height: 14px;
+    background: #E8ECF1;
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);
+}
+.progress-bar-fill {
+    height: 100%;
+    border-radius: 14px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s ease;
+    background: linear-gradient(90deg, #059669, #10B981);
+    min-width: 0;
+    box-shadow: 0 1px 4px rgba(5, 150, 105, 0.3);
+}
+.progress-bar-fill.warning {
+    background: linear-gradient(90deg, #D97706, #F59E0B);
+    box-shadow: 0 1px 4px rgba(217, 119, 6, 0.3);
+}
+.progress-bar-fill.danger {
+    background: linear-gradient(90deg, #DC2626, #EF4444);
+    box-shadow: 0 1px 4px rgba(220, 38, 38, 0.3);
+}
+
+/* ---------- Status Banner ---------- */
+#meta-status-banner {
+    transition: background-color 0.3s ease;
+}
+#meta-status-banner.status-ok {
+    background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+    color: #065F46;
+}
+#meta-status-banner.status-warn {
+    background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+    color: #92400E;
+}
+#meta-status-banner.status-danger {
+    background: linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%);
+    color: #991B1B;
+}
+#meta-status-banner.status-no-limit {
+    background: #F8FAFC;
+    color: #64748B;
+}
+#meta-status-icon {
+    transition: background-color 0.3s ease;
+}
+.status-ok #meta-status-icon { background-color: #A7F3D0; color: #065F46; }
+.status-warn #meta-status-icon { background-color: #FDE68A; color: #92400E; }
+.status-danger #meta-status-icon { background-color: #FECACA; color: #991B1B; }
+.status-no-limit #meta-status-icon { background-color: #E2E8F0; color: #64748B; }
+
+/* ---------- Meta Category Breakdown ---------- */
+.meta-cat-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+}
+.meta-cat-row + .meta-cat-row {
+    border-top: 1px solid #F1F5F9;
+}
+.meta-cat-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    width: 110px;
+    flex-shrink: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.meta-cat-bar-track {
+    flex: 1;
+    height: 8px;
+    background: #E8ECF1;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.meta-cat-bar-fill {
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.meta-cat-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: #334155;
+    white-space: nowrap;
+    min-width: 70px;
+    text-align: right;
+}
+
+/* ---------- Chart Containers ---------- */
+.balanco-chart-container {
+    position: relative;
+    width: 100%;
+    height: 300px;
+}
+.evolucao-chart-container {
+    position: relative;
+    width: 100%;
+    height: 250px;
+}
+
+/* ---------- Month Selector ---------- */
+#mes-selector-dropdown {
+    animation: dropdownSlide 0.2s ease;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06);
+}
+@keyframes dropdownSlide {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.mes-option.active {
+    background-color: #EEF2FF;
+    color: #4338CA;
+    border-color: #818CF8;
+    box-shadow: 0 1px 3px rgba(99, 102, 241, 0.2);
+}
+
+/* ---------- Year Navigation ---------- */
+.ano-nav {
+    transition: all 0.15s ease;
+}
+.ano-nav:active {
+    transform: scale(0.9);
+}
+.ano-nav-disabled {
+    opacity: 0.3;
+    pointer-events: none;
+}
+#ano-selecionado {
+    font-size: 15px;
+    min-width: 50px;
+    text-align: center;
+    letter-spacing: -0.01em;
+}
+
+/* ---------- Disabled Month ---------- */
+.mes-option.mes-disabled {
+    opacity: 0.3;
+    pointer-events: none;
+    background: #F8FAFC;
+    border-color: #E2E8F0;
+    color: #94A3B8;
+}
+
+/* ---------- Summary Cards in Meta ---------- */
+.grid.grid-cols-3 > div {
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    border: 1px solid #F1F5F9;
+    transition: box-shadow 0.2s ease;
+}
+.grid.grid-cols-3 > div:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 480px) {
+    .donut-container {
+        width: 220px;
+        height: 220px;
+    }
+    .donut-center .text-xl {
+        font-size: 16px;
+    }
+    .balanco-chart-container {
+        height: 240px;
+    }
+    .evolucao-chart-container {
+        height: 200px;
+    }
+    .meta-cat-label {
+        width: 85px;
+        font-size: 12px;
+    }
+}
+
+@media (min-width: 481px) and (max-width: 640px) {
+    .balanco-chart-container {
+        height: 280px;
+    }
+}
+
+/* ---------- Desktop (lg: 1024px+) ---------- */
+@media (min-width: 1024px) {
+    .donut-container {
+        width: 320px;
+        height: 320px;
+    }
+    .balanco-chart-container {
+        height: 380px;
+    }
+    .evolucao-chart-container {
+        height: 340px;
+    }
+    .meta-cat-label {
+        width: 130px;
+        font-size: 14px;
+    }
+    .meta-cat-value {
+        font-size: 14px;
+        min-width: 85px;
+    }
+}

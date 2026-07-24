@@ -1,16 +1,19 @@
-const CACHE_NAME = 'moneycontrol-v1';
+const CACHE_NAME = 'moneycontrol-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/login.html',
   '/registrar.html',
   '/config.html',
+  '/gerenciamento.html',
   '/css/index-components.css',
   '/css/login.css',
+  '/css/gerenciamento.css',
   '/js/main.js',
   '/js/script.js',
   '/js/configurações.js',
   '/js/resetgastos.js',
+  '/js/gerenciamento.js',
   '/assets/logo.png'
 ];
 
@@ -18,7 +21,8 @@ const CDN_ASSETS = [
   'https://cdn.tailwindcss.com',
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap',
   'https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css',
-  'https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js'
+  'https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js',
+  'https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js'
 ];
 
 self.addEventListener('install', (e) => {
