@@ -578,7 +578,7 @@ function renderEvolucao(transacoes) {
 
   if (chartEvolucao) chartEvolucao.destroy();
 
-  const ctx = document.getElementById("chart-evolucao").getContext("2d");
+  const ctx = document.getElementById("chart-evolução").getContext("2d");
   chartEvolucao = new Chart(ctx, {
     type: "line",
     data: {
