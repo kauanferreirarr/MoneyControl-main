@@ -237,6 +237,91 @@ function parseItau(filePath) {
     });
 }
 
+// --- 4. Parser para CSV do Banco do Brasil ---
+function parseBB(filePath) {
+    return new Promise((resolve, reject) => {
+        const transacoes = [];
+        let rowCount = 0;
+
+        fs.createReadStream(filePath)
+        .pipe(csv({ separator: ',', headers: false }))
+        .on('data', (row) => {
+            rowCount++;
+            if (rowCount === 1) return;
+
+            const data = row[0] ? row[0].trim().replace(/"/g, '') : null;
+            const lancamento = row[1] ? row[1].trim().replace(/"/g, '') : 'Transação BB';
+            const detalhes = row[2] ? row[2].trim().replace(/"/g, '') : '';
+            let valorStr = row[4] ? row[4].trim().replace(/"/g, '') : null;
+
+            if (!data || !valorStr) return;
+            if (data === '00/00/0000') return;
+
+            let valor = parseFloat(valorStr.replace('.', '').replace(',', '.'));
+            if (isNaN(valor)) return;
+
+            let descricao = lancamento;
+            if (detalhes && detalhes.length > 3) {
+                const nomeMatch = detalhes.match(/\d{2}\/\d{2}\s+\d{2}:\d{2}\s+(.+)/);
+                if (nomeMatch) {
+                    descricao = lancamento + ' - ' + nomeMatch[1].trim();
+                }
+            }
+
+            transacoes.push({
+                data: data,
+                descricao: descricao,
+                valor: valor,
+                fonte: "Banco do Brasil",
+                referencia_bancaria: null
+            });
+        })
+        .on('end', () => { fs.unlinkSync(filePath); resolve(transacoes); })
+        .on('error', (err) => { fs.unlinkSync(filePath); reject(err); });
+    });
+}
+
+// --- 5. Parser para CSV do Bradesco ---
+function parseBradesco(filePath) {
+    return new Promise((resolve, reject) => {
+        const transacoes = [];
+        let rowCount = 0;
+
+        fs.createReadStream(filePath)
+        .pipe(csv({ separator: ';', headers: false }))
+        .on('data', (row) => {
+            rowCount++;
+            if (rowCount <= 2) return;
+
+            const data = row[0] ? row[0].trim() : null;
+            const historico = row[1] ? row[1].trim() : 'Transação Bradesco';
+            const creditoStr = row[3] ? row[3].trim() : '';
+            const debitoStr = row[4] ? row[4].trim() : '';
+
+            if (!data) return;
+
+            let valor = 0;
+            if (creditoStr && creditoStr !== ' ') {
+                valor = parseFloat(creditoStr.replace(/\./g, '').replace(',', '.'));
+            } else if (debitoStr && debitoStr !== ' ') {
+                valor = -Math.abs(parseFloat(debitoStr.replace(/\./g, '').replace(',', '.')));
+            }
+
+            if (isNaN(valor)) return;
+
+            transacoes.push({
+                data: data,
+                descricao: historico,
+                valor: valor,
+                fonte: "Bradesco",
+                referencia_bancaria: null
+            });
+        })
+        .on('end', () => { fs.unlinkSync(filePath); resolve(transacoes); })
+        .on('error', (err) => { fs.unlinkSync(filePath); reject(err); });
+    });
+}
+
 // ==================================================================
 //                      FUNÇÃO DE SALVAMENTO NO FIRESTORE
 // ==================================================================
@@ -370,6 +455,12 @@ app.post('/processar_extrato', upload.single('arquivo_extrato'), async (req, res
         } else if (fileContentStart.includes('Data,Valor,Identificador,Descrição')) {
             dados = await parseNubank(filePath);
             bancoDetectado = 'Nubank';
+        } else if (fileContentStart.includes('"Lan') && fileContentStart.includes('"Valor"')) {
+            dados = await parseBB(filePath);
+            bancoDetectado = 'Banco do Brasil';
+        } else if (fileContentStart.includes('Crédito') && fileContentStart.includes('Débito')) {
+            dados = await parseBradesco(filePath);
+            bancoDetectado = 'Bradesco';
         } else if (fileContentStart.includes(';')) {
             dados = await parseInter(filePath);
             bancoDetectado = 'Banco Inter';

@@ -85,22 +85,46 @@ function lerCSV(input) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = (e) => {
-    const lines = e.target.result.split("\n").filter(l => l.trim());
+    const content = e.target.result;
+    const lines = content.split("\n").filter(l => l.trim());
     csvData = [];
     const preview = document.getElementById("csv-preview");
     preview.innerHTML = "";
-    const header = lines[0].split(",");
-    let html = "<table class='w-full text-xs text-left'><thead class='text-slate-400'>";
-    header.forEach(h => { html += `<th class="px-2 py-1">${h.trim()}</th>`; });
-    html += "</thead><tbody>";
-    for (let i = 1; i < lines.length; i++) {
-      const cols = lines[i].split(",").map(c => c.trim().replace(/"/g, ""));
-      if (cols.length < 4) continue;
-      csvData.push({ data: cols[0], descricao: cols[1], valor: parseFloat(cols[2]), tipo: cols[3] });
-      html += `<tr class="border-t border-slate-100">`;
-      cols.forEach(c => { html += `<td class="px-2 py-1 text-slate-600">${c}</td>`; });
-      html += `</tr>`;
+
+    const contentStart = content.substring(0, 500);
+    let bancoDetectado = "Desconhecido";
+
+    if (contentStart.includes("Data;Data de Balancete") || contentStart.includes("Histórico;Documento;Valor")) {
+      bancoDetectado = "Itaú";
+      csvData = parseItauCSV(lines);
+    } else if (contentStart.includes("Data,Valor,Identificador")) {
+      bancoDetectado = "Nubank";
+      csvData = parseNubankCSV(lines);
+    } else if (contentStart.includes('"Lan') && contentStart.includes('"Valor"')) {
+      bancoDetectado = "Banco do Brasil";
+      csvData = parseBBCSV(lines);
+    } else if (contentStart.includes("Crédito") && contentStart.includes("Débito")) {
+      bancoDetectado = "Bradesco";
+      csvData = parseBradescoCSV(lines);
+    } else if (contentStart.includes(";")) {
+      bancoDetectado = "Banco Inter";
+      csvData = parseInterCSV(lines);
+    } else {
+      csvData = parseGenericoCSV(lines);
     }
+
+    let html = "<div class='text-xs font-semibold text-violet-600 mb-2'>Banco detectado: " + bancoDetectado + "</div>";
+    html += "<table class='w-full text-xs text-left'><thead class='text-slate-400'>";
+    html += "<th class='px-2 py-1'>Data</th><th class='px-2 py-1'>Descrição</th><th class='px-2 py-1'>Valor</th><th class='px-2 py-1'>Tipo</th>";
+    html += "</thead><tbody>";
+    csvData.forEach(t => {
+      html += `<tr class="border-t border-slate-100">`;
+      html += `<td class="px-2 py-1 text-slate-600">${t.data || ''}</td>`;
+      html += `<td class="px-2 py-1 text-slate-600">${t.descricao || ''}</td>`;
+      html += `<td class="px-2 py-1 text-slate-600">${t.valor}</td>`;
+      html += `<td class="px-2 py-1 text-slate-600">${t.tipo || ''}</td>`;
+      html += `</tr>`;
+    });
     html += "</tbody></table>";
     preview.innerHTML = html;
     preview.classList.remove("hidden");
@@ -108,18 +132,215 @@ function lerCSV(input) {
   reader.readAsText(file);
 }
 
-function confirmarImportacao() {
+function parseInterCSV(lines) {
+  const transacoes = [];
+  let rowCount = 0;
+  for (let i = 0; i < lines.length; i++) {
+    const row = lines[i].split(";");
+    rowCount++;
+    if (rowCount <= 5) continue;
+
+    const data_lancamento = row[0] ? row[0].trim() : null;
+    const descricaoCompleta = row[2] ? row[2].trim() : "Transação Inter";
+    let valor_str = row[3];
+
+    if (!data_lancamento || !valor_str) continue;
+
+    let valor_numerico;
+    try {
+      valor_numerico = parseFloat(valor_str.replace(",", "."));
+    } catch (e) { continue; }
+    if (isNaN(valor_numerico)) continue;
+
+    const regex = /^(.*?)\s*-\s*([^-]+?)(?=\s*-\s*(\d{3}\.\d{3}|\d{11}|Conta|Agência|\s*$))/i;
+    const match = descricaoCompleta.match(regex);
+    let descricaoSimplificada = descricaoCompleta;
+    if (match && match[1] && match[2]) {
+      descricaoSimplificada = match[1].trim() + " - " + match[2].trim();
+    } else if (descricaoCompleta.includes("Débito Automático") || descricaoCompleta.includes("Pagamento de Boleto")) {
+      descricaoSimplificada = descricaoCompleta.split("-")[0].trim();
+    }
+
+    transacoes.push({
+      data: data_lancamento,
+      descricao: descricaoSimplificada,
+      valor: valor_numerico,
+      tipo: valor_numerico < 0 ? "despesa" : "entrada",
+      fonte: "Banco Inter"
+    });
+  }
+  return transacoes;
+}
+
+function parseNubankCSV(lines) {
+  const transacoes = [];
+  for (let i = 1; i < lines.length; i++) {
+    const row = lines[i].split(",");
+    const data_lancamento = row[0] ? row[0].trim() : null;
+    let valor_str = row[1];
+    const descricaoCompleta = row[3] ? row[3].trim() : "";
+    let valor_numerico = parseFloat(valor_str);
+
+    if (!data_lancamento || isNaN(valor_numerico)) continue;
+
+    let descricaoSimplificada = descricaoCompleta || "Transação Nubank";
+    descricaoSimplificada = descricaoSimplificada.replace(/compra com débito\s*-\s*/i, "").replace(/compra no crédito\s*-\s*/i, "").trim();
+
+    const regex = /^(.*?)\s*-\s*([^-]+?)(?=\s*-\s*(?:\d{3}\.\d{3}|NU PAGAMENTOS|Conta|Ag[eê]ncia|IP|\d{2,}|\w{2}$|\s*$))/i;
+    const match = descricaoSimplificada.match(regex);
+    if (match && match[1] && match[2]) {
+      descricaoSimplificada = match[1].trim() + " - " + match[2].trim();
+    } else {
+      const partes = descricaoSimplificada.split(" - ");
+      if (partes.length >= 2) descricaoSimplificada = partes[0] + " - " + partes[1];
+    }
+
+    const lastSep = descricaoSimplificada.lastIndexOf(" - ");
+    const pedacoFinal = descricaoSimplificada.slice(lastSep + 3);
+    if (lastSep !== -1 && pedacoFinal.length <= 20 && /[A-Za-z]{2,}/.test(pedacoFinal)) {
+      descricaoSimplificada = descricaoSimplificada.slice(0, lastSep);
+    }
+    if (!descricaoSimplificada) descricaoSimplificada = "Transação Nubank";
+
+    transacoes.push({
+      data: data_lancamento,
+      descricao: descricaoSimplificada,
+      valor: valor_numerico,
+      tipo: valor_numerico < 0 ? "despesa" : "entrada",
+      fonte: "Nubank"
+    });
+  }
+  return transacoes;
+}
+
+function parseItauCSV(lines) {
+  const transacoes = [];
+  for (let i = 1; i < lines.length; i++) {
+    const row = lines[i].split(";");
+    const data = row[0] ? row[0].trim() : null;
+    const historico = row[2] ? row[2].trim() : "Transação Itaú";
+    let valorStr = row[4];
+    const tipo = row[5] ? row[5].trim() : null;
+
+    if (!data || !valorStr) continue;
+
+    let valor = parseFloat(valorStr.replace(".", "").replace(",", "."));
+    if (isNaN(valor)) continue;
+
+    if (tipo === "D") valor = -Math.abs(valor);
+    if (tipo === "C") valor = Math.abs(valor);
+
+    transacoes.push({
+      data: data,
+      descricao: historico,
+      valor: valor,
+      tipo: valor < 0 ? "despesa" : "entrada",
+      fonte: "Itaú"
+    });
+  }
+  return transacoes;
+}
+
+function parseBBCSV(lines) {
+  const transacoes = [];
+  for (let i = 1; i < lines.length; i++) {
+    const row = lines[i].split(",");
+    const data = row[0] ? row[0].trim().replace(/"/g, "") : null;
+    const lancamento = row[1] ? row[1].trim().replace(/"/g, "") : "Transação BB";
+    const detalhes = row[2] ? row[2].trim().replace(/"/g, "") : "";
+    let valorStr = row[4] ? row[4].trim().replace(/"/g, "") : null;
+
+    if (!data || !valorStr) continue;
+    if (data === "00/00/0000") continue;
+
+    let valor = parseFloat(valorStr.replace(".", "").replace(",", "."));
+    if (isNaN(valor)) continue;
+
+    let descricao = lancamento;
+    if (detalhes && detalhes.length > 3) {
+      const nomeMatch = detalhes.match(/\d{2}\/\d{2}\s+\d{2}:\d{2}\s+(.+)/);
+      if (nomeMatch) {
+        descricao = lancamento + " - " + nomeMatch[1].trim();
+      }
+    }
+
+    transacoes.push({
+      data: data,
+      descricao: descricao,
+      valor: valor,
+      tipo: valor < 0 ? "despesa" : "entrada",
+      fonte: "Banco do Brasil"
+    });
+  }
+  return transacoes;
+}
+
+function parseBradescoCSV(lines) {
+  const transacoes = [];
+  for (let i = 2; i < lines.length; i++) {
+    const row = lines[i].split(";");
+    const data = row[0] ? row[0].trim() : null;
+    const historico = row[1] ? row[1].trim() : "Transação Bradesco";
+    const creditoStr = row[3] ? row[3].trim() : "";
+    const debitoStr = row[4] ? row[4].trim() : "";
+
+    if (!data) continue;
+
+    let valor = 0;
+    if (creditoStr && creditoStr !== " ") {
+      valor = parseFloat(creditoStr.replace(/\./g, "").replace(",", "."));
+    } else if (debitoStr && debitoStr !== " ") {
+      valor = -Math.abs(parseFloat(debitoStr.replace(/\./g, "").replace(",", ".")));
+    }
+
+    if (isNaN(valor)) continue;
+
+    transacoes.push({
+      data: data,
+      descricao: historico,
+      valor: valor,
+      tipo: valor < 0 ? "despesa" : "entrada",
+      fonte: "Bradesco"
+    });
+  }
+  return transacoes;
+}
+
+function parseGenericoCSV(lines) {
+  const transacoes = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(",").map(c => c.trim().replace(/"/g, ""));
+    if (cols.length < 4) continue;
+    const valor = parseFloat(cols[2]);
+    if (isNaN(valor)) continue;
+    transacoes.push({
+      data: cols[0],
+      descricao: cols[1],
+      valor: valor,
+      tipo: cols[3] || (valor < 0 ? "despesa" : "entrada"),
+      fonte: "CSV"
+    });
+  }
+  return transacoes;
+}
+
+async function confirmarImportacao() {
   if (csvData.length === 0) {
     alert("Selecione um arquivo CSV primeiro.");
     return;
   }
-  const transacoes = JSON.parse(localStorage.getItem("transacoes")) || [];
-  csvData.forEach(t => {
-    transacoes.push({ data: t.data, descricao: t.descricao, valor: t.valor, tipo: t.tipo });
-  });
-  localStorage.setItem("transacoes", JSON.stringify(transacoes));
-  alert(csvData.length + " transações importadas com sucesso!");
-  fecharImportar();
+  if (!window.importarTransacoesCSV) {
+    alert("Erro: Firebase ainda não carregado. Tente novamente em alguns instantes.");
+    return;
+  }
+  try {
+    const totalSalvo = await window.importarTransacoesCSV(csvData);
+    alert(totalSalvo + " transações importadas com sucesso!");
+    fecharImportar();
+  } catch (err) {
+    console.error("Erro na importação:", err);
+    alert("Erro ao importar: " + (err.message || "Verifique se você está logado."));
+  }
 }
 
 // ===================== PERFIL =====================

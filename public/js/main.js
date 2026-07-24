@@ -262,10 +262,10 @@ function renderDados(dadosAtualizados) {
 
   if (historicoEl) {
     historicoEl.innerHTML = "";
-    const transacoes = (dadosAtualizados.transacoes || []).slice().reverse();
+    const transacoes = (dadosAtualizados.transacoes || []).slice().sort((a, b) => b.data - a.data);
     transacoes.forEach((t, index) => {
       const li = document.createElement("li");
-      li.setAttribute('data-index', transacoes.length - 1 - index);
+      li.setAttribute('data-index', index);
       li.className = "txn-item";
       const cor = t.tipo === "despesa" ? "red" : "green";
       li.innerHTML = `
@@ -341,10 +341,10 @@ async function carregarDados(uid) {
 
   if (historicoEl) {
     historicoEl.innerHTML = "";
-    const transacoes = (dadosAtualizados.transacoes || []).slice().reverse();
+    const transacoes = (dadosAtualizados.transacoes || []).slice().sort((a, b) => b.data - a.data);
     transacoes.forEach((t, index) => {
       const li = document.createElement("li");
-      li.setAttribute('data-index', transacoes.length - 1 - index);
+      li.setAttribute('data-index', index);
       li.className = "txn-item";
       const cor = t.tipo === "despesa" ? "red" : "green";
       li.innerHTML = `
@@ -425,6 +425,91 @@ async function salvarFotoFirebase(base64) {
 }
 
 window.salvarFotoFirebase = salvarFotoFirebase;
+
+// === IMPORTAR CSV PARA FIRESTORE ===
+window.importarTransacoesCSV = async function(csvData) {
+  if (!currentUser) throw new Error("Usuário não logado!");
+  if (!csvData || csvData.length === 0) throw new Error("Nenhuma transação para importar.");
+
+  let totalSaldoChange = 0;
+  let totalGastosIncrease = 0;
+
+  const hoje = new Date();
+  const mesAtual = hoje.getMonth();
+  const anoAtual = hoje.getFullYear();
+
+  const transacoesFormatadas = csvData.map(t => {
+    let dataObj;
+    if (t.data && t.data.includes('/')) {
+      const [dia, mes, ano] = t.data.split('/');
+      dataObj = new Date(`${ano}-${mes}-${dia}T03:00:00Z`);
+    } else if (t.data && t.data.includes('-')) {
+      dataObj = new Date(`${t.data}T03:00:00Z`);
+    } else {
+      dataObj = new Date();
+    }
+    const timestamp = dataObj.getTime();
+
+    let tipo = t.tipo === 'despesa' ? "despesa" : "entrada";
+    let valorNumerico = Math.abs(parseFloat(t.valor));
+    if (isNaN(valorNumerico)) valorNumerico = 0;
+
+    const mesTransacao = dataObj.getMonth();
+    const anoTransacao = dataObj.getFullYear();
+    const isMesAtual = (mesTransacao === mesAtual && anoTransacao === anoAtual);
+
+    if (tipo === "despesa") {
+      totalSaldoChange -= valorNumerico;
+      if (isMesAtual) totalGastosIncrease += valorNumerico;
+    } else {
+      totalSaldoChange += valorNumerico;
+    }
+
+    return {
+      descricao: t.descricao || "Transação importada",
+      valor: valorNumerico,
+      tipo: tipo,
+      data: timestamp,
+      fonte: t.fonte || 'Importação CSV'
+    };
+  });
+
+  transacoesFormatadas.sort((a, b) => b.data - a.data);
+
+  const userRef = doc(db, "usuarios", currentUser.uid);
+
+  try {
+    await updateDoc(userRef, {
+      saldo: increment(totalSaldoChange),
+      gastos: increment(totalGastosIncrease),
+    });
+  } catch (e) {
+    if (e.code === 5 || (e.message && e.message.includes("no document to update"))) {
+      await setDoc(userRef, {
+        saldo: totalSaldoChange,
+        gastos: totalGastosIncrease,
+        transacoes: [],
+        nome: "Usuário"
+      }, { merge: true });
+    } else {
+      throw e;
+    }
+  }
+
+  const CHUNK_SIZE = 250;
+  let totalSalvo = 0;
+
+  for (let i = 0; i < transacoesFormatadas.length; i += CHUNK_SIZE) {
+    const chunk = transacoesFormatadas.slice(i, i + CHUNK_SIZE);
+    await updateDoc(userRef, {
+      transacoes: arrayUnion(...chunk),
+    });
+    totalSalvo += chunk.length;
+  }
+
+  await carregarDados(currentUser.uid);
+  return totalSalvo;
+};
 
 // Expose for config page to read
 window.getLimiteMensal = async function() {
