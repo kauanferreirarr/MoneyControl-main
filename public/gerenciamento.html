@@ -55,16 +55,16 @@
                 </div>
                 <h1 class="text-xl lg:text-2xl font-bold text-slate-800">Gerenciamento Financeiro</h1>
             </div>
-            <p class="text-sm lg:text-base text-slate-500 font-medium ml-[52px] lg:ml-[60px]">Analise seus gastos, metas e evolucao mensal</p>
+            <p class="text-sm lg:text-base text-slate-500 font-medium ml-[52px] lg:ml-[60px]">Análise seus gastos, metas e evolução mensal</p>
         </section>
 
         <!-- Row 1: Donut + Meta side by side on desktop -->
         <div class="grid lg:grid-cols-2 gap-6 mb-6">
 
-        <!-- ==================== COMPONENTE 1: Rosca de Analise Mensal ==================== -->
+        <!-- ==================== COMPONENTE 1: Rosca de Análise Mensal ==================== -->
         <section id="analise-mensal" class="bg-white rounded-2xl p-6 shadow-md shadow-slate-200/50 border border-slate-100">
             <div class="flex items-center justify-between mb-5">
-                <h2 class="text-lg font-bold text-slate-800">Analise Mensal</h2>
+                <h2 class="text-lg font-bold text-slate-800">Análise Mensal</h2>
                 <div class="flex items-center gap-2">
                     <button id="btn-analisar" class="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-semibold rounded-full border border-indigo-200 transition-all duration-200 flex items-center gap-1.5">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -113,7 +113,7 @@
             <!-- Toggle Saida/Entrada -->
             <div class="flex bg-slate-100 rounded-xl p-1 mb-6">
                 <button id="btn-saidas" class="toggle-btn flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 bg-white text-rose-600 shadow-sm">
-                    Saidas
+                    Saídas
                 </button>
                 <button id="btn-entradas" class="toggle-btn flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 text-slate-600 hover:text-slate-800">
                     Entradas
@@ -145,7 +145,7 @@
                         <line x1="12" y1="16" x2="12.01" y2="16"></line>
                     </svg>
                 </div>
-                <p class="text-sm text-slate-500 font-medium">Nenhum dado encontrado para este periodo</p>
+                <p class="text-sm text-slate-500 font-medium">Nenhum dado encontrado para este período</p>
             </div>
         </section>
 
@@ -159,7 +159,7 @@
                 </div>
                 <div>
                     <h2 class="text-lg font-bold text-slate-800">Meta de Gastos</h2>
-                    <p class="text-xs text-slate-500 font-medium">Acompanhe seu orcamento mensal</p>
+                    <p class="text-xs text-slate-500 font-medium">Acompanhe seu orçamento mensal</p>
                 </div>
             </div>
 
@@ -218,7 +218,7 @@
                     </svg>
                 </div>
                 <p class="text-sm text-slate-500 font-medium mb-1">Nenhuma meta definida</p>
-                <p class="text-xs text-slate-400">Defina uma meta nas Configuracoes</p>
+                <p class="text-xs text-slate-400">Defina uma meta nas Configurações</p>
             </div>
         </section>
 
@@ -240,7 +240,7 @@
                 </div>
                 <div>
                     <h2 class="text-lg font-bold text-slate-800">Balanco Mensal</h2>
-                    <p class="text-xs text-slate-500 font-medium">Comparacao de entradas vs saidas</p>
+                    <p class="text-xs text-slate-500 font-medium">Comparação de entradas vs saidas</p>
                 </div>
             </div>
 
@@ -252,7 +252,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <div class="w-3 h-3 rounded-full bg-rose-500 shadow-sm shadow-rose-200"></div>
-                    <span class="text-xs font-semibold text-slate-600">Saidas</span>
+                    <span class="text-xs font-semibold text-slate-600">Saídas</span>
                 </div>
             </div>
 
@@ -263,7 +263,7 @@
         </section>
 
         <!-- ==================== COMPONENTE 4: Evolucao dos Gastos (Line Chart) ==================== -->
-        <section id="evolucao-gastos" class="bg-white rounded-2xl p-6 shadow-md shadow-slate-200/50 border border-slate-100">
+        <section id="evolução-gastos" class="bg-white rounded-2xl p-6 shadow-md shadow-slate-200/50 border border-slate-100">
             <div class="flex items-center gap-3 mb-5">
                 <div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-violet-500">
@@ -272,13 +272,13 @@
                 </div>
                 <div>
                     <h2 class="text-lg font-bold text-slate-800">Evolucao dos Gastos</h2>
-                    <p class="text-xs text-slate-500 font-medium">Ritmo diario vs meta ideal</p>
+                    <p class="text-xs text-slate-500 font-medium">Ritmo diário vs meta ideal</p>
                 </div>
             </div>
 
             <!-- Line Chart -->
-            <div class="evolucao-chart-container">
-                <canvas id="chart-evolucao"></canvas>
+            <div class="evolução-chart-container">
+                <canvas id="chart-evolução"></canvas>
             </div>
 
             <!-- Legend -->
@@ -351,7 +351,7 @@
                             <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
                             <circle cx="12" cy="12" r="3"></circle>
                         </svg>
-                        Configuracoes
+                        Configurações
                     </a>
                 </li>
                 <li>

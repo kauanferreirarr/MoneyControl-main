@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Configuracoes - MoneyControl</title>
+  <title>Configurações - MoneyControl</title>
   <link rel="shortcut icon" href="assets/logo.png" type="image/x-icon">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -40,13 +40,13 @@
           <polyline points="12 19 5 12 12 5"></polyline>
         </svg>
       </a>
-      <h2 class="text-lg font-bold text-slate-800">Configuracoes</h2>
+      <h2 class="text-lg font-bold text-slate-800">Configurações</h2>
     </div>
 
     <div class="px-4 sm:px-6 lg:px-10 py-2 lg:grid lg:grid-cols-2 lg:gap-2">
 
-      <!-- Reinicio do saldo mensal -->
-      <div class="config-row flex items-center gap-4 px-3 py-4 rounded-xl cursor-pointer" onclick="abrirReinicio()">
+      <!-- Reinício do saldo mensal -->
+      <div class="config-row flex items-center gap-4 px-3 py-4 rounded-xl cursor-pointer" onclick="abrirReinício()">
         <div class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -56,8 +56,8 @@
           </svg>
         </div>
         <div class="flex-1 min-w-0">
-          <h3 class="text-sm font-semibold text-slate-700">Reinicio do saldo mensal</h3>
-          <p class="text-xs text-slate-400 mt-0.5">Defina quando seu saldo e historico vao reiniciar</p>
+          <h3 class="text-sm font-semibold text-slate-700">Reinício do saldo mensal</h3>
+          <p class="text-xs text-slate-400 mt-0.5">Defina quando seu saldo e histórico vão reiniciar</p>
         </div>
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-300 shrink-0">
           <polyline points="9 18 15 12 9 6"></polyline>
@@ -99,7 +99,7 @@
         </svg>
       </div>
 
-      <!-- Importar historico -->
+      <!-- Importar histórico -->
       <div class="config-row flex items-center gap-4 px-3 py-4 rounded-xl cursor-pointer" onclick="abrirImportar()">
         <div class="w-11 h-11 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-violet-500">
@@ -109,8 +109,8 @@
           </svg>
         </div>
         <div class="flex-1 min-w-0">
-          <h3 class="text-sm font-semibold text-slate-700">Importar historico</h3>
-          <p class="text-xs text-slate-400 mt-0.5">Importe transacoes de um arquivo CSV</p>
+          <h3 class="text-sm font-semibold text-slate-700">Importar histórico</h3>
+          <p class="text-xs text-slate-400 mt-0.5">Importe transações de um arquivo CSV</p>
         </div>
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-300 shrink-0">
           <polyline points="9 18 15 12 9 6"></polyline>
@@ -127,7 +127,7 @@
         </div>
         <div class="flex-1 min-w-0">
           <h3 class="text-sm font-semibold text-slate-700">Perfil do usuario</h3>
-          <p class="text-xs text-slate-400 mt-0.5">Edite suas informacoes pessoais</p>
+          <p class="text-xs text-slate-400 mt-0.5">Edite suas informações pessoais</p>
         </div>
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-300 shrink-0">
           <polyline points="9 18 15 12 9 6"></polyline>
@@ -150,7 +150,7 @@
         <h2 class="text-base font-bold text-slate-800">Reset do saldo mensal</h2>
       </div>
       <p class="text-sm text-slate-400 mb-5 leading-relaxed">
-        Nessa data, o saldo e o historico mensal serao reiniciados automaticamente (as transacoes permanecem salvas).
+        Nessa data, o saldo e o histórico mensal serão reiniciados automaticamente (as transações permanecem salvas).
       </p>
       <div class="relative mb-4">
         <select id="dia-reinicio" class="input-focus w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 appearance-none cursor-pointer">
@@ -214,7 +214,7 @@
       </div>
       <label class="flex items-center gap-3 mb-5 cursor-pointer">
         <input type="checkbox" id="no-limit" class="checkbox-custom">
-        <span class="text-sm font-medium text-slate-600">Nao definir limite</span>
+        <span class="text-sm font-medium text-slate-600">Não definir limite</span>
       </label>
       <button id="btn-salvar-meta" class="btn-salvar w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold rounded-xl transition-all duration-200 shadow-sm shadow-indigo-200" onclick="salvarMeta()">Salvar</button>
     </div>
@@ -233,7 +233,7 @@
         <h2 class="text-base font-bold text-slate-800">Notificacoes</h2>
       </div>
       <p class="text-sm text-slate-400 mb-5 leading-relaxed">
-        Escolha quando deseja receber alertas sobre seus gastos em relacao a meta definida.
+        Escolha quando deseja receber alertas sobre seus gastos em relação à meta definida.
       </p>
       <div class="space-y-1 mb-5">
         <label class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors duration-200">
@@ -270,10 +270,10 @@
             <polyline points="12 19 5 12 12 5"></polyline>
           </svg>
         </a>
-        <h2 class="text-base font-bold text-slate-800">Importar historico</h2>
+        <h2 class="text-base font-bold text-slate-800">Importar histórico</h2>
       </div>
       <p class="text-sm text-slate-400 mb-5 leading-relaxed">
-        Selecione um arquivo CSV com suas transacoes. O formato deve ser: Data, Descricao, Valor, Tipo (despesa/saldo)
+        Selecione um arquivo CSV com suas transações. O formato deve ser: Data, Descrição, Valor, Tipo (despesa/saldo)
       </p>
       <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-violet-400 hover:bg-violet-50 transition-all duration-200 mb-5">
         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-300 mb-2">
