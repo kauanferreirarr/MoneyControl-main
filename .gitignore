@@ -1,7 +1,7 @@
 node_modules/
 uploads/
 .env
-
+bancosCSV/
 # Chave privada Firebase
 *.json
 !package.json

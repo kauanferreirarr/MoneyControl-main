@@ -27,6 +27,9 @@
     }
   </script>
   <link rel="stylesheet" href="css/config-components.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
 </head>
 <body class="bg-slate-50 min-h-screen flex items-center justify-center p-4 sm:p-6">
 
@@ -273,7 +276,7 @@
         <h2 class="text-base font-bold text-slate-800">Importar histórico</h2>
       </div>
       <p class="text-sm text-slate-400 mb-5 leading-relaxed">
-        Selecione um arquivo CSV com suas transações. O formato deve ser: Data, Descrição, Valor, Tipo (despesa/saldo)
+        Selecione um arquivo CSV ou PDF do seu extrato bancario. Bancos suportados: Nubank, Inter, Itau, BB, Bradesco e Mercado Pago.
       </p>
       <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-violet-400 hover:bg-violet-50 transition-all duration-200 mb-5">
         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-300 mb-2">
@@ -281,8 +284,8 @@
           <polyline points="17 8 12 3 7 8"></polyline>
           <line x1="12" y1="3" x2="12" y2="15"></line>
         </svg>
-        <span class="text-sm text-slate-400">Clique para selecionar CSV</span>
-        <input type="file" id="input-csv" accept=".csv" class="hidden" onchange="lerCSV(this)">
+        <span class="text-sm text-slate-400">Clique para selecionar CSV ou PDF</span>
+        <input type="file" id="input-csv" accept=".csv,.pdf" class="hidden" onchange="lerArquivo(this)">
       </label>
       <div id="csv-preview" class="hidden mb-5 max-h-40 overflow-y-auto"></div>
       <button class="btn-salvar w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold rounded-xl transition-all duration-200 shadow-sm shadow-indigo-200" onclick="confirmarImportacao()">Importar</button>
@@ -332,6 +335,7 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
   <script src="js/configurações.js"></script>
   <script type="module" src="js/main.js"></script>
 </body>

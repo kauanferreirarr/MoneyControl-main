@@ -217,7 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const novoNome = inputNovoNome.value.trim();
                     
                     if (!novoNome) {
-                        alert('Por favor, digite um nome válido.');
+                        window._notyf.error("Por favor, digite um nome valido.");
                         return;
                     }
                     
@@ -245,12 +245,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         localStorage.setItem("userName", novoNome);
                         
-                        alert('Nome atualizado com sucesso!');
+                        window._notyf.success("Nome atualizado com sucesso!");
                         modalTrocarNome.classList.remove('active');
                         document.body.style.overflow = '';
                     } catch (error) {
                         console.error("Erro ao atualizar nome:", error);
-                        alert('Erro ao atualizar o nome. Tente novamente.');
+                        window._notyf.error("Erro ao atualizar o nome. Tente novamente.");
                     }
                 });
             }

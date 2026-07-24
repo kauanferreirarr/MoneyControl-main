@@ -195,16 +195,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // 6) Botão salvar (só zera gastos)
   if (btnSalvar) {
     btnSalvar.addEventListener('click', async () => {
-      if (!currentUser) return alert('Usuário não logado!');
+      if (!currentUser) return window._notyf.error("Usuario nao logado!");
       try {
         const userRef = doc(db, 'usuarios', currentUser.uid);
         const gastosEl = document.getElementById('gastos-atual');
         if (gastosEl) gastosEl.textContent = 'R$ 0,00';
         menuReinicio.style.display = 'none';
-        alert('Gastos do mês reiniciados com sucesso!');
+        window._notyf.success("Gastos do mes reiniciados com sucesso!");
       } catch (err) {
         console.error('[resetMensal] erro ao resetar gastos:', err);
-        alert('Erro ao resetar gastos!');
+        window._notyf.error("Erro ao resetar gastos!");
       }
     });
   }

@@ -6,6 +6,8 @@ import {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
   setPersistence,
   browserLocalPersistence,
   onAuthStateChanged,
@@ -49,19 +51,20 @@ let notyf;
       });
     } else {
       notyf = {
-        success: (m) => { console.log("[notyf success]", m); alert("✅ " + m); },
-        error: (m) => { console.log("[notyf error]", m); alert("❌ " + m); },
-        warning: (m) => { console.log("[notyf warn]", m); alert("⚠️ " + m); }
+        success: (m) => console.log("[notyf success]", m),
+        error: (m) => console.log("[notyf error]", m),
+        warning: (m) => console.log("[notyf warn]", m)
       };
     }
   } catch (e) {
     console.error("Erro inicializando Notyf (fallback ativado):", e);
     notyf = {
-      success: (m) => alert("✅ " + m),
-      error: (m) => alert("❌ " + m),
-      warning: (m) => alert("⚠️ " + m)
+      success: (m) => console.log("[notyf]", m),
+      error: (m) => console.log("[notyf]", m),
+      warning: (m) => console.log("[notyf]", m)
     };
   }
+  window._notyf = notyf;
 })();
 
 // === FUNÇÕES AUXILIARES ===
@@ -215,6 +218,7 @@ function setCachedData(uid, data) {
 // === META DE GASTOS (Dashboard compact) ===
 function renderMetaDashboard(dados) {
   const card = document.getElementById("meta-dashboard");
+  if (!card) return;
   const limite = dados.limiteMensal;
   if (!limite || limite <= 0) {
     card.classList.add("hidden");
@@ -484,7 +488,7 @@ window.importarTransacoesCSV = async function(csvData) {
       gastos: increment(totalGastosIncrease),
     });
   } catch (e) {
-    if (e.code === 5 || (e.message && e.message.includes("no document to update"))) {
+    if (e.code === "not-found" || (e.message && e.message.includes("no document to update"))) {
       await setDoc(userRef, {
         saldo: totalSaldoChange,
         gastos: totalGastosIncrease,
@@ -595,8 +599,7 @@ if (btnRegistrar) {
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, senha);
       currentUser = cred.user;
-      // cria doc do usuário com limiteMensal = null por padrão
-      await setDoc(doc(db, "usuarios", currentUser.uid), { saldo: 0, gastos: 0, transacoes: [], nome: "Usuário", limiteMensal: null });
+      await setDoc(doc(db, "usuarios", currentUser.uid), { saldo: 0, gastos: 0, transacoes: [], nome: "Usuário", limiteMensal: null, onboardingComplete: false });
       notyf.success("Conta criada! Redirecionando...");
       window.location.href = "index.html";
     } catch (err) {
@@ -639,6 +642,70 @@ if(closeModal){
 }
 window.addEventListener("click", (e) => { if(e.target === modal){ modal.style.display = "none"; } });
 
+// === LOGIN COM GOOGLE ===
+const googleProvider = new GoogleAuthProvider();
+
+async function loginComGoogle() {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
+    currentUser = user;
+
+    const userRef = doc(db, "usuarios", user.uid);
+    const snap = await getDoc(userRef);
+
+    if (!snap.exists()) {
+      const nome = user.displayName || "Usuário";
+      const foto = user.photoURL || null;
+      await setDoc(userRef, {
+        saldo: 0,
+        gastos: 0,
+        transacoes: [],
+        nome: nome,
+        foto: foto,
+        limiteMensal: null,
+        onboardingComplete: false
+      });
+      localStorage.setItem("userName", nome);
+      if (foto) localStorage.setItem("userPhoto", foto);
+      notyf.success("Conta criada com Google!");
+    } else {
+      const dados = snap.data();
+      if (user.displayName && !dados.nome) {
+        await updateDoc(userRef, { nome: user.displayName });
+      }
+      if (user.photoURL && !dados.foto) {
+        await updateDoc(userRef, { foto: user.photoURL });
+      }
+      notyf.success("Login com Google efetuado!");
+    }
+
+    window.location.href = "index.html";
+  } catch (err) {
+    console.error("Erro login Google:", err);
+    if (err.code !== "auth/popup-closed-by-user") {
+      notyf.error(err.message || "Erro ao logar com Google");
+    }
+  }
+}
+
+const btnGoogleLogin = document.getElementById("btn-google-login");
+const btnGoogleRegistrar = document.getElementById("btn-google-registrar");
+
+if (btnGoogleLogin) {
+  btnGoogleLogin.addEventListener("click", (e) => {
+    e.preventDefault();
+    loginComGoogle();
+  });
+}
+
+if (btnGoogleRegistrar) {
+  btnGoogleRegistrar.addEventListener("click", (e) => {
+    e.preventDefault();
+    loginComGoogle();
+  });
+}
+
 // === TROCAR NOME ===
 const formTrocarNome = document.getElementById('form-trocar-nome');
 if (formTrocarNome){
@@ -646,7 +713,7 @@ if (formTrocarNome){
     e.preventDefault();
     const inputNovoNome = document.getElementById('novo-nome');
     const novoNome = inputNovoNome.value.trim();
-    if (!novoNome) return alert('Digite um nome válido');
+    if (!novoNome) return notyf.error("Digite um nome valido");
     if (currentUser) await atualizarNomeUsuario(currentUser.uid, novoNome);
     document.getElementById('modal-trocar-nome').classList.remove('active');
     document.body.style.overflow = '';
@@ -679,10 +746,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   if(btnAddDespesa){
     btnAddDespesa.addEventListener("click", async ()=>{
-      if(!currentUser) return alert("Usuário não logado!");
+      if(!currentUser) return notyf.error("Usuario nao logado!");
       const valor = parseFloat(inputValor.value.replace(",", "."));
       const descricao = inputDescricao.value.trim() || "Despesa";
-      if(!valor || !descricao) return alert("Preencha valor e descrição");
+      if(!valor || !descricao) return notyf.error("Preencha valor e descricao");
 
       const userRef = doc(db, "usuarios", currentUser.uid);
       const snap = await getDoc(userRef);
@@ -710,10 +777,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   if(btnAddSaldo){
     btnAddSaldo.addEventListener("click", async ()=>{
-      if(!currentUser) return alert("Usuário não logado!");
+      if(!currentUser) return notyf.error("Usuario nao logado!");
       const valor = parseFloat(inputValor.value.replace(",", "."));
-      const descricao = inputDescricao.value.trim() || "Depósito";
-      if(!valor) return alert("Preencha um valor válido");
+      const descricao = inputDescricao.value.trim() || "Deposito";
+      if(!valor) return notyf.error("Preencha um valor valido");
 
       const userRef = doc(db, "usuarios", currentUser.uid);
       const snap = await getDoc(userRef);
@@ -759,6 +826,73 @@ function setupTransactionItems(){
   });
 }
 
+// === ONBOARDING DE NOVOS USUARIOS ===
+function iniciarOnboarding(uid) {
+  const welcomeEl = document.getElementById("onboarding-welcome");
+  const metaEl = document.getElementById("onboarding-meta");
+  const reinicioEl = document.getElementById("onboarding-reinicio");
+
+  function showStep(step) {
+    [welcomeEl, metaEl, reinicioEl].forEach(el => {
+      if (el) el.classList.remove("active");
+    });
+    if (step) step.classList.add("active");
+  }
+
+  showStep(welcomeEl);
+
+  document.getElementById("onboarding-next-1").addEventListener("click", () => {
+    showStep(metaEl);
+  });
+
+  document.getElementById("onboarding-back-2").addEventListener("click", () => {
+    showStep(welcomeEl);
+  });
+
+  document.getElementById("onboarding-next-2").addEventListener("click", () => {
+    showStep(reinicioEl);
+  });
+
+  document.getElementById("onboarding-back-3").addEventListener("click", () => {
+    showStep(metaEl);
+  });
+
+  document.getElementById("onboarding-sem-limite").addEventListener("change", (e) => {
+    const input = document.getElementById("onboarding-limite");
+    input.disabled = e.target.checked;
+    if (e.target.checked) input.value = "";
+  });
+
+  document.getElementById("onboarding-finish").addEventListener("click", async () => {
+    const userRef = doc(db, "usuarios", uid);
+    const updates = { onboardingComplete: true };
+
+    const semLimite = document.getElementById("onboarding-sem-limite").checked;
+    if (!semLimite) {
+      const limiteVal = parseFloat(document.getElementById("onboarding-limite").value);
+      if (!isNaN(limiteVal) && limiteVal > 0) {
+        updates.limiteMensal = limiteVal;
+      }
+    }
+
+    const diaVal = document.getElementById("onboarding-dia").value;
+    if (diaVal) {
+      updates.dataReinicio = Number(diaVal);
+    }
+
+    try {
+      await updateDoc(userRef, updates);
+    } catch (e) {
+      console.error("Erro ao salvar onboarding:", e);
+    }
+
+    showStep(null);
+    notyf.success("Tudo pronto! Bora gerenciar suas financas!");
+
+    await carregarDados(uid);
+  });
+}
+
 // === DETECTA USUÁRIO LOGADO ===
 onAuthStateChanged(auth, async (user) => {
   if (user) {
@@ -801,6 +935,17 @@ onAuthStateChanged(auth, async (user) => {
     }
     
 
+    // Sincroniza dados do Google (foto e nome) com o Firestore
+    const isGoogleUser = user.providerData.some(p => p.providerId === "google.com");
+    if (isGoogleUser) {
+      const updates = {};
+      if (user.displayName) updates.nome = user.displayName;
+      if (user.photoURL) updates.foto = user.photoURL;
+      if (Object.keys(updates).length > 0) {
+        await updateDoc(userRef, updates).catch(() => {});
+      }
+    }
+
     await carregarDados(user.uid);
     await carregarNomeUsuario(user.uid);
 
@@ -808,6 +953,17 @@ onAuthStateChanged(auth, async (user) => {
     const cachedName = localStorage.getItem("userName");
     const userNameEl = document.querySelector(".user-name");
     if (cachedName && userNameEl && !userNameEl.textContent) userNameEl.textContent = cachedName;
+
+    // Verifica se é novo usuario (onboarding)
+    const snapRefresh = await getDoc(userRef).catch(() => null);
+    const dadosRefresh = snapRefresh && snapRefresh.exists() ? snapRefresh.data() : {};
+    
+    if (dadosRefresh.onboardingComplete === undefined) {
+      // Usuario antigo que nao tem o campo - marca como completo pra nao mostrar onboarding
+      await updateDoc(userRef, { onboardingComplete: true }).catch(() => {});
+    } else if (dadosRefresh.onboardingComplete === false) {
+      iniciarOnboarding(user.uid);
+    }
 
     if (
       window.location.href.includes("login.html") ||
@@ -834,25 +990,25 @@ const btnSalvarMeta = document.getElementById("btn-salvar-meta");
 
 if (btnSalvarMeta) {
 btnSalvarMeta.addEventListener("click", async () => {
-  if (!currentUser) return alert("Usuário não logado!");
+  if (!currentUser) return notyf.error("Usuario nao logado!");
 
   const limiteInput = document.getElementById("limit-range");
   const noLimitCheckbox = document.getElementById("no-limit");
-  let limiteMensal = null; // padrão null se não definir limite
+  let limiteMensal = null;
 
   if (!noLimitCheckbox.checked) {
     limiteMensal = parseFloat(limiteInput.value);
-    if (isNaN(limiteMensal)) return alert("Valor inválido!");
+    if (isNaN(limiteMensal)) return notyf.error("Valor invalido!");
   }
 
   const userRef = doc(db, "usuarios", currentUser.uid);
 
   try {
     await updateDoc(userRef, { limiteMensal: limiteMensal });
-    alert("Limite mensal salvo com sucesso!");
+    notyf.success("Limite mensal salvo com sucesso!");
   } catch (err) {
     console.error("Erro ao salvar limite:", err);
-    alert("Erro ao salvar limite: " + err.message);
+    notyf.error("Erro ao salvar limite: " + err.message);
   }
 });
 }

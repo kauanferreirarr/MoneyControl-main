@@ -153,3 +153,39 @@
     background: linear-gradient(90deg, #DC2626, #EF4444);
     box-shadow: 0 1px 4px rgba(220, 38, 38, 0.3);
 }
+
+/* ============================================
+   Onboarding Modals
+   ============================================ */
+.onboarding-overlay {
+    display: none;
+    animation: onboardingFadeIn 0.3s ease;
+}
+.onboarding-overlay.active {
+    display: flex !important;
+}
+@keyframes onboardingFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.onboarding-card {
+    animation: onboardingSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes onboardingSlideUp {
+    from { opacity: 0; transform: translateY(30px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.onboarding-header {
+    position: relative;
+    overflow: hidden;
+}
+.onboarding-header::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: -10%;
+    width: 120%;
+    height: 40px;
+    background: white;
+    border-radius: 50% 50% 0 0;
+}

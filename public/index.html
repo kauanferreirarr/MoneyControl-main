@@ -318,6 +318,136 @@
         </div>
     </div>
 
+    <!-- Onboarding: Passo 1 - Boas-vindas -->
+    <div id="onboarding-welcome" class="onboarding-overlay fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[300] items-center justify-center p-4">
+        <div class="onboarding-card bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden">
+            <div class="onboarding-header bg-gradient-to-br from-indigo-500 to-indigo-700 px-8 pt-10 pb-12 text-center relative">
+                <svg class="mx-auto mb-4" width="56" height="56" viewBox="0 0 56 56" fill="none">
+                    <rect width="56" height="56" rx="16" fill="rgba(255,255,255,0.15)"/>
+                    <path d="M28 12v32M36 18H23a5 5 0 0 0 0 10h10a5 5 0 0 1 0 10H18" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <h2 class="text-2xl font-bold text-white">Bem-vindo ao MoneyControl</h2>
+            </div>
+            <div class="px-8 py-8">
+                <p class="text-slate-600 text-base leading-relaxed mb-5">
+                    Seu gerenciador financeiro pessoal. Com o MoneyControl voce pode:
+                </p>
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-start gap-3">
+                        <div class="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0 mt-0.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="1" x2="12" y2="23"></line>
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                            </svg>
+                        </div>
+                        <span class="text-sm text-slate-600">Acompanhar seu saldo e gastos do mes em tempo real</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0 mt-0.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                            </svg>
+                        </div>
+                        <span class="text-sm text-slate-600">Importar extratos de bancos como Nubank, Inter, Itau, BB e Bradesco</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center shrink-0 mt-0.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E11D48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="20" x2="12" y2="10"></line>
+                                <line x1="18" y1="20" x2="18" y2="4"></line>
+                                <line x1="6" y1="20" x2="6" y2="16"></line>
+                            </svg>
+                        </div>
+                        <span class="text-sm text-slate-600">Definir uma meta mensal de gastos e receber alertas</span>
+                    </li>
+                </ul>
+                <button id="onboarding-next-1" class="w-full py-3.5 bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white text-base font-bold rounded-xl transition-all duration-200 shadow-lg shadow-indigo-200">
+                    Continuar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Onboarding: Passo 2 - Meta de Gastos -->
+    <div id="onboarding-meta" class="onboarding-overlay fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[300] items-center justify-center p-4">
+        <div class="onboarding-card bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden">
+            <div class="onboarding-header bg-gradient-to-br from-emerald-500 to-emerald-700 px-8 pt-10 pb-12 text-center relative">
+                <svg class="mx-auto mb-4" width="56" height="56" viewBox="0 0 56 56" fill="none">
+                    <rect width="56" height="56" rx="16" fill="rgba(255,255,255,0.15)"/>
+                    <line x1="16" y1="38" x2="16" y2="24" stroke="white" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="28" y1="38" x2="28" y2="16" stroke="white" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="40" y1="38" x2="40" y2="20" stroke="white" stroke-width="4" stroke-linecap="round"/>
+                </svg>
+                <h2 class="text-2xl font-bold text-white">Meta de Gastos</h2>
+            </div>
+            <div class="px-8 py-8">
+                <p class="text-slate-600 text-base leading-relaxed mb-6">
+                    Defina um limite mensal de gastos. O MoneyControl vai monitorar e avisar quando voce estiver perto do limite.
+                </p>
+                <div class="mb-3">
+                    <label class="block text-sm font-semibold text-slate-500 mb-2" for="onboarding-limite">Limite mensal (R$)</label>
+                    <input type="number" id="onboarding-limite" placeholder="Ex: 2000" min="0" step="50"
+                        class="w-full px-4 py-3.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-base text-slate-700 placeholder-slate-300 font-medium focus:border-emerald-500 focus:ring-0 focus:outline-none transition-colors">
+                </div>
+                <label class="flex items-center gap-2 text-sm text-slate-500 mb-8 cursor-pointer">
+                    <input type="checkbox" id="onboarding-sem-limite" class="w-4 h-4 rounded border-slate-300 text-emerald-500 focus:ring-emerald-500">
+                    <span>Pular por enquanto</span>
+                </label>
+                <div class="flex gap-3">
+                    <button id="onboarding-back-2" class="px-5 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-base font-semibold rounded-xl transition-all duration-200">
+                        Voltar
+                    </button>
+                    <button id="onboarding-next-2" class="flex-1 py-3.5 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white text-base font-bold rounded-xl transition-all duration-200 shadow-lg shadow-emerald-200">
+                        Continuar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Onboarding: Passo 3 - Dia de Reinicio -->
+    <div id="onboarding-reinicio" class="onboarding-overlay fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[300] items-center justify-center p-4">
+        <div class="onboarding-card bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden">
+            <div class="onboarding-header bg-gradient-to-br from-amber-500 to-orange-600 px-8 pt-10 pb-12 text-center relative">
+                <svg class="mx-auto mb-4" width="56" height="56" viewBox="0 0 56 56" fill="none">
+                    <rect width="56" height="56" rx="16" fill="rgba(255,255,255,0.15)"/>
+                    <circle cx="28" cy="28" r="14" stroke="white" stroke-width="3" fill="none"/>
+                    <polyline points="28,16 28,28 36,32" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>
+                <h2 class="text-2xl font-bold text-white">Dia de Reinicio</h2>
+            </div>
+            <div class="px-8 py-8">
+                <p class="text-slate-600 text-base leading-relaxed mb-6">
+                    Escolha o dia do mes em que seus gastos serao resetados automaticamente. Por exemplo, se voce recebe no dia 5, pode escolher o dia 5.
+                </p>
+                <div class="mb-8">
+                    <label class="block text-sm font-semibold text-slate-500 mb-2" for="onboarding-dia">Dia do reinicio</label>
+                    <select id="onboarding-dia"
+                        class="w-full px-4 py-3.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-base text-slate-700 font-medium focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors appearance-none cursor-pointer">
+                        <option value="1">Dia 1</option>
+                        <option value="5">Dia 5</option>
+                        <option value="10">Dia 10</option>
+                        <option value="15">Dia 15</option>
+                        <option value="20">Dia 20</option>
+                        <option value="25">Dia 25</option>
+                        <option value="30" selected>Dia 30</option>
+                    </select>
+                </div>
+                <div class="flex gap-3">
+                    <button id="onboarding-back-3" class="px-5 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-base font-semibold rounded-xl transition-all duration-200">
+                        Voltar
+                    </button>
+                    <button id="onboarding-finish" class="flex-1 py-3.5 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white text-base font-bold rounded-xl transition-all duration-200 shadow-lg shadow-amber-200">
+                        Comecar a usar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
     <script defer src="js/script.js"></script>
     <script type="module" src="js/main.js"></script>

@@ -48,7 +48,7 @@ function fecharNotifCard() {
 function exportarHistorico() {
   const transacoes = JSON.parse(localStorage.getItem("transacoes")) || [];
   if (transacoes.length === 0) {
-    alert("Nenhuma transação para exportar.");
+    window._notyf.error("Nenhuma transacao para exportar.");
     return;
   }
   let csv = "Data,Descrição,Valor,Tipo\n";
@@ -80,9 +80,19 @@ function fecharImportar() {
   document.getElementById("menuimportar").style.display = "none";
 }
 
-function lerCSV(input) {
+function lerArquivo(input) {
   const file = input.files[0];
   if (!file) return;
+
+  const ext = file.name.split(".").pop().toLowerCase();
+  if (ext === "pdf") {
+    lerPDF(file);
+  } else {
+    lerCSVArquivo(file);
+  }
+}
+
+function lerCSVArquivo(file) {
   const reader = new FileReader();
   reader.onload = (e) => {
     const content = e.target.result;
@@ -106,6 +116,9 @@ function lerCSV(input) {
     } else if (contentStart.includes("Crédito") && contentStart.includes("Débito")) {
       bancoDetectado = "Bradesco";
       csvData = parseBradescoCSV(lines);
+    } else if (contentStart.includes("data,hora,tipo")) {
+      bancoDetectado = "PicPay";
+      csvData = parsePicPayCSV(lines);
     } else if (contentStart.includes(";")) {
       bancoDetectado = "Banco Inter";
       csvData = parseInterCSV(lines);
@@ -113,23 +126,105 @@ function lerCSV(input) {
       csvData = parseGenericoCSV(lines);
     }
 
-    let html = "<div class='text-xs font-semibold text-violet-600 mb-2'>Banco detectado: " + bancoDetectado + "</div>";
-    html += "<table class='w-full text-xs text-left'><thead class='text-slate-400'>";
-    html += "<th class='px-2 py-1'>Data</th><th class='px-2 py-1'>Descrição</th><th class='px-2 py-1'>Valor</th><th class='px-2 py-1'>Tipo</th>";
-    html += "</thead><tbody>";
-    csvData.forEach(t => {
-      html += `<tr class="border-t border-slate-100">`;
-      html += `<td class="px-2 py-1 text-slate-600">${t.data || ''}</td>`;
-      html += `<td class="px-2 py-1 text-slate-600">${t.descricao || ''}</td>`;
-      html += `<td class="px-2 py-1 text-slate-600">${t.valor}</td>`;
-      html += `<td class="px-2 py-1 text-slate-600">${t.tipo || ''}</td>`;
-      html += `</tr>`;
-    });
-    html += "</tbody></table>";
-    preview.innerHTML = html;
-    preview.classList.remove("hidden");
+    exibirPreview(bancoDetectado);
   };
   reader.readAsText(file);
+}
+
+async function lerPDF(file) {
+  const preview = document.getElementById("csv-preview");
+  preview.innerHTML = "<div class='text-xs text-slate-400 mb-2'>Lendo PDF...</div>";
+  preview.classList.remove("hidden");
+
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let textoCompleto = "";
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      const items = content.items.filter(item => item.str.trim());
+      if (items.length === 0) continue;
+
+      items.sort((a, b) => {
+        const yDiff = b.transform[5] - a.transform[5];
+        if (Math.abs(yDiff) > 3) return yDiff;
+        return a.transform[4] - b.transform[4];
+      });
+
+      let lastY = items[0].transform[5];
+      let linha = "";
+      for (const item of items) {
+        const y = item.transform[5];
+        if (Math.abs(y - lastY) > 3) {
+          textoCompleto += linha.trim() + "\n";
+          linha = "";
+        }
+        linha += (linha && !linha.endsWith(" ") ? " " : "") + item.str;
+        lastY = y;
+      }
+      if (linha.trim()) textoCompleto += linha.trim() + "\n";
+    }
+
+    textoCompleto = textoCompleto.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+    csvData = [];
+    let bancoDetectado = "Desconhecido";
+
+    const textoLower = textoCompleto.toLowerCase();
+
+    if (textoLower.includes("mercado pago") || textoLower.includes("mercadopago")) {
+      bancoDetectado = "Mercado Pago";
+      csvData = parseMercadoPagoPDF(textoCompleto);
+    } else if (textoLower.includes("picpay")) {
+      bancoDetectado = "PicPay";
+      csvData = parsePicPayPDF(textoCompleto);
+    } else if (textoLower.includes("nubank") || textoLower.includes("nu pagamentos") || textoLower.includes("nu investimentos")) {
+      bancoDetectado = "Nubank";
+      csvData = parseNubankPDF(textoCompleto);
+    } else if (textoLower.includes("inter") && (textoLower.includes("banco inter") || textoLower.includes("bancointer"))) {
+      bancoDetectado = "Banco Inter";
+      csvData = parseInterPDF(textoCompleto);
+    } else if (textoLower.includes("itau") || textoLower.includes("itaú") || textoLower.includes("banco itaú")) {
+      bancoDetectado = "Itaú";
+      csvData = parseItauPDF(textoCompleto);
+    } else if (textoLower.includes("banco do brasil") || textoLower.includes("bb ") || textoLower.includes("brasil")) {
+      bancoDetectado = "Banco do Brasil";
+      csvData = parseBBPDF(textoCompleto);
+    } else if (textoLower.includes("bradesco") || textoLower.includes("banco bradesco")) {
+      bancoDetectado = "Bradesco";
+      csvData = parseBradescoPDF(textoCompleto);
+    } else {
+      bancoDetectado = "Desconhecido";
+      csvData = parseGenericoPDF(textoCompleto);
+    }
+
+    exibirPreview(bancoDetectado);
+  } catch (err) {
+    console.error("Erro ao ler PDF:", err);
+    preview.innerHTML = "<div class='text-xs text-red-500 mb-2'>Erro ao ler PDF. Verifique se o arquivo e valido.</div>";
+    preview.classList.remove("hidden");
+  }
+}
+
+function exibirPreview(bancoDetectado) {
+  const preview = document.getElementById("csv-preview");
+  let html = "<div class='text-xs font-semibold text-violet-600 mb-2'>Banco detectado: " + bancoDetectado + "</div>";
+  html += "<table class='w-full text-xs text-left'><thead class='text-slate-400'>";
+  html += "<th class='px-2 py-1'>Data</th><th class='px-2 py-1'>Descricao</th><th class='px-2 py-1'>Valor</th><th class='px-2 py-1'>Tipo</th>";
+  html += "</thead><tbody>";
+  csvData.forEach(t => {
+    html += `<tr class="border-t border-slate-100">`;
+    html += `<td class="px-2 py-1 text-slate-600">${t.data || ''}</td>`;
+    html += `<td class='px-2 py-1 text-slate-600'>${t.descricao || ''}</td>`;
+    html += `<td class="px-2 py-1 text-slate-600">${t.valor}</td>`;
+    html += `<td class="px-2 py-1 text-slate-600">${t.tipo || ''}</td>`;
+    html += `</tr>`;
+  });
+  html += "</tbody></table>";
+  preview.innerHTML = html;
+  preview.classList.remove("hidden");
 }
 
 function parseInterCSV(lines) {
@@ -324,22 +419,443 @@ function parseGenericoCSV(lines) {
   return transacoes;
 }
 
+function parsePicPayCSV(lines) {
+  const transacoes = [];
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    const fields = [];
+    let current = "";
+    let inQuotes = false;
+    for (let c = 0; c < line.length; c++) {
+      const ch = line[c];
+      if (ch === '"') { inQuotes = !inQuotes; }
+      else if (ch === ',' && !inQuotes) { fields.push(current.trim()); current = ""; }
+      else { current += ch; }
+    }
+    fields.push(current.trim());
+
+    if (fields.length < 5) continue;
+
+    const dataRaw = fields[0];
+    const tipo = fields[2];
+    const origem = fields[3];
+    const valorRaw = fields[4];
+
+    if (!dataRaw || !tipo || !valorRaw) continue;
+
+    const dateMatch = dataRaw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!dateMatch) continue;
+    const data = dateMatch[3] + "/" + dateMatch[2] + "/" + dateMatch[1];
+
+    let valorLimpo = valorRaw
+      .replace(/R\$\s*/g, "")
+      .replace(/\u2212/g, "-")
+      .trim();
+    const valor = parseValorBR(valorLimpo);
+    if (isNaN(valor) || valor === 0) continue;
+
+    const descricao = tipo + (origem ? " - " + origem : "");
+
+    const tipoTransacao = /enviad[oa]|compra|pagamento/i.test(tipo) ? "despesa" : "entrada";
+
+    transacoes.push({
+      data: data,
+      descricao: descricao,
+      valor: valor,
+      tipo: tipoTransacao,
+      fonte: "PicPay"
+    });
+  }
+  return transacoes;
+}
+
+function parsePicPayPDF(texto) {
+  const transacoes = [];
+  const linhas = texto.split("\n").map(l => l.trim()).filter(l => l);
+
+  const meses = {
+    janeiro: "01", fevereiro: "02", marco: "03", abril: "04",
+    maio: "05", junho: "06", julho: "07", agosto: "08",
+    setembro: "09", outubro: "10", novembro: "11", dezembro: "12"
+  };
+
+  const regexHora = /^\d{2}:\d{2}\s/;
+  const regexData = /(\d{1,2})\s+de\s+(\w+)\s+(\d{4})/;
+  const regexValor = /[+\u2212-]R\$\s*([\d.,]+)/;
+
+  let dataAtual = null;
+
+  for (let idx = 0; idx < linhas.length; idx++) {
+    const linha = linhas[idx];
+
+    if (linha.includes("Documento emitido")) continue;
+    if (linha.includes("Hora Tipo Valor")) continue;
+    if (linha.includes("CPF:")) continue;
+    if (/^Kauan/i.test(linha)) continue;
+
+    const dateMatch = linha.match(regexData);
+    if (dateMatch && linha.includes("Saldo")) {
+      const mesNum = meses[dateMatch[2].toLowerCase()];
+      if (mesNum) {
+        dataAtual = dateMatch[1].padStart(2, "0") + "/" + mesNum + "/" + dateMatch[3];
+      }
+      continue;
+    }
+
+    if (!regexHora.test(linha)) continue;
+
+    const valorMatch = linha.match(regexValor);
+    if (!valorMatch) continue;
+
+    const antesValor = linha.substring(0, linha.indexOf(valorMatch[0]));
+    const tipo = antesValor.replace(/^\d{2}:\d{2}\s+/, "").trim();
+
+    const valor = parseValorBR(valorMatch[1]);
+    if (isNaN(valor) || valor === 0) continue;
+
+    const posValor = linha.indexOf(valorMatch[0]) + valorMatch[0].length;
+    let descricao = linha.substring(posValor).trim();
+
+    for (let j = idx + 1; j < linhas.length && j <= idx + 3; j++) {
+      const proxima = linhas[j];
+      if (regexHora.test(proxima)) break;
+      if (regexData.test(proxima) && proxima.includes("Saldo")) break;
+      if (proxima.includes("Documento emitido")) break;
+      if (proxima.includes("Hora Tipo Valor")) break;
+      if (proxima.includes("CPF:")) break;
+      if (/^Kauan/i.test(proxima)) break;
+      descricao += (descricao ? " " : "") + proxima;
+    }
+
+    descricao = descricao
+      .replace(/\s*Com\s*saldo(\s*\+?\s*cart[aã]o)?\s*$/i, "")
+      .replace(/\s*Com\s*cart[aã]o\s*$/i, "")
+      .trim();
+
+    if (!descricao) descricao = tipo;
+
+    transacoes.push({
+      data: dataAtual,
+      descricao: tipo + " - " + descricao,
+      valor: valor,
+      tipo: /enviad[oa]|compra|pagamento|guardado/i.test(tipo) ? "despesa" : "entrada",
+      fonte: "PicPay"
+    });
+  }
+  return transacoes;
+}
+
+// ===================== PARSERS PDF =====================
+
+function parseNubankPDF(texto) {
+  const transacoes = [];
+  const linhas = texto.split("\n").map(l => l.trim()).filter(l => l);
+
+  for (const linha of linhas) {
+    const regexData = /(\d{2}\s+(?:jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)\.?\s+\d{4}|\d{2}\/\d{2}\/\d{4})/i;
+    const matchData = linha.match(regexData);
+    if (!matchData) continue;
+
+    const data = normalizarData(matchData[1]);
+    const valorRegex = /(-?\d[\d.,]*\d)/;
+    const matchValor = linha.match(valorRegex);
+    if (!matchValor) continue;
+
+    const valor = parseValorBR(matchValor[1]);
+    if (isNaN(valor) || valor === 0) continue;
+
+    let descricao = linha.replace(matchData[0], "").replace(matchValor[0], "").trim();
+    descricao = descricao.replace(/\s+/g, " ").replace(/^-/, "").trim();
+    if (!descricao) descricao = "Transacao Nubank";
+
+    transacoes.push({
+      data: data,
+      descricao: descricao,
+      valor: valor,
+      tipo: valor < 0 ? "despesa" : "entrada",
+      fonte: "Nubank"
+    });
+  }
+  return transacoes;
+}
+
+function parseInterPDF(texto) {
+  const transacoes = [];
+  const linhas = texto.split("\n").map(l => l.trim()).filter(l => l);
+
+  for (const linha of linhas) {
+    const regexData = /(\d{2}\/\d{2}\/\d{4})/;
+    const matchData = linha.match(regexData);
+    if (!matchData) continue;
+
+    const data = normalizarData(matchData[1]);
+    const valorRegex = /(-?\d[\d.,]*\d)/;
+    const matchValor = linha.match(valorRegex);
+    if (!matchValor) continue;
+
+    const valor = parseValorBR(matchValor[1]);
+    if (isNaN(valor) || valor === 0) continue;
+
+    let descricao = linha.replace(matchData[0], "").replace(matchValor[0], "").trim();
+    descricao = descricao.replace(/\s+/g, " ").replace(/^-/, "").trim();
+    if (!descricao) descricao = "Transacao Inter";
+
+    transacoes.push({
+      data: data,
+      descricao: descricao,
+      valor: valor,
+      tipo: valor < 0 ? "despesa" : "entrada",
+      fonte: "Banco Inter"
+    });
+  }
+  return transacoes;
+}
+
+function parseItauPDF(texto) {
+  const transacoes = [];
+  const linhas = texto.split("\n").map(l => l.trim()).filter(l => l);
+
+  for (const linha of linhas) {
+    const regexData = /(\d{2}\/\d{2}\/\d{4})/;
+    const matchData = linha.match(regexData);
+    if (!matchData) continue;
+
+    const data = normalizarData(matchData[1]);
+    const valorRegex = /(-?\d[\d.,]*\d)/;
+    const matchValor = linha.match(valorRegex);
+    if (!matchValor) continue;
+
+    const valor = parseValorBR(matchValor[1]);
+    if (isNaN(valor) || valor === 0) continue;
+
+    let descricao = linha.replace(matchData[0], "").replace(matchValor[0], "").trim();
+    descricao = descricao.replace(/\s+/g, " ").replace(/^-/, "").trim();
+    if (!descricao) descricao = "Transacao Itau";
+
+    transacoes.push({
+      data: data,
+      descricao: descricao,
+      valor: valor,
+      tipo: valor < 0 ? "despesa" : "entrada",
+      fonte: "Itau"
+    });
+  }
+  return transacoes;
+}
+
+function parseBBPDF(texto) {
+  const transacoes = [];
+  const linhas = texto.split("\n").map(l => l.trim()).filter(l => l);
+
+  for (const linha of linhas) {
+    const regexData = /(\d{2}\/\d{2}\/\d{4})/;
+    const matchData = linha.match(regexData);
+    if (!matchData) continue;
+
+    const data = normalizarData(matchData[1]);
+    const valorRegex = /(-?\d[\d.,]*\d)/;
+    const matchValor = linha.match(valorRegex);
+    if (!matchValor) continue;
+
+    const valor = parseValorBR(matchValor[1]);
+    if (isNaN(valor) || valor === 0) continue;
+
+    let descricao = linha.replace(matchData[0], "").replace(matchValor[0], "").trim();
+    descricao = descricao.replace(/\s+/g, " ").replace(/^-/, "").trim();
+    if (!descricao) descricao = "Transacao BB";
+
+    transacoes.push({
+      data: data,
+      descricao: descricao,
+      valor: valor,
+      tipo: valor < 0 ? "despesa" : "entrada",
+      fonte: "Banco do Brasil"
+    });
+  }
+  return transacoes;
+}
+
+function parseBradescoPDF(texto) {
+  const transacoes = [];
+  const linhas = texto.split("\n").map(l => l.trim()).filter(l => l);
+
+  for (const linha of linhas) {
+    const regexData = /(\d{2}\/\d{2}\/\d{4})/;
+    const matchData = linha.match(regexData);
+    if (!matchData) continue;
+
+    const data = normalizarData(matchData[1]);
+    const valorRegex = /(-?\d[\d.,]*\d)/;
+    const matchValor = linha.match(valorRegex);
+    if (!matchValor) continue;
+
+    const valor = parseValorBR(matchValor[1]);
+    if (isNaN(valor) || valor === 0) continue;
+
+    let descricao = linha.replace(matchData[0], "").replace(matchValor[0], "").trim();
+    descricao = descricao.replace(/\s+/g, " ").replace(/^-/, "").trim();
+    if (!descricao) descricao = "Transacao Bradesco";
+
+    transacoes.push({
+      data: data,
+      descricao: descricao,
+      valor: valor,
+      tipo: valor < 0 ? "despesa" : "entrada",
+      fonte: "Bradesco"
+    });
+  }
+  return transacoes;
+}
+
+function parseGenericoPDF(texto) {
+  const transacoes = [];
+  const linhas = texto.split("\n").map(l => l.trim()).filter(l => l);
+
+  for (const linha of linhas) {
+    const regexData = /(\d{2}\/\d{2}\/\d{4})/;
+    const matchData = linha.match(regexData);
+    if (!matchData) continue;
+
+    const data = normalizarData(matchData[1]);
+    const valorRegex = /(-?\d[\d.,]*\d)/;
+    const matchValor = linha.match(valorRegex);
+    if (!matchValor) continue;
+
+    const valor = parseValorBR(matchValor[1]);
+    if (isNaN(valor) || valor === 0) continue;
+
+    let descricao = linha.replace(matchData[0], "").replace(matchValor[0], "").trim();
+    descricao = descricao.replace(/\s+/g, " ").replace(/^-/, "").trim();
+    if (!descricao) descricao = "Transacao";
+
+    transacoes.push({
+      data: data,
+      descricao: descricao,
+      valor: valor,
+      tipo: valor < 0 ? "despesa" : "entrada",
+      fonte: "PDF"
+    });
+  }
+  return transacoes;
+}
+
+function parseMercadoPagoPDF(texto) {
+  const transacoes = [];
+  const linhas = texto.split("\n").map(l => l.trim()).filter(l => l);
+  const regexData = /(\d{2}-\d{2}-\d{4})/;
+  const regexValor = /R\$\s*(-?[\d.,]+)/;
+
+  for (let idx = 0; idx < linhas.length; idx++) {
+    const matchData = linhas[idx].match(regexData);
+    if (!matchData) continue;
+
+    const data = normalizarData(matchData[1]);
+    const linha = linhas[idx];
+
+    const valorMatches = [...linha.matchAll(/R\$\s*(-?[\d.,]+)/g)];
+    if (valorMatches.length < 2) continue;
+
+    const valor = parseValorBR(valorMatches[0][1]);
+    if (isNaN(valor) || valor === 0) continue;
+
+    let descricao = linha
+      .replace(matchData[0], "")
+      .replace(/R\$\s*-?[\d.,]+/g, "")
+      .replace(/\b(\d{11,})\b/g, "")
+      .trim()
+      .replace(/\s+/g, " ");
+
+    for (let j = idx + 1; j < linhas.length && j <= idx + 3; j++) {
+      const proxima = linhas[j];
+      if (regexData.test(proxima)) break;
+      if (regexValor.test(proxima)) break;
+      if (/^\d{11,}$/.test(proxima)) break;
+      if (proxima.includes("Saldo") || proxima.includes("Periodo") || proxima.includes("DETALHE")) break;
+      descricao += (descricao ? " " : "") + proxima;
+    }
+
+    descricao = descricao
+      .replace(/Liber[a-z]*\s*de\s*dinheiro/gi, "Transferencia recebida")
+      .replace(/Pagamento\s+com\s+C[oó]digo\s+QR\s*Pix/gi, "Pagamento QR Pix")
+      .replace(/Pagamento\s+com\s+C[oó]digo\s+QR/gi, "Pagamento QR")
+      .replace(/Pix\s+enviado\s*/gi, "Pix enviado ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (!descricao) descricao = "Transacao Mercado Pago";
+
+    transacoes.push({
+      data: data,
+      descricao: descricao,
+      valor: valor,
+      tipo: /enviad[oa]|transfer[eê]ncia/i.test(descricao) ? "despesa" : "entrada",
+      fonte: "Mercado Pago"
+    });
+  }
+  return transacoes;
+}
+
+function normalizarData(dataStr) {
+  const meses = { jan: "01", fev: "02", mar: "03", abr: "04", mai: "05", jun: "06", jul: "07", ago: "08", set: "09", out: "10", nov: "11", dez: "12" };
+  dataStr = dataStr.replace(".", "").toLowerCase();
+
+  const matchMes = dataStr.match(/(\d{2})\s+(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)\s+(\d{4})/);
+  if (matchMes) {
+    return matchMes[1] + "/" + meses[matchMes[2]] + "/" + matchMes[3];
+  }
+
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(dataStr)) return dataStr;
+
+  if (/^\d{2}-\d{2}-\d{4}$/.test(dataStr)) return dataStr.replace(/-/g, "/");
+
+  return dataStr;
+}
+
+function parseValorBR(valorStr) {
+  let limpo = valorStr.replace(/\s/g, "");
+  const negativo = limpo.startsWith("-");
+  limpo = limpo.replace("-", "");
+
+  if (limpo.includes(",") && limpo.includes(".")) {
+    if (limpo.lastIndexOf(",") > limpo.lastIndexOf(".")) {
+      limpo = limpo.replace(/\./g, "").replace(",", ".");
+    } else {
+      limpo = limpo.replace(",", "");
+    }
+  } else if (limpo.includes(",")) {
+    limpo = limpo.replace(",", ".");
+  }
+
+  const valor = parseFloat(limpo);
+  return negativo ? -Math.abs(valor) : valor;
+}
+
 async function confirmarImportacao() {
-  if (csvData.length === 0) {
-    alert("Selecione um arquivo CSV primeiro.");
+  console.log("confirmarImportacao chamado, csvData length:", csvData.length);
+  if (!csvData || csvData.length === 0) {
+    window._notyf?.error("Selecione um arquivo CSV ou PDF primeiro.");
     return;
   }
   if (!window.importarTransacoesCSV) {
-    alert("Erro: Firebase ainda não carregado. Tente novamente em alguns instantes.");
+    window._notyf?.error("Erro: Firebase ainda nao carregado. Tente novamente em alguns instantes.");
     return;
   }
   try {
     const totalSalvo = await window.importarTransacoesCSV(csvData);
-    alert(totalSalvo + " transações importadas com sucesso!");
+    window._notyf?.success(totalSalvo + " transacoes importadas com sucesso!");
     fecharImportar();
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith('mc_cache_') || key === 'transacoes')) {
+        localStorage.removeItem(key);
+      }
+    }
+    setTimeout(() => { window.location.href = "index.html"; }, 800);
   } catch (err) {
-    console.error("Erro na importação:", err);
-    alert("Erro ao importar: " + (err.message || "Verifique se você está logado."));
+    console.error("Erro na importacao:", err);
+    window._notyf?.error("Erro ao importar: " + (err.message || "Verifique se voce esta logado."));
   }
 }
 
@@ -380,7 +896,7 @@ function carregarFoto(event) {
   const file = event.target.files[0];
   if (!file) return;
   if (file.size > 2 * 1024 * 1024) {
-    alert("A foto deve ter no máximo 2MB.");
+    window._notyf.error("A foto deve ter no maximo 2MB.");
     return;
   }
   const reader = new FileReader();
@@ -398,7 +914,7 @@ function carregarFoto(event) {
 function salvarPerfil() {
   const nome = document.getElementById("input-nome-perfil").value.trim();
   if (!nome) {
-    alert("Digite um nome válido.");
+    window._notyf.error("Digite um nome valido.");
     return;
   }
 
@@ -410,7 +926,7 @@ function salvarPerfil() {
     });
   }
 
-  alert("Perfil atualizado com sucesso!");
+  window._notyf.success("Perfil atualizado com sucesso!");
   fecharPerfil();
 }
 
@@ -448,12 +964,12 @@ document.addEventListener("DOMContentLoaded", () => {
     menuReinicio.querySelector(".btn-salvar").addEventListener("click", () => {
       const dia = selectDia.value;
       if (!dia) {
-        alert("Selecione um dia.");
+        window._notyf.error("Selecione um dia.");
         return;
       }
       localStorage.setItem("diaReinicio", dia);
       if (window.salvarDataReinicio) window.salvarDataReinicio(dia);
-      alert("Dia de reinício salvo: dia " + dia);
+      window._notyf.success("Dia de reinicio salvo: dia " + dia);
       fecharReinicio();
     });
 
@@ -529,10 +1045,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const limite = document.getElementById("display-value").textContent;
       if (semLimite) {
         localStorage.removeItem("metaGastos");
-        alert("Meta de gastos removida!");
+        window._notyf.success("Meta de gastos removida!");
       } else {
         localStorage.setItem("metaGastos", limite);
-        alert("Meta de gastos salva: R$ " + limite);
+        window._notyf.success("Meta de gastos salva: R$ " + limite);
       }
       fecharMetas();
     });
@@ -575,7 +1091,7 @@ document.addEventListener("DOMContentLoaded", () => {
           chk50: chk50.checked, chk80: chk80.checked,
           chk100: chk100.checked, chkNone: chkNone.checked
         }));
-        alert("Configurações de notificações salvas!");
+        window._notyf.success("Configuracoes de notificacoes salvas!");
         fecharNotifCard();
       });
     }
