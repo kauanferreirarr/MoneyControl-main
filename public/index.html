@@ -30,7 +30,7 @@
 
     <!-- Top Bar -->
     <header id="topo" class="top-bar fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-b border-slate-200/50 shadow-sm">
-        <div class="max-w-2xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 h-16 flex items-center justify-between">
             <img src="assets/logo.png" alt="MoneyControl" class="h-12 w-auto object-contain drop-shadow-sm">
             <button id="menuButton" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 transition-colors duration-200" aria-label="Menu">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-600">
@@ -43,7 +43,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-2xl mx-auto px-4 sm:px-6 pt-24 pb-8">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pt-24 pb-8">
 
         <!-- Balance Cards -->
         <section id="saldo" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -88,8 +88,14 @@
             </div>
         </section>
 
+        <!-- Add Expense + History row -->
+        <div class="grid lg:grid-cols-5 gap-6">
+
+        <!-- Left Column: Form + Meta -->
+        <div class="left-col flex flex-col gap-6 lg:col-span-2">
+
         <!-- Add Expense Card -->
-        <section id="dispesas" class="bg-white rounded-2xl p-6 shadow-md shadow-slate-200/50 border border-slate-100 mb-6">
+        <section id="dispesas" class="bg-white rounded-2xl p-6 shadow-md shadow-slate-200/50 border border-slate-100">
             <h2 class="text-lg font-bold text-slate-800 mb-5">Adicionar nova Despesa ou Saldo</h2>
 
             <form action="" class="space-y-4">
@@ -128,8 +134,46 @@
             </div>
         </section>
 
+        <!-- Meta de Gastos (compact) -->
+        <section id="meta-dashboard" class="bg-white rounded-2xl p-6 shadow-md shadow-slate-200/50 border border-slate-100 hidden">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500">
+                        <line x1="12" y1="20" x2="12" y2="10"></line>
+                        <line x1="18" y1="20" x2="18" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="16"></line>
+                    </svg>
+                </div>
+                <h3 class="text-sm font-bold text-slate-800">Meta de Gastos</h3>
+            </div>
+
+            <!-- Status pill -->
+            <div id="meta-dash-status" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold mb-4">
+            </div>
+
+            <!-- Summary row -->
+            <div class="flex items-center justify-between mb-3">
+                <div>
+                    <p class="text-xs text-slate-400 font-medium">Gasto</p>
+                    <p id="meta-dash-gasto" class="text-base font-bold text-slate-800">R$ 0,00</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs text-slate-400 font-medium">Resta</p>
+                    <p id="meta-dash-resta" class="text-base font-bold text-emerald-600">R$ 0,00</p>
+                </div>
+            </div>
+
+            <!-- Progress bar -->
+            <div class="meta-dash-track">
+                <div id="meta-dash-bar" class="meta-dash-fill"></div>
+            </div>
+            <p id="meta-dash-pct" class="text-xs font-semibold text-slate-400 text-right mt-1.5">0%</p>
+        </section>
+
+        </div> <!-- /Left Column -->
+
         <!-- Transaction History -->
-        <section id="historico" class="bg-white rounded-2xl shadow-md shadow-slate-200/50 border border-slate-100 overflow-hidden">
+        <section id="historico" class="bg-white rounded-2xl shadow-md shadow-slate-200/50 border border-slate-100 overflow-hidden lg:col-span-3 lg:row-span-1">
             <div class="px-6 pt-6 pb-4 border-b border-slate-100">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
@@ -150,6 +194,8 @@
             <ul id="historico-list" class="custom-scroll">
             </ul>
         </section>
+
+        </div> <!-- /Add Expense + History row -->
 
     </main>
 

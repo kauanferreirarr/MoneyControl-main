@@ -104,3 +104,52 @@
 #modal-trocar-nome {
     display: none;
 }
+
+/* ---------- Desktop ---------- */
+@media (min-width: 1024px) {
+    #historico-list {
+        max-height: 600px;
+    }
+    #historico {
+        max-height: none;
+    }
+}
+
+/* ---------- Left column stretch on desktop ---------- */
+@media (min-width: 1024px) {
+    .left-col {
+        display: flex;
+        flex-direction: column;
+    }
+    .left-col > #dispesas {
+        flex: 1;
+    }
+    .left-col > #meta-dashboard:not(.hidden) {
+        flex: 1;
+    }
+}
+
+/* ---------- Meta Dashboard ---------- */
+.meta-dash-track {
+    width: 100%;
+    height: 10px;
+    background: #E8ECF1;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);
+}
+.meta-dash-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s ease;
+    background: linear-gradient(90deg, #059669, #10B981);
+    box-shadow: 0 1px 4px rgba(5, 150, 105, 0.3);
+}
+.meta-dash-fill.warning {
+    background: linear-gradient(90deg, #D97706, #F59E0B);
+    box-shadow: 0 1px 4px rgba(217, 119, 6, 0.3);
+}
+.meta-dash-fill.danger {
+    background: linear-gradient(90deg, #DC2626, #EF4444);
+    box-shadow: 0 1px 4px rgba(220, 38, 38, 0.3);
+}

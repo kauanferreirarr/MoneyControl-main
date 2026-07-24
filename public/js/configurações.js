@@ -8,7 +8,26 @@ function fecharReinicio() {
 }
 
 // ===================== METAS =====================
-function abrirMetas() {
+async function abrirMetas() {
+  if (window.getLimiteMensal) {
+    const limite = await window.getLimiteMensal();
+    const rangeInput = document.getElementById("limit-range");
+    const displayValue = document.getElementById("display-value");
+    const manualInput = document.getElementById("manual-input");
+    const noLimit = document.getElementById("no-limit");
+    if (rangeInput) rangeInput.value = limite;
+    if (displayValue) displayValue.textContent = limite;
+    if (manualInput) manualInput.value = limite;
+    if (noLimit) {
+      noLimit.checked = false;
+      rangeInput.disabled = false;
+      manualInput.disabled = false;
+      rangeInput.style.opacity = "1";
+      manualInput.style.opacity = "1";
+    }
+    const pct = (limite / (rangeInput?.max || 2000)) * 100;
+    if (rangeInput) rangeInput.style.background = `linear-gradient(to right, #6366F1 ${pct}%, #E0E0E0 ${pct}%)`;
+  }
   document.getElementById("menumetas").style.display = "flex";
 }
 
@@ -279,8 +298,6 @@ document.addEventListener("DOMContentLoaded", () => {
         manualInput.style.opacity = disabled ? "0.5" : "1";
       });
     }
-
-    updateRangeDisplay(rangeInput.value);
   }
 
   // --- Salvar meta ---

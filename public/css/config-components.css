@@ -31,3 +31,14 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22p
 #menuperfil {
     display: none;
 }
+
+/* ---------- Desktop ---------- */
+@media (min-width: 1024px) {
+    .config-row:hover {
+        background-color: #F8FAFC;
+    }
+    .config-row {
+        border: 1px solid #F1F5F9;
+        border-radius: 12px;
+    }
+}

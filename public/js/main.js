@@ -212,6 +212,44 @@ function setCachedData(uid, data) {
   try { localStorage.setItem('mc_cache_' + uid, JSON.stringify(data)); } catch {}
 }
 
+// === META DE GASTOS (Dashboard compact) ===
+function renderMetaDashboard(dados) {
+  const card = document.getElementById("meta-dashboard");
+  const limite = dados.limiteMensal;
+  if (!limite || limite <= 0) {
+    card.classList.add("hidden");
+    return;
+  }
+  card.classList.remove("hidden");
+
+  const gastos = dados.gastos || 0;
+  const resta = Math.max(0, limite - gastos);
+  const pct = Math.min(100, (gastos / limite) * 100);
+
+  document.getElementById("meta-dash-gasto").textContent = formatBR(gastos);
+  document.getElementById("meta-dash-resta").textContent = formatBR(resta);
+  document.getElementById("meta-dash-pct").textContent = pct.toFixed(0) + "%";
+
+  const bar = document.getElementById("meta-dash-bar");
+  bar.style.width = pct + "%";
+  bar.className = "meta-dash-fill";
+  if (pct >= 100) bar.classList.add("danger");
+  else if (pct >= 80) bar.classList.add("warning");
+
+  const statusEl = document.getElementById("meta-dash-status");
+  statusEl.className = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold mb-4";
+  if (pct >= 100) {
+    statusEl.classList.add("bg-red-50", "text-red-600");
+    statusEl.textContent = "Limite ultrapassado";
+  } else if (pct >= 80) {
+    statusEl.classList.add("bg-amber-50", "text-amber-600");
+    statusEl.textContent = "Quase no limite";
+  } else {
+    statusEl.classList.add("bg-emerald-50", "text-emerald-600");
+    statusEl.textContent = "Dentro do orcamento";
+  }
+}
+
 function renderDados(dadosAtualizados) {
   const saldoAtualEl = document.getElementById("saldo-atual");
   const gastosAtualEl = document.getElementById("gastos-atual");
@@ -219,6 +257,8 @@ function renderDados(dadosAtualizados) {
 
   if (saldoAtualEl) saldoAtualEl.textContent = formatBR(dadosAtualizados.saldo);
   if (gastosAtualEl) gastosAtualEl.textContent = formatBR(dadosAtualizados.gastos);
+
+  renderMetaDashboard(dadosAtualizados);
 
   if (historicoEl) {
     historicoEl.innerHTML = "";
@@ -385,6 +425,15 @@ async function salvarFotoFirebase(base64) {
 }
 
 window.salvarFotoFirebase = salvarFotoFirebase;
+
+// Expose for config page to read
+window.getLimiteMensal = async function() {
+  if (!currentUser) return 0;
+  try {
+    const snap = await getDoc(doc(db, "usuarios", currentUser.uid));
+    return snap.exists() ? (snap.data().limiteMensal || 0) : 0;
+  } catch { return 0; }
+};
 
 
 
