@@ -1,4 +1,4 @@
-const CACHE_NAME = 'moneycontrol-v2';
+const CACHE_NAME = 'moneycontrol-v3';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -26,11 +26,6 @@ const CDN_ASSETS = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll([...STATIC_ASSETS, ...CDN_ASSETS]);
-    })
-  );
   self.skipWaiting();
 });
 
@@ -38,7 +33,7 @@ self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
-        keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
+        keys.map((k) => caches.delete(k))
       );
     })
   );
@@ -48,28 +43,26 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
 
-  // Firebase requests: network first, no cache
-  if (url.hostname.includes('firebaseio.com') || url.hostname.includes('googleapis.com') && url.pathname.includes('firebase')) {
+  if (url.hostname.includes('firebaseio.com')) {
     return;
   }
 
-  // CDN / static assets: cache first, fallback to network
   if (e.request.method !== 'GET') return;
 
   e.respondWith(
-    caches.match(e.request).then((cached) => {
-      if (cached) return cached;
-
-      return fetch(e.request).then((response) => {
-        if (!response || response.status !== 200) return response;
-
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(e.request, clone);
-        });
+    fetch(e.request).then((response) => {
+      if (!response || response.status !== 200 || response.type !== 'basic') {
         return response;
-      }).catch(() => {
-        // offline fallback for navigation
+      }
+
+      const clone = response.clone();
+      caches.open(CACHE_NAME).then((cache) => {
+        cache.put(e.request, clone);
+      });
+      return response;
+    }).catch(() => {
+      return caches.match(e.request).then((cached) => {
+        if (cached) return cached;
         if (e.request.mode === 'navigate') {
           return caches.match('/index.html');
         }
