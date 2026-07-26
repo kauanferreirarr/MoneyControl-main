@@ -242,6 +242,7 @@
             const db = firebase.firestore();
 
             let userFoto = null;
+            let userEmail = null;
 
             function fotoToThumbnail(base64, maxSize) {
                 return new Promise((resolve) => {
@@ -263,12 +264,19 @@
 
             auth.onAuthStateChanged(async (user) => {
                 if (user) {
+                    userEmail = user.email || null;
                     try {
                         const snap = await db.collection("usuarios").doc(user.uid).get();
                         const dados = snap.data();
                         const fotoOriginal = (dados && dados.foto) || null;
                         if (fotoOriginal) {
                             userFoto = await fotoToThumbnail(fotoOriginal, 80);
+                        }
+                        if (userEmail && !document.getElementById("report-email").value) {
+                            document.getElementById("report-email").value = userEmail;
+                        }
+                        if (dados && dados.nome && !document.getElementById("report-nome").value) {
+                            document.getElementById("report-nome").value = dados.nome;
                         }
                     } catch (e) {
                         console.warn("[Report] Nao foi possivel carregar foto:", e);
@@ -315,7 +323,7 @@
                     tipo: tipoLabels[tipo],
                     nota: estrelas + " " + rating + "/5",
                     nome: nome,
-                    email: email || "Não informado",
+                    email: email || userEmail || "Não informado",
                     mensagem: msg,
                     foto: userFoto || "",
                     subject: `[MoneyControl - ${tipoLabels[tipo]}] ${nome}`
