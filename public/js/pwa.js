@@ -168,9 +168,13 @@
     /* Expoe para outros modulos (ex: onboarding) */
     window._deferredInstallPrompt = e;
 
-    /* Mostra/esconde botao de instalar no menu */
-    var menuBtn = document.getElementById('pwa-install-menu-btn');
-    if (menuBtn) menuBtn.style.display = 'flex';
+  /* Mostra/esconde botao de instalar no menu */
+  var menuBtn = document.getElementById('pwa-install-menu-btn');
+
+  /* Se ja esta instalado, esconde o botao */
+  if (isStandalone() && menuBtn) {
+    menuBtn.style.display = 'none';
+  }
 
     /* Nao mostrar se:
        - Ja esta em modo standalone (app instalado)
@@ -184,18 +188,18 @@
   /* Funcao global para instalar via botao do menu */
   window.__installPWA = function () {
     var prompt = window._deferredInstallPrompt;
-    if (!prompt) {
-      alert('O app já está instalado ou seu navegador não suporta instalação.');
-      return;
+    if (prompt) {
+      prompt.prompt();
+      prompt.userChoice.then(function (result) {
+        if (result.outcome === 'accepted') {
+          var menuBtn = document.getElementById('pwa-install-menu-btn');
+          if (menuBtn) menuBtn.style.display = 'none';
+        }
+        window._deferredInstallPrompt = null;
+      });
+    } else {
+      alert('Para instalar o MoneyControl:\n\nNo Chrome, toque nos 3 pontinhos (⋮) e selecione "Instalar app" ou "Adicionar à Tela de Início".');
     }
-    prompt.prompt();
-    prompt.userChoice.then(function (result) {
-      if (result.outcome === 'accepted') {
-        var menuBtn = document.getElementById('pwa-install-menu-btn');
-        if (menuBtn) menuBtn.style.display = 'none';
-      }
-      window._deferredInstallPrompt = null;
-    });
   };
 
   /* Quando o app ja estiver instalado, esconder qualquer banner */
