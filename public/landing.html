@@ -1,436 +1,495 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <script>if(localStorage.getItem('mc_theme')==='dark')document.documentElement.classList.add('dark')</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>MoneyControl - Gerenciamento Financeiro Pessoal Grátis</title>
     <meta name="description" content="Gerencie suas finanças de forma simples e gratuita. Controle saldo, gastos, metas e transações recorrentes. Disponível como app no celular e computador.">
-    <meta name="keywords" content="gerenciamento financeiro, controle financeiro pessoal, organizar gastos, app de finanças, controle de saldo, metas financeiras, orçamento pessoal, dinheiro, finanças">
-    <meta name="author" content="MoneyControl">
+    <meta name="keywords" content="gerenciamento financeiro, controle financeiro pessoal, organizar gastos, app de finanças, controle de saldo, metas financeiras, orçamento pessoal">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://www.moneycontroll.xyz/">
-
-    <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://www.moneycontroll.xyz/">
     <meta property="og:title" content="MoneyControl - Gerenciamento Financeiro Pessoal Grátis">
-    <meta property="og:description" content="Gerencie suas finanças de forma simples e gratuita. Controle saldo, gastos, metas e transações recorrentes.">
+    <meta property="og:description" content="Gerencie suas finanças de forma simples e gratuita.">
     <meta property="og:image" content="https://www.moneycontroll.xyz/assets/icon-512.png">
     <meta property="og:locale" content="pt_BR">
     <meta property="og:site_name" content="MoneyControl">
-
-    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="MoneyControl - Gerenciamento Financeiro Pessoal Grátis">
-    <meta name="twitter:description" content="Gerencie suas finanças de forma simples e gratuita. Controle saldo, gastos, metas e transações recorrentes.">
+    <meta name="twitter:description" content="Gerencie suas finanças de forma simples e gratuita.">
     <meta name="twitter:image" content="https://www.moneycontroll.xyz/assets/icon-512.png">
-
-    <!-- PWA Meta Tags -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#6366F1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="MoneyControl">
     <link rel="apple-touch-icon" href="assets/icon-192.png">
     <link rel="shortcut icon" href="assets/logo.png" type="image/x-icon">
-
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-    <!-- Structured Data -->
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "WebApplication",
         "name": "MoneyControl",
         "url": "https://www.moneycontroll.xyz",
-        "description": "Gerencie suas finanças de forma simples e gratuita. Controle saldo, gastos, metas e transações recorrentes.",
+        "description": "Gerencie suas finanças de forma simples e gratuita.",
         "applicationCategory": "FinanceApplication",
         "operatingSystem": "Web, Android, iOS",
-        "offers": {
-            "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "BRL"
-        },
-        "inLanguage": "pt-BR",
-        "screenshot": "https://www.moneycontroll.xyz/assets/icon-512.png"
+        "offers": {"@type":"Offer","price":"0","priceCurrency":"BRL"},
+        "inLanguage": "pt-BR"
     }
     </script>
-
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;color:#1a1a2e;background:#fff;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            color: #1e293b;
-            background: #f8fafc;
-            overflow-x: hidden;
-        }
+        .nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,255,255,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,0,0,0.06)}
+        .nav-inner{max-width:1200px;margin:0 auto;padding:0 32px;height:72px;display:flex;align-items:center;justify-content:space-between}
+        .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+        .nav-logo img{height:36px;width:auto}
+        .nav-links{display:flex;align-items:center;gap:32px}
+        .nav-links a{text-decoration:none;color:#64748b;font-size:15px;font-weight:500;transition:color 0.2s}
+        .nav-links a:hover{color:#1a1a2e}
+        .nav-cta{background:#6366f1!important;color:#fff!important;padding:10px 24px;border-radius:12px;font-weight:600!important}
+        .nav-cta:hover{background:#4f46e5!important}
 
-        /* HERO */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 80px 24px 60px;
-            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 30%, #c7d2fe 70%, #a5b4fc 100%);
-            position: relative;
-        }
+        .hero{padding:140px 32px 80px;text-align:center;background:linear-gradient(180deg,#f5f3ff 0%,#ede9fe 40%,#fff 100%);position:relative;overflow:hidden}
+        .hero::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:800px;height:800px;background:radial-gradient(circle,rgba(99,102,241,0.08) 0%,transparent 70%);pointer-events:none}
+        .hero-content{position:relative;z-index:1;max-width:740px;margin:0 auto}
+        .hero-badge{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid #e2e8f0;padding:8px 18px;border-radius:100px;font-size:13px;font-weight:600;color:#6366f1;margin-bottom:28px;box-shadow:0 2px 8px rgba(99,102,241,0.08)}
+        .hero-badge::before{content:'';width:8px;height:8px;border-radius:50%;background:#22c55e}
+        .hero h1{font-size:clamp(2.8rem,6vw,4.2rem);font-weight:900;line-height:1.08;letter-spacing:-0.03em;margin-bottom:20px;color:#0f172a}
+        .hero h1 em{font-style:normal;background:linear-gradient(135deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .hero>p,.hero-desc{font-size:1.2rem;color:#64748b;line-height:1.65;max-width:520px;margin:0 auto 36px}
+        .hero-buttons{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+        .btn-primary{display:inline-flex;align-items:center;gap:10px;background:#6366f1;color:#fff;padding:16px 32px;border-radius:14px;font-size:16px;font-weight:700;text-decoration:none;border:none;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 14px rgba(99,102,241,0.3)}
+        .btn-primary:hover{background:#4f46e5;transform:translateY(-2px);box-shadow:0 8px 24px rgba(99,102,241,0.4)}
+        .btn-secondary{display:inline-flex;align-items:center;gap:10px;background:#fff;color:#1a1a2e;padding:16px 32px;border-radius:14px;font-size:16px;font-weight:700;text-decoration:none;border:1px solid #e2e8f0;transition:all 0.2s}
+        .btn-secondary:hover{border-color:#6366f1;color:#6366f1;transform:translateY(-2px)}
 
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 30% 40%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
-                        radial-gradient(circle at 70% 60%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
-            animation: float 20s ease-in-out infinite;
-        }
+        .hero-mockup{margin-top:64px;position:relative;z-index:1}
+        .mockup-card{background:#fff;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,0.08),0 1px 3px rgba(0,0,0,0.04);border:1px solid #f1f5f9;overflow:hidden;max-width:820px;margin:0 auto}
+        .mockup-toolbar{display:flex;align-items:center;gap:8px;padding:14px 20px;background:#fafafa;border-bottom:1px solid #f1f5f9}
+        .mockup-dot{width:10px;height:10px;border-radius:50%}
+        .mockup-dot:nth-child(1){background:#fca5a5}
+        .mockup-dot:nth-child(2){background:#fcd34d}
+        .mockup-dot:nth-child(3){background:#86efac}
+        .mockup-body{padding:32px;display:grid;grid-template-columns:180px 1fr;gap:24px;min-height:360px}
+        .mockup-sidebar-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:13px;color:#64748b;font-weight:500}
+        .mockup-sidebar-item.active{background:#eef2ff;color:#6366f1;font-weight:600}
+        .mockup-sidebar-dot{width:16px;height:16px;border-radius:6px;background:currentColor;opacity:0.15}
+        .mockup-sidebar-item.active .mockup-sidebar-dot{opacity:0.3}
+        .mockup-main-title{font-size:18px;font-weight:800;color:#0f172a;margin-bottom:20px}
+        .mockup-stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+        .mockup-stat{background:#f8fafc;border-radius:14px;padding:16px;border:1px solid #f1f5f9}
+        .mockup-stat-label{font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px}
+        .mockup-stat-value{font-size:20px;font-weight:800;color:#0f172a}
+        .mockup-stat-value.green{color:#16a34a}
+        .mockup-stat-value.red{color:#dc2626}
+        .mockup-transactions{background:#f8fafc;border-radius:14px;border:1px solid #f1f5f9;overflow:hidden}
+        .mockup-tx-header{padding:12px 16px;font-size:12px;font-weight:700;color:#0f172a;border-bottom:1px solid #f1f5f9;text-transform:uppercase;letter-spacing:0.05em}
+        .mockup-tx-item{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid #f1f5f9}
+        .mockup-tx-item:last-child{border-bottom:none}
+        .mockup-tx-left{display:flex;align-items:center;gap:10px}
+        .mockup-tx-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
+        .mockup-tx-name{font-size:13px;font-weight:600;color:#1a1a2e}
+        .mockup-tx-cat{font-size:11px;color:#94a3b8}
+        .mockup-tx-amount{font-size:13px;font-weight:700}
+        .mockup-tx-amount.neg{color:#dc2626}
+        .mockup-tx-amount.pos{color:#16a34a}
 
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(-2%, 2%); }
-        }
+        .section{padding:100px 32px}
+        .section-header{text-align:center;max-width:600px;margin:0 auto 64px}
+        .section-eyebrow{font-size:13px;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px}
+        .section-title{font-size:clamp(2rem,4vw,2.8rem);font-weight:800;line-height:1.15;letter-spacing:-0.02em;color:#0f172a;margin-bottom:16px}
+        .section-desc{font-size:1.1rem;color:#64748b;line-height:1.6}
 
-        .hero-content { position: relative; z-index: 1; max-width: 720px; }
+        .feature-split{max-width:1100px;margin:0 auto 80px;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+        .feature-split.reverse{direction:rtl}
+        .feature-split.reverse>*{direction:ltr}
+        .feature-text h3{font-size:1.75rem;font-weight:800;color:#0f172a;margin-bottom:14px;letter-spacing:-0.01em}
+        .feature-text p{font-size:1rem;color:#64748b;line-height:1.7;margin-bottom:20px}
+        .feature-list{list-style:none;display:flex;flex-direction:column;gap:10px}
+        .feature-list li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#475569;line-height:1.5}
+        .feature-check{width:20px;height:20px;border-radius:50%;background:#ecfdf5;color:#16a34a;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-size:11px}
+        .feature-visual{background:#f8fafc;border-radius:20px;border:1px solid #f1f5f9;padding:28px}
 
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(99, 102, 241, 0.1);
-            border: 1px solid rgba(99, 102, 241, 0.2);
-            color: #4f46e5;
-            padding: 8px 16px;
-            border-radius: 50px;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 24px;
-        }
+        .mock-balance{background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:18px;padding:28px;color:#fff;margin-bottom:20px}
+        .mock-bl-label{font-size:13px;opacity:0.8;font-weight:500;margin-bottom:4px}
+        .mock-bl-value{font-size:30px;font-weight:900;letter-spacing:-0.02em}
+        .mock-bl-row{display:flex;gap:24px;margin-top:16px}
+        .mock-bl-item{font-size:13px;opacity:0.85}
+        .mock-bl-item strong{display:block;font-size:16px;font-weight:700;opacity:1;margin-top:2px}
 
-        .hero h1 {
-            font-size: clamp(2.5rem, 6vw, 4rem);
-            font-weight: 900;
-            line-height: 1.1;
-            margin-bottom: 20px;
-            background: linear-gradient(135deg, #1e1b4b, #4338ca, #6366f1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+        .mock-goal{background:#fff;border:1px solid #f1f5f9;border-radius:14px;padding:16px;margin-bottom:10px}
+        .mock-goal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+        .mock-goal-name{font-size:13px;font-weight:700;color:#0f172a}
+        .mock-goal-pct{font-size:13px;font-weight:700;color:#6366f1}
+        .mock-goal-bar{height:8px;background:#f1f5f9;border-radius:100px;overflow:hidden}
+        .mock-goal-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,#6366f1,#a78bfa)}
 
-        .hero p {
-            font-size: clamp(1rem, 2.5vw, 1.25rem);
-            color: #475569;
-            line-height: 1.6;
-            margin-bottom: 36px;
-            max-width: 560px;
-            margin-left: auto;
-            margin-right: auto;
-        }
+        .mock-rr{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f1f5f9}
+        .mock-rr:last-child{border-bottom:none}
+        .mock-rr-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+        .mock-rr-name{font-size:13px;font-weight:600;color:#0f172a}
+        .mock-rr-date{font-size:11px;color:#94a3b8}
+        .mock-rr-price{font-size:13px;font-weight:700;color:#dc2626;margin-left:auto}
 
-        .hero-buttons {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
+        .mock-chart{display:flex;align-items:flex-end;gap:6px;height:120px}
+        .mock-chart-bar{flex:1;border-radius:6px 6px 0 0}
+        .mock-chart-labels{display:flex;gap:6px;margin-top:8px}
+        .mock-chart-labels span{flex:1;text-align:center;font-size:10px;color:#94a3b8;font-weight:500}
 
-        .btn-primary {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: linear-gradient(135deg, #6366f1, #4f46e5);
-            color: #fff;
-            padding: 16px 32px;
-            border-radius: 16px;
-            font-size: 16px;
-            font-weight: 700;
-            text-decoration: none;
-            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
+        .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:1100px;margin:0 auto}
+        .feature-card{background:#fff;border:1px solid #f1f5f9;border-radius:18px;padding:28px;transition:all 0.25s}
+        .feature-card:hover{border-color:#e0e7ff;box-shadow:0 8px 30px rgba(99,102,241,0.08);transform:translateY(-4px)}
+        .feature-card-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;font-size:22px}
+        .feature-card h4{font-size:1.05rem;font-weight:700;color:#0f172a;margin-bottom:8px}
+        .feature-card p{font-size:0.9rem;color:#64748b;line-height:1.6}
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 32px rgba(99, 102, 241, 0.45);
-        }
+        .testimonials-section{background:#f8fafc}
+        .testimonials-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:1100px;margin:0 auto}
+        .testimonial-card{background:#fff;border-radius:18px;padding:28px;border:1px solid #f1f5f9}
+        .testimonial-stars{color:#f59e0b;font-size:14px;letter-spacing:2px;margin-bottom:14px}
+        .testimonial-text{font-size:0.95rem;color:#475569;line-height:1.65;margin-bottom:18px;font-style:italic}
+        .testimonial-author{display:flex;align-items:center;gap:12px}
+        .testimonial-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff}
+        .testimonial-name{font-size:14px;font-weight:600;color:#0f172a}
+        .testimonial-role{font-size:12px;color:#94a3b8}
 
-        .btn-secondary {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: #fff;
-            color: #4f46e5;
-            padding: 16px 32px;
-            border-radius: 16px;
-            font-size: 16px;
-            font-weight: 700;
-            text-decoration: none;
-            border: 2px solid #e0e7ff;
-            transition: transform 0.2s, border-color 0.2s;
-        }
+        .cta-final{text-align:center;padding:100px 32px;background:linear-gradient(180deg,#fff 0%,#f5f3ff 100%)}
+        .cta-final h2{font-size:clamp(2rem,4vw,2.8rem);font-weight:800;color:#0f172a;margin-bottom:16px;letter-spacing:-0.02em}
+        .cta-final>p{font-size:1.1rem;color:#64748b;margin-bottom:36px;max-width:480px;margin-left:auto;margin-right:auto}
 
-        .btn-secondary:hover {
-            transform: translateY(-2px);
-            border-color: #6366f1;
-        }
+        footer{background:#0f172a;padding:60px 32px 40px}
+        .footer-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:48px}
+        .footer-brand p{color:#64748b;font-size:14px;line-height:1.6;margin-top:12px;max-width:280px}
+        .footer-col h5{color:#fff;font-size:14px;font-weight:700;margin-bottom:16px}
+        .footer-col a{display:block;color:#64748b;text-decoration:none;font-size:14px;margin-bottom:10px;transition:color 0.2s}
+        .footer-col a:hover{color:#a5b4fc}
+        .footer-bottom{max-width:1100px;margin:0 auto;padding-top:24px;border-top:1px solid #1e293b;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+        .footer-bottom p{color:#475569;font-size:13px}
 
-        .hero-screenshot {
-            margin-top: 60px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .hero-screenshot img {
-            max-width: 340px;
-            width: 100%;
-            border-radius: 24px;
-            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.06);
-        }
-
-        /* FEATURES */
-        .section { padding: 80px 24px; }
-
-        .section-title {
-            text-align: center;
-            font-size: clamp(1.75rem, 4vw, 2.5rem);
-            font-weight: 800;
-            margin-bottom: 16px;
-        }
-
-        .section-subtitle {
-            text-align: center;
-            color: #64748b;
-            font-size: 1.1rem;
-            max-width: 560px;
-            margin: 0 auto 60px;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-
-        .feature-card {
-            background: #fff;
-            border-radius: 20px;
-            padding: 32px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03);
-            border: 1px solid #f1f5f9;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
-        }
-
-        .feature-icon {
-            width: 56px;
-            height: 56px;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            margin-bottom: 20px;
-        }
-
-        .feature-card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; }
-        .feature-card p { color: #64748b; font-size: 0.95rem; line-height: 1.6; }
-
-        /* HOW IT WORKS */
-        .steps-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 32px;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .step { text-align: center; }
-
-        .step-number {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #6366f1, #818cf8);
-            color: #fff;
-            font-size: 22px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 16px;
-            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
-        }
-
-        .step h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
-        .step p { color: #64748b; font-size: 0.95rem; line-height: 1.5; }
-
-        /* CTA */
-        .cta {
-            background: linear-gradient(135deg, #4f46e5, #6366f1);
-            color: #fff;
-            text-align: center;
-            padding: 80px 24px;
-        }
-
-        .cta h2 { font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 800; margin-bottom: 16px; }
-        .cta p { font-size: 1.1rem; opacity: 0.9; margin-bottom: 36px; max-width: 500px; margin-left: auto; margin-right: auto; }
-
-        .cta .btn-primary {
-            background: #fff;
-            color: #4f46e5;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-        }
-
-        .cta .btn-primary:hover { box-shadow: 0 12px 32px rgba(0,0,0,0.2); }
-
-        /* FOOTER */
-        footer {
-            background: #0f172a;
-            color: #94a3b8;
-            text-align: center;
-            padding: 40px 24px;
-            font-size: 14px;
-        }
-
-        footer a { color: #818cf8; text-decoration: none; }
-        footer a:hover { text-decoration: underline; }
-
-        /* DARK MODE */
-        .dark body, .dark { background: #0f172a; color: #e2e8f0; }
-        .dark .hero { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%); }
-        .dark .hero h1 { background: linear-gradient(135deg, #c7d2fe, #a5b4fc, #818cf8); -webkit-background-clip: text; background-clip: text; }
-        .dark .feature-card { background: #1e293b; border-color: #334155; }
-        .dark .feature-card p { color: #94a3b8; }
-        .dark .section-subtitle { color: #94a3b8; }
-        .dark .step p { color: #94a3b8; }
-        .dark .cta { background: linear-gradient(135deg, #312e81, #4338ca); }
-
-        @media (max-width: 640px) {
-            .hero { padding: 60px 20px 40px; }
-            .hero-buttons { flex-direction: column; align-items: center; }
-            .btn-primary, .btn-secondary { width: 100%; max-width: 300px; justify-content: center; }
+        @media(max-width:768px){
+            .nav-links{display:none}
+            .mockup-body{grid-template-columns:1fr}
+            .mockup-sidebar{display:none}
+            .mockup-stat-row{grid-template-columns:1fr}
+            .feature-split{grid-template-columns:1fr;gap:40px}
+            .feature-split.reverse{direction:ltr}
+            .features-grid{grid-template-columns:1fr}
+            .testimonials-grid{grid-template-columns:1fr}
+            .footer-inner{grid-template-columns:1fr 1fr}
+            .hero-buttons{flex-direction:column;align-items:center}
+            .btn-primary,.btn-secondary{width:100%;max-width:320px;justify-content:center}
         }
     </style>
 </head>
 <body>
 
-    <!-- HERO -->
-    <section class="hero">
-        <div class="hero-content">
-            <div class="hero-badge">100% Gratuito</div>
-            <h1>Controle suas finanças de forma simples</h1>
-            <p>Gerencie saldo, gastos, metas e transações recorrentes em um único lugar. Acesse de qualquer dispositivo, a qualquer momento.</p>
-            <div class="hero-buttons">
-                <a href="login.html" class="btn-primary">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-                    Começar Agora
-                </a>
-                <a href="#funcionalidades" class="btn-secondary">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 16 16 12 12 8"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                    Saiba Mais
-                </a>
+<!-- NAV -->
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="/" class="nav-logo"><img src="assets/logo.png" alt="MoneyControl"></a>
+        <div class="nav-links">
+            <a href="#funcionalidades">Funcionalidades</a>
+            <a href="#como-funciona">Como Funciona</a>
+            <a href="#avaliacoes">Avaliações</a>
+            <a href="login.html" class="nav-cta">Entrar</a>
+        </div>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-badge">100% Gratuito para sempre</div>
+        <h1>Controle suas finanças<br>de forma <em>simples</em></h1>
+        <p class="hero-desc">Veja para onde seu dinheiro vai, defina metas e acompanhe seus gastos em um único lugar. Grátis, rápido e seguro.</p>
+        <div class="hero-buttons">
+            <a href="registrar.html" class="btn-primary">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                Criar Conta Grátis
+            </a>
+            <a href="#funcionalidades" class="btn-secondary">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 16 16 12 12 8"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                Ver Funcionalidades
+            </a>
+        </div>
+    </div>
+
+    <!-- APP MOCKUP -->
+    <div class="hero-mockup">
+        <div class="mockup-card">
+            <div class="mockup-toolbar"><div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div></div>
+            <div class="mockup-body">
+                <div class="mockup-sidebar">
+                    <div class="mockup-sidebar-item active"><div class="mockup-sidebar-dot"></div>Dashboard</div>
+                    <div class="mockup-sidebar-item"><div class="mockup-sidebar-dot"></div>Transações</div>
+                    <div class="mockup-sidebar-item"><div class="mockup-sidebar-dot"></div>Metas</div>
+                    <div class="mockup-sidebar-item"><div class="mockup-sidebar-dot"></div>Recorrentes</div>
+                    <div class="mockup-sidebar-item"><div class="mockup-sidebar-dot"></div>Configurações</div>
+                </div>
+                <div class="mockup-main">
+                    <div class="mockup-main-title">Dashboard</div>
+                    <div class="mockup-stat-row">
+                        <div class="mockup-stat"><div class="mockup-stat-label">Saldo</div><div class="mockup-stat-value">R$ 4.280</div></div>
+                        <div class="mockup-stat"><div class="mockup-stat-label">Gastos Mês</div><div class="mockup-stat-value red">R$ 1.850</div></div>
+                        <div class="mockup-stat"><div class="mockup-stat-label">Economia</div><div class="mockup-stat-value green">R$ 2.430</div></div>
+                    </div>
+                    <div class="mockup-transactions">
+                        <div class="mockup-tx-header">Últimas Transações</div>
+                        <div class="mockup-tx-item">
+                            <div class="mockup-tx-left"><div class="mockup-tx-icon" style="background:#fef2f2">🛒</div><div><div class="mockup-tx-name">Supermercado</div><div class="mockup-tx-cat">Alimentação</div></div></div>
+                            <div class="mockup-tx-amount neg">-R$ 245,90</div>
+                        </div>
+                        <div class="mockup-tx-item">
+                            <div class="mockup-tx-left"><div class="mockup-tx-icon" style="background:#ecfdf5">💰</div><div><div class="mockup-tx-name">Salário</div><div class="mockup-tx-cat">Renda</div></div></div>
+                            <div class="mockup-tx-amount pos">+R$ 5.200,00</div>
+                        </div>
+                        <div class="mockup-tx-item">
+                            <div class="mockup-tx-left"><div class="mockup-tx-icon" style="background:#eff6ff">☕</div><div><div class="mockup-tx-name">Cafeteria</div><div class="mockup-tx-cat">Lazer</div></div></div>
+                            <div class="mockup-tx-amount neg">-R$ 18,50</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- FEATURES -->
-    <section class="section" id="funcionalidades">
-        <h2 class="section-title">Funcionalidades</h2>
-        <p class="section-subtitle">Tudo que você precisa para manter suas finanças organizadas</p>
-        <div class="features-grid">
-            <article class="feature-card">
-                <div class="feature-icon" style="background: #ede9fe; color: #7c3aed;">💰</div>
-                <h3>Controle de Saldo</h3>
-                <p>Acompanhe seu saldo em tempo real. Registre entradas e saídas de forma rápida e intuitiva.</p>
-            </article>
-            <article class="feature-card">
-                <div class="feature-icon" style="background: #fef2f2; color: #dc2626;">📊</div>
-                <h3>Registro de Gastos</h3>
-                <p>Categorize e acompanhe todos os seus gastos. Saiba exatamente para onde seu dinheiro está indo.</p>
-            </article>
-            <article class="feature-card">
-                <div class="feature-icon" style="background: #ecfdf5; color: #16a34a;">🎯</div>
-                <h3>Metas de Economia</h3>
-                <p>Defina metas de economia mensais e acompanhe seu progresso. Economize mais a cada mês.</p>
-            </article>
-            <article class="feature-card">
-                <div class="feature-icon" style="background: #eff6ff; color: #2563eb;">🔄</div>
-                <h3>Transações Recorrentes</h3>
-                <p>Registre aluguel, assinaturas e contas fixas. Nunca mais esqueça de uma despesa recorrente.</p>
-            </article>
-            <article class="feature-card">
-                <div class="feature-icon" style="background: #fff7ed; color: #ea580c;">📤</div>
-                <h3>Exportar Dados</h3>
-                <p>Exporte seus dados financeiros em CSV para análises detalhadas no Excel ou Google Sheets.</p>
-            </article>
-            <article class="feature-card">
-                <div class="feature-icon" style="background: #fdf4ff; color: #9333ea;">🌙</div>
-                <h3>Modo Escuro</h3>
-                <p>Interface confortável para os olhos, dia e noite. Use o app sem cansaço visual.</p>
-            </article>
+<!-- FEATURES -->
+<section class="section" id="funcionalidades">
+    <div class="section-header">
+        <div class="section-eyebrow">Funcionalidades</div>
+        <h2 class="section-title">Tudo que você precisa num só lugar</h2>
+        <p class="section-desc">Conecte suas contas, categorize gastos, defina metas e acompanhe tudo em tempo real.</p>
+    </div>
+
+    <!-- Feature 1: Saldo -->
+    <div class="feature-split">
+        <div class="feature-text">
+            <h3>Veja seu saldo em tempo real</h3>
+            <p>Saiba exatamente quanto tem, quanto gastou e quanto sobrou. Tudo atualizado instantaneamente.</p>
+            <ul class="feature-list">
+                <li><span class="feature-check">&#10003;</span>Saldo geral e por categoria</li>
+                <li><span class="feature-check">&#10003;</span>Entradas e saídas organizadas</li>
+                <li><span class="feature-check">&#10003;</span>Visão clara do mês atual</li>
+            </ul>
         </div>
-    </section>
-
-    <!-- HOW IT WORKS -->
-    <section class="section" style="background: #f1f5f9;">
-        <h2 class="section-title">Como Funciona</h2>
-        <p class="section-subtitle">Três passos simples para começar a controlar suas finanças</p>
-        <div class="steps-grid">
-            <div class="step">
-                <div class="step-number">1</div>
-                <h3>Crie sua Conta</h3>
-                <p>Cadastre-se gratuitamente com email ou Google. Leva menos de 30 segundos.</p>
+        <div class="feature-visual">
+            <div class="mock-balance">
+                <div class="mock-bl-label">Saldo Disponível</div>
+                <div class="mock-bl-value">R$ 4.280,50</div>
+                <div class="mock-bl-row">
+                    <div class="mock-bl-item">Entradas<strong style="color:#bbf7d0">+R$ 5.200</strong></div>
+                    <div class="mock-bl-item">Saídas<strong style="color:#fecaca">-R$ 1.850</strong></div>
+                </div>
             </div>
-            <div class="step">
-                <div class="step-number">2</div>
-                <h3>Registre seus Dados</h3>
-                <p>Adicione seu saldo atual e comece a registrar entradas e saídas.</p>
-            </div>
-            <div class="step">
-                <div class="step-number">3</div>
-                <h3>Acompanhe tudo</h3>
-                <p>Veja seus gastos, metas e saldo em tempo real. Instale o app no celular.</p>
+            <div style="background:#fff;border:1px solid #f1f5f9;border-radius:14px;padding:16px">
+                <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:13px;font-weight:600;color:#0f172a">Meta de Economia</span><span style="font-size:13px;font-weight:700;color:#6366f1">72%</span></div>
+                <div class="mock-goal-bar"><div class="mock-goal-fill" style="width:72%"></div></div>
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- CTA -->
-    <section class="cta">
-        <h2>Comece a organizar suas finanças hoje</h2>
-        <p>É grátis, rápido e funciona no seu celular e computador.</p>
-        <a href="login.html" class="btn-primary">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+    <!-- Feature 2: Metas -->
+    <div class="feature-split reverse">
+        <div class="feature-text">
+            <h3>Defina metas e acompanhe o progresso</h3>
+            <p>Quer economizar pra uma viagem, um carro ou uma reserva? Crie metas e veja o progresso em tempo real.</p>
+            <ul class="feature-list">
+                <li><span class="feature-check">&#10003;</span>Metas mensais de economia</li>
+                <li><span class="feature-check">&#10003;</span>Barra de progresso visual</li>
+                <li><span class="feature-check">&#10003;</span>Alcance suas metas mais rápido</li>
+            </ul>
+        </div>
+        <div class="feature-visual">
+            <div class="mock-goal">
+                <div class="mock-goal-head"><span class="mock-goal-name">Viagem dos Sonhos</span><span class="mock-goal-pct">65%</span></div>
+                <div class="mock-goal-bar"><div class="mock-goal-fill" style="width:65%"></div></div>
+            </div>
+            <div class="mock-goal">
+                <div class="mock-goal-head"><span class="mock-goal-name">Reserva de Emergência</span><span class="mock-goal-pct">40%</span></div>
+                <div class="mock-goal-bar"><div class="mock-goal-fill" style="width:40%;background:linear-gradient(90deg,#16a34a,#4ade80)"></div></div>
+            </div>
+            <div class="mock-goal">
+                <div class="mock-goal-head"><span class="mock-goal-name">Novo Notebook</span><span class="mock-goal-pct">88%</span></div>
+                <div class="mock-goal-bar"><div class="mock-goal-fill" style="width:88%;background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature 3: Recorrentes -->
+    <div class="feature-split">
+        <div class="feature-text">
+            <h3>Nunca mais esqueça uma conta</h3>
+            <p>Registre aluguel, streaming, academia e todas as contas fixas. O app lembra você antes do vencimento.</p>
+            <ul class="feature-list">
+                <li><span class="feature-check">&#10003;</span>Alertas antes do vencimento</li>
+                <li><span class="feature-check">&#10003;</span>Total de compromissos do mês</li>
+                <li><span class="feature-check">&#10003;</span>Organize assinaturas e contas fixas</li>
+            </ul>
+        </div>
+        <div class="feature-visual">
+            <div style="background:#fff;border:1px solid #f1f5f9;border-radius:14px;padding:16px">
+                <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:4px">Contas Recorrentes</div>
+                <div style="font-size:12px;color:#94a3b8;margin-bottom:12px">Total: R$ 1.430/mês</div>
+                <div class="mock-rr"><div class="mock-rr-icon" style="background:#fef2f2">🏠</div><div><div class="mock-rr-name">Aluguel</div><div class="mock-rr-date">Dia 5 de cada mês</div></div><div class="mock-rr-price">R$ 1.200</div></div>
+                <div class="mock-rr"><div class="mock-rr-icon" style="background:#eff6ff">🎬</div><div><div class="mock-rr-name">Netflix</div><div class="mock-rr-date">Dia 15 de cada mês</div></div><div class="mock-rr-price">R$ 39,90</div></div>
+                <div class="mock-rr"><div class="mock-rr-icon" style="background:#ecfdf5">💪</div><div><div class="mock-rr-name">Academia</div><div class="mock-rr-date">Dia 1 de cada mês</div></div><div class="mock-rr-price">R$ 89,90</div></div>
+                <div class="mock-rr"><div class="mock-rr-icon" style="background:#fdf4ff">🎵</div><div><div class="mock-rr-name">Spotify</div><div class="mock-rr-date">Dia 20 de cada mês</div></div><div class="mock-rr-price">R$ 21,90</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature 4: Gráficos -->
+    <div class="feature-split reverse">
+        <div class="feature-text">
+            <h3>Visualize seus gastos</h3>
+            <p>Gráficos claros mostram pra onde seu dinheiro vai. Identifique padrões e corte gastos desnecessários.</p>
+            <ul class="feature-list">
+                <li><span class="feature-check">&#10003;</span>Gráficos por categoria</li>
+                <li><span class="feature-check">&#10003;</span>Comparativo mensal</li>
+                <li><span class="feature-check">&#10003;</span>Exporte em CSV pra análise</li>
+            </ul>
+        </div>
+        <div class="feature-visual">
+            <div style="background:#fff;border:1px solid #f1f5f9;border-radius:14px;padding:20px">
+                <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:16px">Gastos por Categoria</div>
+                <div class="mock-chart">
+                    <div class="mock-chart-bar" style="height:85%;background:#6366f1"></div>
+                    <div class="mock-chart-bar" style="height:60%;background:#8b5cf6"></div>
+                    <div class="mock-chart-bar" style="height:45%;background:#a78bfa"></div>
+                    <div class="mock-chart-bar" style="height:70%;background:#6366f1"></div>
+                    <div class="mock-chart-bar" style="height:30%;background:#8b5cf6"></div>
+                    <div class="mock-chart-bar" style="height:55%;background:#a78bfa"></div>
+                    <div class="mock-chart-bar" style="height:90%;background:#6366f1"></div>
+                </div>
+                <div class="mock-chart-labels">
+                    <span>Jan</span><span>Fev</span><span>Mar</span><span>Abr</span><span>Mai</span><span>Jun</span><span>Jul</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURES GRID -->
+<section class="section" style="background:#f8fafc;padding-top:80px;padding-bottom:80px">
+    <div class="section-header">
+        <div class="section-eyebrow">Mais Funcionalidades</div>
+        <h2 class="section-title">Feito pra você</h2>
+    </div>
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-card-icon" style="background:#eef2ff">🌙</div>
+            <h4>Modo Escuro</h4>
+            <p>Interface confortável pra usar de noite sem cansar os olhos.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-card-icon" style="background:#ecfdf5">📤</div>
+            <h4>Exportar Dados</h4>
+            <p>Exporte tudo em CSV pra analisar no Excel ou Google Sheets.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-card-icon" style="background:#fef2f2">📱</div>
+            <h4>Funciona no Celular</h4>
+            <p>Instale como app no celular. Acesso rápido, sem precisar abrir o navegador.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-card-icon" style="background:#fff7ed">🔒</div>
+            <h4>Seguro e Privado</h4>
+            <p>Seus dados ficam criptografados. Ninguém além de você tem acesso.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-card-icon" style="background:#fdf4ff">⚡</div>
+            <h4>Rápido e Leve</h4>
+            <p>Abre instantaneamente. Sem carregamentos pesados ou travamentos.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-card-icon" style="background:#f0fdf4">🎯</div>
+            <h4>100% Gratuito</h4>
+            <p>Sem taxas, sem assinatura, sem anúncios. Totalmente grátis.</p>
+        </div>
+    </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section testimonials-section" id="avaliacoes">
+    <div class="section-header">
+        <div class="section-eyebrow">Avaliações</div>
+        <h2 class="section-title">O que nossos usuários dizem</h2>
+    </div>
+    <div class="testimonials-grid">
+        <div class="testimonial-card">
+            <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+            <p class="testimonial-text">"Finalmente um app que me ajuda a controlar tudo sem complicação. Uso todo dia pra saber pra onde vai meu dinheiro."</p>
+            <div class="testimonial-author">
+                <div class="testimonial-avatar" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">M</div>
+                <div><div class="testimonial-name">Mariana S.</div><div class="testimonial-role">Usuária desde 2024</div></div>
+            </div>
+        </div>
+        <div class="testimonial-card">
+            <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+            <p class="testimonial-text">"As metas de economia me ajudaram a juntar dinheiro pra minha viagem. O app é simples e muito fácil de usar."</p>
+            <div class="testimonial-author">
+                <div class="testimonial-avatar" style="background:linear-gradient(135deg,#16a34a,#4ade80)">P</div>
+                <div><div class="testimonial-name">Pedro L.</div><div class="testimonial-role">Usuário desde 2025</div></div>
+            </div>
+        </div>
+        <div class="testimonial-card">
+            <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+            <p class="testimonial-text">"Adorei o sistema de recorrentes. Nunca mais esqueci de pagar uma conta. E o melhor: é totalmente grátis!"</p>
+            <div class="testimonial-author">
+                <div class="testimonial-avatar" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)">A</div>
+                <div><div class="testimonial-name">Ana C.</div><div class="testimonial-role">Usuária desde 2025</div></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-final">
+    <h2>Comece a organizar suas finanças hoje</h2>
+    <p>É grátis, funciona no celular e no computador. Leva 30 segundos pra criar sua conta.</p>
+    <div class="hero-buttons">
+        <a href="registrar.html" class="btn-primary">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
             Criar Minha Conta Grátis
         </a>
-    </section>
+    </div>
+</section>
 
-    <!-- FOOTER -->
-    <footer>
-        <p>&copy; 2025 MoneyControl. Todos os direitos reservados.</p>
-        <p style="margin-top: 8px;">
-            <a href="ajuda.html">Ajuda</a> &middot;
-            <a href="reportar.html">Reportar Problema</a> &middot;
+<!-- FOOTER -->
+<footer>
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <a href="/" class="nav-logo"><img src="assets/logo.png" alt="MoneyControl" style="height:32px;filter:brightness(0) invert(1)"></a>
+            <p>Gerencie suas finanças de forma simples e eficiente. Grátis para sempre.</p>
+        </div>
+        <div class="footer-col">
+            <h5>Produto</h5>
+            <a href="#funcionalidades">Funcionalidades</a>
+            <a href="#como-funciona">Como Funciona</a>
+            <a href="#avaliacoes">Avaliações</a>
+        </div>
+        <div class="footer-col">
+            <h5>Conta</h5>
             <a href="login.html">Entrar</a>
-        </p>
-    </footer>
+            <a href="registrar.html">Criar Conta</a>
+            <a href="config.html">Configurações</a>
+        </div>
+        <div class="footer-col">
+            <h5>Suporte</h5>
+            <a href="ajuda.html">Ajuda</a>
+            <a href="reportar.html">Reportar Problema</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2025 MoneyControl. Todos os direitos reservados.</p>
+    </div>
+</footer>
 
-    <script src="js/dark-mode.js"></script>
-    <script src="js/pwa.js"></script>
+<script src="js/pwa.js"></script>
 </body>
 </html>
