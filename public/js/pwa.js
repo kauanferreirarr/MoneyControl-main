@@ -168,6 +168,10 @@
     /* Expoe para outros modulos (ex: onboarding) */
     window._deferredInstallPrompt = e;
 
+    /* Mostra/esconde botao de instalar no menu */
+    var menuBtn = document.getElementById('pwa-install-menu-btn');
+    if (menuBtn) menuBtn.style.display = 'flex';
+
     /* Nao mostrar se:
        - Ja esta em modo standalone (app instalado)
        - O usuario dispensou ha menos de 7 dias */
@@ -176,6 +180,23 @@
       setTimeout(showInstallBanner, 2500);
     }
   });
+
+  /* Funcao global para instalar via botao do menu */
+  window.__installPWA = function () {
+    var prompt = window._deferredInstallPrompt;
+    if (!prompt) {
+      alert('O app já está instalado ou seu navegador não suporta instalação.');
+      return;
+    }
+    prompt.prompt();
+    prompt.userChoice.then(function (result) {
+      if (result.outcome === 'accepted') {
+        var menuBtn = document.getElementById('pwa-install-menu-btn');
+        if (menuBtn) menuBtn.style.display = 'none';
+      }
+      window._deferredInstallPrompt = null;
+    });
+  };
 
   /* Quando o app ja estiver instalado, esconder qualquer banner */
   window.addEventListener('appinstalled', function () {
