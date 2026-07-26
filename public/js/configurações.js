@@ -48,7 +48,7 @@ function fecharNotifCard() {
 function exportarHistorico() {
   const transacoes = JSON.parse(localStorage.getItem("transacoes")) || [];
   if (transacoes.length === 0) {
-    window._notyf.error("Nenhuma transacao para exportar.");
+    window._notyf.error("Nenhuma transação para exportar.");
     return;
   }
   let csv = "Data,Descrição,Valor,Tipo\n";
@@ -203,7 +203,7 @@ async function lerPDF(file) {
     exibirPreview(bancoDetectado);
   } catch (err) {
     console.error("Erro ao ler PDF:", err);
-    preview.innerHTML = "<div class='text-xs text-red-500 mb-2'>Erro ao ler PDF. Verifique se o arquivo e valido.</div>";
+    preview.innerHTML = "<div class='text-xs text-red-500 mb-2'>Erro ao ler PDF. Verifique se o arquivo é válido.</div>";
     preview.classList.remove("hidden");
   }
 }
@@ -212,7 +212,7 @@ function exibirPreview(bancoDetectado) {
   const preview = document.getElementById("csv-preview");
   let html = "<div class='text-xs font-semibold text-violet-600 mb-2'>Banco detectado: " + bancoDetectado + "</div>";
   html += "<table class='w-full text-xs text-left'><thead class='text-slate-400'>";
-  html += "<th class='px-2 py-1'>Data</th><th class='px-2 py-1'>Descricao</th><th class='px-2 py-1'>Valor</th><th class='px-2 py-1'>Tipo</th>";
+  html += "<th class='px-2 py-1'>Data</th><th class='px-2 py-1'>Descrição</th><th class='px-2 py-1'>Valor</th><th class='px-2 py-1'>Tipo</th>";
   html += "</thead><tbody>";
   csvData.forEach(t => {
     html += `<tr class="border-t border-slate-100">`;
@@ -568,7 +568,7 @@ function parseNubankPDF(texto) {
 
     let descricao = linha.replace(matchData[0], "").replace(matchValor[0], "").trim();
     descricao = descricao.replace(/\s+/g, " ").replace(/^-/, "").trim();
-    if (!descricao) descricao = "Transacao Nubank";
+    if (!descricao) descricao = "Transação Nubank";
 
     transacoes.push({
       data: data,
@@ -600,7 +600,7 @@ function parseInterPDF(texto) {
 
     let descricao = linha.replace(matchData[0], "").replace(matchValor[0], "").trim();
     descricao = descricao.replace(/\s+/g, " ").replace(/^-/, "").trim();
-    if (!descricao) descricao = "Transacao Inter";
+    if (!descricao) descricao = "Transação Inter";
 
     transacoes.push({
       data: data,
@@ -632,7 +632,7 @@ function parseItauPDF(texto) {
 
     let descricao = linha.replace(matchData[0], "").replace(matchValor[0], "").trim();
     descricao = descricao.replace(/\s+/g, " ").replace(/^-/, "").trim();
-    if (!descricao) descricao = "Transacao Itau";
+    if (!descricao) descricao = "Transação Itaú";
 
     transacoes.push({
       data: data,
@@ -664,7 +664,7 @@ function parseBBPDF(texto) {
 
     let descricao = linha.replace(matchData[0], "").replace(matchValor[0], "").trim();
     descricao = descricao.replace(/\s+/g, " ").replace(/^-/, "").trim();
-    if (!descricao) descricao = "Transacao BB";
+    if (!descricao) descricao = "Transação BB";
 
     transacoes.push({
       data: data,
@@ -696,7 +696,7 @@ function parseBradescoPDF(texto) {
 
     let descricao = linha.replace(matchData[0], "").replace(matchValor[0], "").trim();
     descricao = descricao.replace(/\s+/g, " ").replace(/^-/, "").trim();
-    if (!descricao) descricao = "Transacao Bradesco";
+    if (!descricao) descricao = "Transação Bradesco";
 
     transacoes.push({
       data: data,
@@ -728,7 +728,7 @@ function parseGenericoPDF(texto) {
 
     let descricao = linha.replace(matchData[0], "").replace(matchValor[0], "").trim();
     descricao = descricao.replace(/\s+/g, " ").replace(/^-/, "").trim();
-    if (!descricao) descricao = "Transacao";
+    if (!descricao) descricao = "Transação";
 
     transacoes.push({
       data: data,
@@ -784,7 +784,7 @@ function parseMercadoPagoPDF(texto) {
       .replace(/\s+/g, " ")
       .trim();
 
-    if (!descricao) descricao = "Transacao Mercado Pago";
+    if (!descricao) descricao = "Transação Mercado Pago";
 
     transacoes.push({
       data: data,
@@ -839,12 +839,12 @@ async function confirmarImportacao() {
     return;
   }
   if (!window.importarTransacoesCSV) {
-    window._notyf?.error("Erro: Firebase ainda nao carregado. Tente novamente em alguns instantes.");
+    window._notyf?.error("Erro: Firebase ainda não carregado. Tente novamente em alguns instantes.");
     return;
   }
   try {
     const totalSalvo = await window.importarTransacoesCSV(csvData);
-    window._notyf?.success(totalSalvo + " transacoes importadas com sucesso!");
+    window._notyf?.success(totalSalvo + " transações importadas com sucesso!");
     fecharImportar();
     for (let i = localStorage.length - 1; i >= 0; i--) {
       const key = localStorage.key(i);
@@ -854,8 +854,8 @@ async function confirmarImportacao() {
     }
     setTimeout(() => { window.location.href = "index.html"; }, 800);
   } catch (err) {
-    console.error("Erro na importacao:", err);
-    window._notyf?.error("Erro ao importar: " + (err.message || "Verifique se voce esta logado."));
+    console.error("Erro na importação:", err);
+    window._notyf?.error("Erro ao importar: " + (err.message || "Verifique se você está logado."));
   }
 }
 
@@ -896,7 +896,7 @@ function carregarFoto(event) {
   const file = event.target.files[0];
   if (!file) return;
   if (file.size > 2 * 1024 * 1024) {
-    window._notyf.error("A foto deve ter no maximo 2MB.");
+    window._notyf.error("A foto deve ter no máximo 2MB.");
     return;
   }
   const reader = new FileReader();
@@ -914,7 +914,7 @@ function carregarFoto(event) {
 function salvarPerfil() {
   const nome = document.getElementById("input-nome-perfil").value.trim();
   if (!nome) {
-    window._notyf.error("Digite um nome valido.");
+    window._notyf.error("Digite um nome válido.");
     return;
   }
 
@@ -937,6 +937,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const diasGrid = document.querySelector(".dias-grid");
   const selectDia = document.getElementById("dia-reinicio");
   const menuReinicio = document.getElementById("menureinicio");
+  let diaSelecionado = null;
 
   if (diasGrid && selectDia) {
     const botoes = diasGrid.querySelectorAll(".day-btn");
@@ -949,46 +950,39 @@ document.addEventListener("DOMContentLoaded", () => {
     diasGrid.addEventListener("click", (e) => {
       if (e.target.classList.contains("day-btn")) {
         ativarBotao(e.target);
-        selectDia.value = e.target.textContent;
+        diaSelecionado = e.target.textContent.trim();
+        selectDia.value = "";
       }
     });
 
     selectDia.addEventListener("change", () => {
-      botoes.forEach(btn => {
-        if (btn.textContent === selectDia.value) {
-          ativarBotao(btn);
-        }
-      });
+      botoes.forEach(btn => btn.classList.remove("ativo"));
+      diaSelecionado = selectDia.value;
     });
 
     menuReinicio.querySelector(".btn-salvar").addEventListener("click", () => {
-      const dia = selectDia.value;
-      if (!dia) {
+      if (!diaSelecionado) {
         window._notyf.error("Selecione um dia.");
         return;
       }
-      localStorage.setItem("diaReinicio", dia);
-      if (window.salvarDataReinicio) window.salvarDataReinicio(dia);
-      window._notyf.success("Dia de reinicio salvo: dia " + dia);
+      if (window.salvarDataReinicio) window.salvarDataReinicio(diaSelecionado);
+      window._notyf.success("Dia de reinício salvo: dia " + diaSelecionado);
       fecharReinicio();
     });
-
-    const diaSalvo = localStorage.getItem("diaReinicio");
-    if (diaSalvo) {
-      selectDia.value = diaSalvo;
-      botoes.forEach(btn => {
-        if (btn.textContent === diaSalvo) ativarBotao(btn);
-      });
-    }
 
     // Carregar do Firestore se disponível
     if (window.carregarDataReinicio) {
       window.carregarDataReinicio().then((dia) => {
         if (dia) {
-          selectDia.value = String(dia);
+          diaSelecionado = String(dia);
           botoes.forEach(btn => {
-            if (btn.textContent === String(dia)) ativarBotao(btn);
+            if (btn.textContent.trim() === String(dia)) {
+              ativarBotao(btn);
+              selectDia.value = "";
+            }
           });
+          const opts = selectDia.querySelectorAll("option");
+          opts.forEach(opt => { if (opt.value === String(dia)) selectDia.value = String(dia); });
         }
       });
     }
@@ -1038,19 +1032,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- Salvar meta ---
+  // O onclick="salvarMeta()" do HTML ja salva no Firestore (main.js)
+  // Este listener so fecha o modal apos o clique
   const btnSalvarMeta = document.getElementById("btn-salvar-meta");
   if (btnSalvarMeta) {
     btnSalvarMeta.addEventListener("click", () => {
-      const semLimite = document.getElementById("no-limit").checked;
-      const limite = document.getElementById("display-value").textContent;
-      if (semLimite) {
-        localStorage.removeItem("metaGastos");
-        window._notyf.success("Meta de gastos removida!");
-      } else {
-        localStorage.setItem("metaGastos", limite);
-        window._notyf.success("Meta de gastos salva: R$ " + limite);
-      }
-      fecharMetas();
+      setTimeout(() => fecharMetas(), 150);
     });
   }
 
@@ -1091,7 +1078,7 @@ document.addEventListener("DOMContentLoaded", () => {
           chk50: chk50.checked, chk80: chk80.checked,
           chk100: chk100.checked, chkNone: chkNone.checked
         }));
-        window._notyf.success("Configuracoes de notificacoes salvas!");
+        window._notyf.success("Configurações de notificações salvas!");
         fecharNotifCard();
       });
     }

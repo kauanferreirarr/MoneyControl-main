@@ -1,9 +1,20 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+    <script>if(localStorage.getItem('mc_theme')==='dark')document.documentElement.classList.add('dark')</script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>MoneyControl</title>
+
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6366F1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MoneyControl">
+    <meta name="application-name" content="MoneyControl">
+    <meta name="description" content="Gerencie suas finanças de forma simples e eficiente. Acompanhe saldo, gastos e metas.">
+    <link rel="apple-touch-icon" href="assets/icon-192.png">
     <link rel="shortcut icon" href="assets/logo.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,6 +36,8 @@
         }
     </script>
     <link rel="stylesheet" href="css/index-components.css">
+    <link rel="stylesheet" href="css/pwa.css">
+    <link rel="stylesheet" href="css/dark-mode.css">
 </head>
 <body class="bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 min-h-screen">
 
@@ -48,7 +61,7 @@
         <!-- Balance Cards -->
         <section id="saldo" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             <!-- Saldo Atual -->
-            <div class="card-hover card-saldo relative rounded-2xl p-6 overflow-hidden shadow-lg shadow-emerald-200">
+            <div class="card-hover card-saldo relative rounded-2xl p-6 overflow-hidden shadow-sm shadow-emerald-200/60">
                 <div class="relative z-10">
                     <div class="flex items-center justify-between mb-3">
                         <span class="text-xs font-semibold text-emerald-100 uppercase tracking-wider">Saldo Atual</span>
@@ -68,7 +81,7 @@
             </div>
 
             <!-- Gastos do Mes -->
-            <div class="card-hover card-gastos relative rounded-2xl p-6 overflow-hidden shadow-lg shadow-rose-200">
+            <div class="card-hover card-gastos relative rounded-2xl p-6 overflow-hidden shadow-sm shadow-rose-200/60">
                 <div class="relative z-10">
                     <div class="flex items-center justify-between mb-3">
                         <span class="text-xs font-semibold text-rose-100 uppercase tracking-wider">Gastos do Mês</span>
@@ -95,7 +108,7 @@
         <div class="left-col flex flex-col gap-6 lg:col-span-2">
 
         <!-- Add Expense Card -->
-        <section id="dispesas" class="bg-white rounded-2xl p-6 shadow-md shadow-slate-200/50 border border-slate-100">
+        <section id="dispesas" class="bg-white rounded-2xl p-6 shadow-sm shadow-slate-200/40 border border-slate-100">
             <h2 class="text-lg font-bold text-slate-800 mb-5">Adicionar nova Despesa ou Saldo</h2>
 
             <form action="" class="space-y-4">
@@ -107,7 +120,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-500 mb-1.5" for="descricao">Descrição</label>
-                        <input type="text" name="descricao" id="descricao" placeholder="No que voce gastou?"
+                        <input type="text" name="descricao" id="descricao" placeholder="No que você gastou?"
                             class="input-focus w-full px-4 py-3.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-base text-slate-700 placeholder-slate-300 font-medium">
                     </div>
                 </div>
@@ -125,10 +138,10 @@
 
             <!-- Action Buttons -->
             <div class="butoes-acao flex flex-col sm:flex-row gap-3 mt-6">
-                <button id="ad-dispesas" class="flex-1 px-6 py-4 bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white text-base font-bold rounded-xl transition-all duration-200 shadow-lg shadow-indigo-200">
+                <button id="ad-dispesas" class="flex-1 px-6 py-4 bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white text-base font-bold rounded-xl transition-all duration-200 shadow-sm shadow-indigo-200/60">
                     Adicionar Despesa
                 </button>
-                <button id="ad-saldo" class="flex-1 px-6 py-4 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white text-base font-bold rounded-xl transition-all duration-200 shadow-lg shadow-emerald-200">
+                <button id="ad-saldo" class="flex-1 px-6 py-4 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white text-base font-bold rounded-xl transition-all duration-200 shadow-sm shadow-emerald-200/60">
                     Adicionar Saldo
                 </button>
             </div>
@@ -173,7 +186,7 @@
         </div> <!-- /Left Column -->
 
         <!-- Transaction History -->
-        <section id="historico" class="bg-white rounded-2xl shadow-md shadow-slate-200/50 border border-slate-100 overflow-hidden lg:col-span-3 lg:row-span-1">
+        <section id="historico" class="bg-white rounded-2xl shadow-sm shadow-slate-200/40 border border-slate-100 overflow-hidden lg:col-span-3 lg:row-span-1">
             <div class="px-6 pt-6 pb-4 border-b border-slate-100">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
@@ -203,7 +216,7 @@
     <div id="overlay" class="overlay-bg fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] opacity-0 pointer-events-none"></div>
 
     <!-- Sidebar Panel -->
-    <aside id="sidebar" class="sidebar-panel fixed top-0 right-0 h-full w-[320px] max-w-[85vw] bg-white z-[101] shadow-2xl translate-x-full flex flex-col">
+    <aside id="sidebar" class="sidebar-panel fixed top-0 right-0 h-full w-[320px] max-w-[85vw] bg-white z-[101] shadow-xl translate-x-full flex flex-col">
         <!-- Header -->
         <div class="flex items-center justify-between px-6 py-5 border-b border-slate-100">
             <h2 class="text-xl font-bold text-slate-800">Menu</h2>
@@ -217,7 +230,7 @@
 
         <!-- User Profile -->
         <div class="px-6 py-7 flex flex-col items-center border-b border-slate-100 bg-gradient-to-b from-indigo-50/50 to-white">
-            <div id="user-avatar" class="user-avatar w-20 h-20 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 text-white flex items-center justify-center text-2xl font-bold shadow-lg shadow-indigo-200 mb-3 ring-4 ring-white overflow-hidden">
+            <div id="user-avatar" class="user-avatar w-20 h-20 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 text-white flex items-center justify-center text-2xl font-bold shadow-sm shadow-indigo-200/60 mb-3 ring-4 ring-white overflow-hidden">
               <img id="user-photo" class="hidden w-full h-full object-cover" alt="Foto de perfil">
               <span id="user-initials"></span>
             </div>
@@ -250,6 +263,15 @@
                     </a>
                 </li>
                 <li>
+                    <a href="recorrentes.html" class="menu-link flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-all duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                        </svg>
+                        Recorrências
+                    </a>
+                </li>
+                <li>
                     <a href="#" class="menu-link flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-all duration-200" data-action="mudar-nome">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -268,7 +290,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="menu-link flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-all duration-200">
+                    <a href="ajuda.html" class="menu-link flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-all duration-200">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
                             <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
@@ -276,6 +298,33 @@
                         </svg>
                         Ajuda
                     </a>
+                </li>
+                <li>
+                    <a href="reportar.html" class="menu-link flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-all duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        Reportar & Feedback
+                    </a>
+                </li>
+                <li>
+                    <button type="button" class="dark-mode-toggle" onclick="window.__toggleDarkMode()" aria-label="Alternar modo escuro">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dm-icon-sun">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                        <div class="dark-mode-switch"></div>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dm-icon-moon">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </button>
                 </li>
             </ul>
         </nav>
@@ -295,7 +344,7 @@
 
     <!-- Change Name Modal -->
     <div id="modal-trocar-nome" class="modal-overlay fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[200] items-center justify-center p-4">
-        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-xl">
             <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
                 <h2 class="text-lg font-bold text-slate-800">Alterar Nome</h2>
                 <button class="close-modal w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 transition-colors duration-200 text-slate-400 hover:text-slate-600">
@@ -310,7 +359,7 @@
                     <label class="block text-sm font-semibold text-slate-500 mb-1.5" for="novo-nome">Novo Nome</label>
                     <input type="text" id="novo-nome" placeholder="Digite seu nome completo" required
                         class="input-focus w-full px-4 py-3.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-base text-slate-700 placeholder-slate-300 font-medium mb-5">
-                    <button type="submit" class="w-full px-6 py-3.5 bg-indigo-500 hover:bg-indigo-600 text-white text-base font-bold rounded-xl transition-all duration-200 shadow-lg shadow-indigo-200">
+                    <button type="submit" class="w-full px-6 py-3.5 bg-indigo-500 hover:bg-indigo-600 text-white text-base font-bold rounded-xl transition-all duration-200 shadow-sm shadow-indigo-200/60">
                         Salvar
                     </button>
                 </form>
@@ -318,9 +367,36 @@
         </div>
     </div>
 
+    <!-- Confirm Modal -->
+    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[400] items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl w-full max-w-sm shadow-xl overflow-hidden transform transition-all">
+            <div class="px-6 pt-7 pb-5 text-center">
+                <div id="confirm-modal-icon" class="w-14 h-14 rounded-full bg-rose-50 flex items-center justify-center mx-auto mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E11D48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                    </svg>
+                </div>
+                <h3 id="confirm-modal-title" class="text-lg font-bold text-slate-800 mb-1">Deletar transação?</h3>
+                <p id="confirm-modal-text" class="text-sm text-slate-500 leading-relaxed">Esta ação não pode ser desfeita.</p>
+            </div>
+            <div class="flex border-t border-slate-100">
+                <button id="confirm-modal-cancel" class="flex-1 py-3.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
+                    Cancelar
+                </button>
+                <div class="w-px bg-slate-100"></div>
+                <button id="confirm-modal-ok" class="flex-1 py-3.5 text-sm font-semibold text-rose-500 hover:bg-rose-50 transition-colors">
+                    Deletar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Onboarding: Passo 1 - Boas-vindas -->
     <div id="onboarding-welcome" class="onboarding-overlay fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[300] items-center justify-center p-4">
-        <div class="onboarding-card bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden">
+        <div class="onboarding-card bg-white rounded-3xl w-full max-w-md shadow-xl overflow-hidden">
             <div class="onboarding-header bg-gradient-to-br from-indigo-500 to-indigo-700 px-8 pt-10 pb-12 text-center relative">
                 <svg class="mx-auto mb-4" width="56" height="56" viewBox="0 0 56 56" fill="none">
                     <rect width="56" height="56" rx="16" fill="rgba(255,255,255,0.15)"/>
@@ -340,7 +416,7 @@
                                 <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                             </svg>
                         </div>
-                        <span class="text-sm text-slate-600">Acompanhar seu saldo e gastos do mes em tempo real</span>
+                        <span class="text-sm text-slate-600">Acompanhar seu saldo e gastos do mês em tempo real</span>
                     </li>
                     <li class="flex items-start gap-3">
                         <div class="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0 mt-0.5">
@@ -351,7 +427,7 @@
                                 <line x1="16" y1="17" x2="8" y2="17"></line>
                             </svg>
                         </div>
-                        <span class="text-sm text-slate-600">Importar extratos de bancos como Nubank, Inter, Itau, BB e Bradesco</span>
+                        <span class="text-sm text-slate-600">Importar extratos de bancos como Nubank, Inter, Itaú, BB e Bradesco</span>
                     </li>
                     <li class="flex items-start gap-3">
                         <div class="w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center shrink-0 mt-0.5">
@@ -364,7 +440,7 @@
                         <span class="text-sm text-slate-600">Definir uma meta mensal de gastos e receber alertas</span>
                     </li>
                 </ul>
-                <button id="onboarding-next-1" class="w-full py-3.5 bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white text-base font-bold rounded-xl transition-all duration-200 shadow-lg shadow-indigo-200">
+                    <button id="onboarding-next-1" class="w-full py-3.5 bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white text-base font-bold rounded-xl transition-all duration-200 shadow-sm shadow-indigo-200/60">
                     Continuar
                 </button>
             </div>
@@ -373,7 +449,7 @@
 
     <!-- Onboarding: Passo 2 - Meta de Gastos -->
     <div id="onboarding-meta" class="onboarding-overlay fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[300] items-center justify-center p-4">
-        <div class="onboarding-card bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden">
+        <div class="onboarding-card bg-white rounded-3xl w-full max-w-md shadow-xl overflow-hidden">
             <div class="onboarding-header bg-gradient-to-br from-emerald-500 to-emerald-700 px-8 pt-10 pb-12 text-center relative">
                 <svg class="mx-auto mb-4" width="56" height="56" viewBox="0 0 56 56" fill="none">
                     <rect width="56" height="56" rx="16" fill="rgba(255,255,255,0.15)"/>
@@ -389,18 +465,15 @@
                 </p>
                 <div class="mb-3">
                     <label class="block text-sm font-semibold text-slate-500 mb-2" for="onboarding-limite">Limite mensal (R$)</label>
-                    <input type="number" id="onboarding-limite" placeholder="Ex: 2000" min="0" step="50"
+                    <input type="number" id="onboarding-limite" placeholder="Ex: 3000" min="50" max="50000" step="50"
                         class="w-full px-4 py-3.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-base text-slate-700 placeholder-slate-300 font-medium focus:border-emerald-500 focus:ring-0 focus:outline-none transition-colors">
+                    <p id="onboarding-meta-error" class="text-xs text-rose-500 mt-1.5 hidden">Informe um valor para o limite mensal</p>
                 </div>
-                <label class="flex items-center gap-2 text-sm text-slate-500 mb-8 cursor-pointer">
-                    <input type="checkbox" id="onboarding-sem-limite" class="w-4 h-4 rounded border-slate-300 text-emerald-500 focus:ring-emerald-500">
-                    <span>Pular por enquanto</span>
-                </label>
-                <div class="flex gap-3">
+                <div class="flex gap-3 mt-8">
                     <button id="onboarding-back-2" class="px-5 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-base font-semibold rounded-xl transition-all duration-200">
                         Voltar
                     </button>
-                    <button id="onboarding-next-2" class="flex-1 py-3.5 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white text-base font-bold rounded-xl transition-all duration-200 shadow-lg shadow-emerald-200">
+                    <button id="onboarding-next-2" class="flex-1 py-3.5 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white text-base font-bold rounded-xl transition-all duration-200 shadow-sm shadow-emerald-200/60">
                         Continuar
                     </button>
                 </div>
@@ -410,7 +483,7 @@
 
     <!-- Onboarding: Passo 3 - Dia de Reinicio -->
     <div id="onboarding-reinicio" class="onboarding-overlay fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[300] items-center justify-center p-4">
-        <div class="onboarding-card bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden">
+        <div class="onboarding-card bg-white rounded-3xl w-full max-w-md shadow-xl overflow-hidden">
             <div class="onboarding-header bg-gradient-to-br from-amber-500 to-orange-600 px-8 pt-10 pb-12 text-center relative">
                 <svg class="mx-auto mb-4" width="56" height="56" viewBox="0 0 56 56" fill="none">
                     <rect width="56" height="56" rx="16" fill="rgba(255,255,255,0.15)"/>
@@ -440,10 +513,76 @@
                     <button id="onboarding-back-3" class="px-5 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-base font-semibold rounded-xl transition-all duration-200">
                         Voltar
                     </button>
-                    <button id="onboarding-finish" class="flex-1 py-3.5 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white text-base font-bold rounded-xl transition-all duration-200 shadow-lg shadow-amber-200">
-                        Comecar a usar
+                    <button id="onboarding-next-3" class="flex-1 py-3.5 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white text-base font-bold rounded-xl transition-all duration-200 shadow-sm shadow-amber-200/60">
+                        Continuar
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Onboarding: Passo 4 - Instalar App -->
+    <div id="onboarding-install" class="onboarding-overlay fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[300] items-center justify-center p-4">
+        <div class="onboarding-card bg-white rounded-3xl w-full max-w-md shadow-xl overflow-hidden">
+            <div class="onboarding-header bg-gradient-to-br from-violet-500 to-purple-700 px-8 pt-10 pb-12 text-center relative">
+                <svg class="mx-auto mb-4" width="56" height="56" viewBox="0 0 56 56" fill="none">
+                    <rect width="56" height="56" rx="16" fill="rgba(255,255,255,0.15)"/>
+                    <rect x="18" y="10" width="20" height="36" rx="4" stroke="white" stroke-width="2.5" fill="none"/>
+                    <line x1="26" y1="14" x2="30" y2="14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <polyline points="24,30 28,34 32,30" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    <line x1="28" y1="20" x2="28" y2="33" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <h2 class="text-2xl font-bold text-white">Instale o App</h2>
+            </div>
+            <div class="px-8 py-8">
+                <p class="text-slate-600 text-base leading-relaxed mb-6">
+                    Para uma experiência ainda melhor, instale o MoneyControl no seu dispositivo. Acesso rápido direto da tela inicial, sem precisar abrir o navegador.
+                </p>
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-start gap-3">
+                        <div class="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center shrink-0 mt-0.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                            </svg>
+                        </div>
+                        <span class="text-sm text-slate-600">Abre mais rapido que pelo navegador</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center shrink-0 mt-0.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            </svg>
+                        </div>
+                        <span class="text-sm text-slate-600">Funciona mesmo sem conexão com a internet</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center shrink-0 mt-0.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg>
+                        </div>
+                        <span class="text-sm text-slate-600">Ícone próprio na tela inicial do seu celular</span>
+                    </li>
+                </ul>
+                <div class="flex gap-3">
+                    <button id="onboarding-back-4" class="px-5 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-base font-semibold rounded-xl transition-all duration-200">
+                        Voltar
+                    </button>
+                    <button id="onboarding-install-btn" class="flex-1 py-3.5 bg-violet-500 hover:bg-violet-600 active:bg-violet-700 text-white text-base font-bold rounded-xl transition-all duration-200 shadow-sm shadow-violet-200/60 flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Instalar
+                    </button>
+                </div>
+                <button id="onboarding-skip-install" class="w-full mt-3 py-2 text-sm text-slate-400 hover:text-slate-600 font-medium transition-colors duration-200">
+                    Agora não
+                </button>
             </div>
         </div>
     </div>
@@ -451,13 +590,7 @@
     <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
     <script defer src="js/script.js?v=3"></script>
     <script type="module" src="js/main.js?v=3"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then((regs) => {
-          regs.forEach((r) => r.unregister());
-        });
-        navigator.serviceWorker.register('/sw.js?v=3').catch(() => {});
-      }
-    </script>
+    <script src="js/pwa.js"></script>
+    <script src="js/dark-mode.js"></script>
 </body>
 </html>

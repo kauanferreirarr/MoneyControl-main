@@ -1,0 +1,756 @@
+/* ============================================
+   Dark Mode - MoneyControl
+   ============================================ */
+
+/* --- Body & Background --- */
+html.dark body,
+html.dark {
+    background-color: #0f172a !important;
+    color: #e2e8f0;
+}
+
+/* --- Sidebar --- */
+html.dark .sidebar-panel,
+html.dark aside#sidebar {
+    background-color: #1e293b !important;
+    color: #e2e8f0;
+}
+
+html.dark aside#sidebar .border-b,
+html.dark aside#sidebar > div:first-child {
+    border-color: #334155 !important;
+}
+
+html.dark aside#sidebar .bg-gradient-to-b {
+    background: linear-gradient(to bottom, rgba(99,102,241,0.08), #1e293b) !important;
+}
+
+html.dark aside#sidebar .text-slate-800,
+html.dark aside#sidebar h2,
+html.dark aside#sidebar .user-name {
+    color: #ffffff !important;
+}
+
+html.dark aside#sidebar .text-slate-400,
+html.dark aside#sidebar .user-email {
+    color: #94a3b8 !important;
+}
+
+html.dark aside#sidebar .ring-white {
+    --tw-ring-color: #1e293b;
+}
+
+/* Sidebar nav links */
+html.dark .menu-link {
+    color: #cbd5e1;
+}
+
+html.dark .menu-link:hover {
+    background-color: rgba(51, 65, 85, 0.5);
+    color: #ffffff;
+}
+
+html.dark .menu-link.active {
+    background-color: rgba(99, 102, 241, 0.15) !important;
+    color: #818cf8 !important;
+}
+
+/* Sidebar nav borders */
+html.dark aside#sidebar nav + div,
+html.dark aside#sidebar > .border-t {
+    border-color: #334155 !important;
+}
+
+/* --- Top Bar / Header --- */
+html.dark .top-bar,
+html.dark header#topo {
+    background-color: rgba(15, 23, 42, 0.9) !important;
+    border-color: rgba(51, 65, 85, 0.5) !important;
+}
+
+html.dark header#topo .text-slate-600 {
+    color: #cbd5e1 !important;
+}
+
+html.dark header#topo button:hover {
+    background-color: rgba(51, 65, 85, 0.4);
+}
+
+/* --- Cards --- */
+html.dark section.bg-white,
+html.dark .bg-white {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.2) !important;
+}
+
+/* --- Text Colors (High Contrast) --- */
+html.dark .text-slate-800,
+html.dark .text-slate-700 {
+    color: #ffffff !important;
+}
+
+html.dark .text-slate-600 {
+    color: #e2e8f0 !important;
+}
+
+html.dark .text-slate-500 {
+    color: #cbd5e1 !important;
+}
+
+html.dark .text-slate-400 {
+    color: #94a3b8 !important;
+}
+
+html.dark .text-slate-300 {
+    color: #64748b !important;
+}
+
+/* --- Inputs --- */
+html.dark input[type="text"],
+html.dark input[type="number"],
+html.dark input[type="email"],
+html.dark input[type="password"],
+html.dark select,
+html.dark .input-focus {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+    color: #e2e8f0 !important;
+}
+
+html.dark input::placeholder {
+    color: #475569 !important;
+}
+
+html.dark input:focus {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+}
+
+/* --- Labels --- */
+html.dark label.text-slate-500,
+html.dark .text-sm.font-semibold.text-slate-500 {
+    color: #94a3b8 !important;
+}
+
+/* --- Utility text classes --- */
+html.dark .medio-text {
+    color: #e2e8f0 !important;
+}
+
+html.dark .litle-text {
+    color: #94a3b8 !important;
+}
+
+/* --- Background Gradient (body) --- */
+html.dark body.bg-gradient-to-br {
+    background: #0f172a !important;
+}
+
+html.dark body.bg-slate-50 {
+    background-color: #0f172a !important;
+}
+
+/* --- Overlay --- */
+html.dark .overlay-bg {
+    background-color: rgba(0, 0, 0, 0.6) !important;
+}
+
+/* --- Modals --- */
+html.dark .modal-overlay,
+html.dark .modal-panel,
+html.dark [id^="menu"].fixed,
+html.dark #confirm-modal > div,
+html.dark #modal-trocar-nome > div {
+    background-color: #1e293b !important;
+    color: #e2e8f0;
+}
+
+html.dark .modal-panel h2,
+html.dark .modal-panel .text-base.font-bold,
+html.dark .modal-panel .text-lg.font-bold,
+html.dark #confirm-modal h3 {
+    color: #ffffff !important;
+}
+
+html.dark .modal-panel p,
+html.dark .modal-panel .text-sm.text-slate-400 {
+    color: #cbd5e1 !important;
+}
+
+html.dark .modal-panel .border-b,
+html.dark .modal-panel .border-t {
+    border-color: #334155 !important;
+}
+
+/* --- Chips / Quick Tags --- */
+html.dark .chip,
+html.dark .butoes-sugestivos button {
+    background-color: rgba(99, 102, 241, 0.15) !important;
+    color: #a5b4fc !important;
+    border-color: rgba(99, 102, 241, 0.3) !important;
+}
+
+html.dark .chip:hover,
+html.dark .butoes-sugestivos button:hover {
+    background-color: rgba(99, 102, 241, 0.25) !important;
+}
+
+/* --- Buttons --- */
+html.dark .bg-indigo-500 {
+    background-color: #6366f1 !important;
+}
+
+html.dark .bg-emerald-500 {
+    background-color: #10b981 !important;
+}
+
+/* --- Extrato / History --- */
+html.dark #historico-list li {
+    border-bottom-color: #334155 !important;
+}
+
+html.dark #historico-list li:hover {
+    background-color: rgba(51, 65, 85, 0.3) !important;
+}
+
+html.dark #historico-list li h3 {
+    color: #e2e8f0 !important;
+}
+
+html.dark #historico-list li p {
+    color: #94a3b8 !important;
+}
+
+html.dark .linha {
+    background: #334155 !important;
+    border-color: #334155 !important;
+}
+
+/* --- Delete Icon in Extrato --- */
+html.dark #historico-list li.selected-for-delete {
+    background-color: rgba(244, 63, 94, 0.12) !important;
+}
+
+/* --- Meta Dashboard --- */
+html.dark .meta-dash-track {
+    background: #334155 !important;
+}
+
+/* --- Scrollbar --- */
+html.dark .custom-scroll::-webkit-scrollbar-thumb {
+    background: #475569;
+}
+
+/* Hide sidebar scrollbar */
+#sidebar nav {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+#sidebar nav::-webkit-scrollbar {
+    display: none;
+}
+
+/* --- Config Page --- */
+html.dark .config-row:hover {
+    background-color: rgba(51, 65, 85, 0.3) !important;
+}
+
+html.dark .config-row {
+    border-color: #334155 !important;
+}
+
+html.dark .day-btn {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+    color: #e2e8f0 !important;
+}
+
+html.dark .day-btn:hover {
+    border-color: #818cf8 !important;
+    background-color: rgba(99, 102, 241, 0.1) !important;
+    color: #a5b4fc !important;
+}
+
+html.dark .day-btn.ativo {
+    background: #6366f1 !important;
+    color: white !important;
+    border-color: #6366f1 !important;
+}
+
+/* --- Range Input --- */
+html.dark input[type="range"] {
+    background: #334155 !important;
+}
+
+/* --- Checkbox --- */
+html.dark .checkbox-custom {
+    border-color: #475569 !important;
+}
+
+/* --- Config Modals --- */
+html.dark #menureinicio,
+html.dark #menumetas,
+html.dark #notifcard,
+html.dark #menuimportar,
+html.dark #menuperfil {
+    background-color: rgba(0, 0, 0, 0.6) !important;
+}
+
+/* --- Login Page --- */
+html.dark .login-wrapper {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+}
+
+html.dark .login-form-side {
+    background-color: #1e293b !important;
+}
+
+html.dark .login-form-side h2,
+html.dark .login-header h2 {
+    color: #ffffff !important;
+}
+
+html.dark .login-form-side p,
+html.dark .login-header p {
+    color: #cbd5e1 !important;
+}
+
+html.dark .login-form label,
+html.dark .create-form label {
+    color: #e2e8f0 !important;
+}
+
+html.dark .input-container input {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+    color: #e2e8f0 !important;
+}
+
+html.dark .input-container input::placeholder {
+    color: #475569 !important;
+}
+
+html.dark .input-container input:focus {
+    background-color: #1e293b !important;
+}
+
+html.dark .login-footer {
+    color: #94a3b8 !important;
+}
+
+html.dark .footer-links a {
+    color: #94a3b8 !important;
+}
+
+html.dark .footer-links a:hover {
+    color: #818cf8 !important;
+}
+
+/* --- PWA Banner --- */
+html.dark .pwa-banner {
+    background: #1e293b !important;
+}
+
+html.dark .pwa-banner-title {
+    color: #ffffff !important;
+}
+
+html.dark .pwa-banner-subtitle {
+    color: #cbd5e1 !important;
+}
+
+html.dark .pwa-btn-dismiss {
+    background: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+html.dark .pwa-btn-close:hover {
+    background: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+/* --- Onboarding --- */
+html.dark .onboarding-card {
+    background-color: #1e293b !important;
+}
+
+html.dark .onboarding-card p,
+html.dark .onboarding-card .text-slate-600 {
+    color: #e2e8f0 !important;
+}
+
+html.dark .onboarding-card .text-slate-500 {
+    color: #cbd5e1 !important;
+}
+
+/* --- Help Page --- */
+html.dark .help-section {
+    border-color: #334155 !important;
+}
+
+html.dark .help-section-toggle:hover {
+    background-color: rgba(51, 65, 85, 0.3) !important;
+}
+
+html.dark .help-section-content p,
+html.dark .help-section-content li,
+html.dark .help-section-content span {
+    color: #e2e8f0 !important;
+}
+
+html.dark .help-section-content h4 {
+    color: #ffffff !important;
+}
+
+html.dark .help-item:hover {
+    background-color: rgba(51, 65, 85, 0.2) !important;
+}
+
+html.dark .help-item {
+    border-left-color: transparent;
+}
+
+html.dark .help-item:hover {
+    border-left-color: #818cf8;
+}
+
+/* --- Gerenciamento Specific --- */
+html.dark .toggle-btn {
+    color: #cbd5e1 !important;
+}
+
+html.dark .toggle-btn.active {
+    background: #1e293b !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3) !important;
+}
+
+html.dark .categoria-item:hover {
+    background-color: rgba(51, 65, 85, 0.3) !important;
+}
+
+html.dark .categoria-nome {
+    color: #e2e8f0 !important;
+}
+
+html.dark .categoria-valor {
+    color: #ffffff !important;
+}
+
+html.dark .categoria-porcentagem {
+    color: #94a3b8 !important;
+}
+
+html.dark .categoria-barra-bg {
+    background: #334155 !important;
+}
+
+html.dark .meta-cat-bar-track {
+    background: #334155 !important;
+}
+
+html.dark .meta-cat-label {
+    color: #e2e8f0 !important;
+}
+
+html.dark .meta-cat-value {
+    color: #ffffff !important;
+}
+
+html.dark .progress-bar-track {
+    background: #334155 !important;
+}
+
+/* --- Status Banner --- */
+html.dark .status-ok {
+    background: rgba(6, 95, 70, 0.3) !important;
+    color: #6ee7b7 !important;
+}
+
+html.dark .status-warn {
+    background: rgba(146, 64, 14, 0.3) !important;
+    color: #fcd34d !important;
+}
+
+html.dark .status-danger {
+    background: rgba(153, 27, 27, 0.3) !important;
+    color: #fca5a5 !important;
+}
+
+html.dark .status-no-limit {
+    background: #1e293b !important;
+    color: #94a3b8 !important;
+}
+
+/* --- Summary Cards in Meta --- */
+html.dark .grid.grid-cols-3 > div {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
+}
+
+html.dark .bg-slate-50 {
+    background-color: #0f172a !important;
+}
+
+/* --- Toggle Button Group --- */
+html.dark .bg-slate-100.rounded-xl.p-1 {
+    background: #1e293b !important;
+}
+
+/* --- Analisar Button --- */
+html.dark #btn-analisar {
+    background: rgba(99, 102, 241, 0.15) !important;
+    color: #a5b4fc !important;
+    border-color: rgba(99, 102, 241, 0.3) !important;
+}
+
+html.dark #btn-analisar:hover {
+    background: rgba(99, 102, 241, 0.25) !important;
+}
+
+/* --- Donut Center --- */
+html.dark .donut-center .text-xs {
+    color: #94a3b8 !important;
+}
+
+/* --- Legend text --- */
+html.dark #balanco-mensal .text-xs.font-semibold,
+html.dark #evolução-gastos .text-xs.font-semibold {
+    color: #cbd5e1 !important;
+}
+
+/* --- Month Selector --- */
+html.dark #mes-selector-dropdown {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+html.dark #mes-selector-dropdown .h-px {
+    background-color: #334155 !important;
+}
+
+html.dark #mes-selector-dropdown .ano-nav {
+    color: #94a3b8 !important;
+}
+
+html.dark #mes-selector-dropdown .ano-nav:hover {
+    background-color: rgba(51, 65, 85, 0.5) !important;
+    color: #e2e8f0 !important;
+}
+
+html.dark .mes-option {
+    border-color: #334155 !important;
+    color: #e2e8f0 !important;
+    background-color: #0f172a !important;
+}
+
+html.dark .mes-option:hover {
+    background-color: rgba(99, 102, 241, 0.15) !important;
+    border-color: #818cf8 !important;
+    color: #a5b4fc !important;
+}
+
+html.dark .mes-option.active {
+    background-color: rgba(99, 102, 241, 0.25) !important;
+    color: #a5b4fc !important;
+    border-color: #818cf8 !important;
+}
+
+/* --- Chart text colors --- */
+html.dark .text-xl.font-extrabold,
+html.dark .text-xl.font-bold {
+    color: #ffffff !important;
+}
+
+/* --- Confirm Modal delete button --- */
+html.dark #confirm-modal .bg-white {
+    background-color: #1e293b !important;
+}
+
+/* --- Toggle transition for smooth theme switch --- */
+html.transitioning,
+html.transitioning * {
+    transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease !important;
+}
+
+/* --- Dark mode toggle button in sidebar --- */
+.dark-mode-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: calc(100% - 24px);
+    margin: 0 12px;
+    padding: 12px 16px;
+    background: #f1f5f9;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.3s ease;
+}
+
+html.dark .dark-mode-toggle {
+    background: #0f172a;
+}
+
+.dark-mode-toggle:hover {
+    background: #e2e8f0;
+}
+
+html.dark .dark-mode-toggle:hover {
+    background: #1e293b;
+}
+
+/* --- Switch track --- */
+.dark-mode-switch {
+    position: relative;
+    width: 48px;
+    height: 26px;
+    background: linear-gradient(135deg, #cbd5e1, #a1a1aa);
+    border-radius: 13px;
+    transition: background 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+}
+
+html.dark .dark-mode-switch {
+    background: linear-gradient(135deg, #818cf8, #6366f1);
+}
+
+/* --- Switch thumb --- */
+.dark-mode-switch::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+html.dark .dark-mode-switch::after {
+    transform: translateX(22px);
+    box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
+}
+
+/* --- Sun/Moon icon colors --- */
+.dark-mode-toggle .dm-icon-sun {
+    color: #f59e0b;
+    transition: color 0.5s ease, opacity 0.5s ease;
+    opacity: 1;
+}
+
+.dark-mode-toggle .dm-icon-moon {
+    color: #94a3b8;
+    transition: color 0.5s ease, opacity 0.5s ease;
+    opacity: 0.6;
+}
+
+html.dark .dark-mode-toggle .dm-icon-sun {
+    color: #475569;
+    opacity: 0.5;
+}
+
+html.dark .dark-mode-toggle .dm-icon-moon {
+    color: #c7d2fe;
+    opacity: 1;
+}
+
+/* ===================== DARK MODE: Recorrências Page ===================== */
+html.dark .rec-item:hover { background-color: rgba(51,65,85,0.3); }
+html.dark .rec-nome { color: #e2e8f0; }
+html.dark .rec-detalhe { color: #94a3b8; }
+
+/* ===================== DARK MODE: Metas de Economia ===================== */
+html.dark .meta-card-item {
+    border-color: #334155;
+    background-color: #1e293b;
+}
+html.dark .meta-card-item:hover {
+    border-color: #475569;
+}
+
+/* ===================== DARK MODE: Lembretes de Contas ===================== */
+html.dark #lembretes-list .flex.items-center {
+    background-color: rgba(30,41,59,0.8);
+    border-color: #334155;
+}
+html.dark #lembretes-list .flex.items-center.p-3 {
+    background-color: #1e293b;
+}
+
+/* Lembretes status colors - dark mode */
+html.dark #lembretes-list .bg-rose-50 { background-color: rgba(225,29,72,0.15) !important; }
+html.dark #lembretes-list .text-rose-700 { color: #fda4af !important; }
+html.dark #lembretes-list .border-rose-100 { border-color: rgba(225,29,72,0.2) !important; }
+html.dark #lembretes-list .bg-amber-50 { background-color: rgba(245,158,11,0.15) !important; }
+html.dark #lembretes-list .text-amber-700 { color: #fcd34d !important; }
+html.dark #lembretes-list .border-amber-200 { border-color: rgba(245,158,11,0.2) !important; }
+html.dark #lembretes-list .bg-emerald-50 { background-color: rgba(16,185,129,0.15) !important; }
+html.dark #lembretes-list .text-emerald-700 { color: #6ee7b7 !important; }
+html.dark #lembretes-list .border-emerald-100 { border-color: rgba(16,185,129,0.2) !important; }
+
+/* Lembretes check button dark mode */
+html.dark .lemb-check { border-color: #475569; }
+html.dark .lemb-check:hover { border-color: #34d399; }
+
+/* ===================== DARK MODE: Confirm Modal ===================== */
+html.dark #confirm-modal > div { background-color: #1e293b; }
+html.dark #confirm-modal #confirm-modal-title { color: #e2e8f0; }
+html.dark #confirm-modal #confirm-modal-text { color: #94a3b8; }
+html.dark #confirm-modal .bg-rose-50 { background-color: rgba(225,29,72,0.15); }
+html.dark #confirm-modal #confirm-modal-cancel { color: #e2e8f0; background-color: transparent; }
+html.dark #confirm-modal #confirm-modal-cancel:hover { background-color: rgba(71,85,105,0.4); }
+html.dark #confirm-modal #confirm-modal-ok { color: #fda4af; }
+html.dark #confirm-modal #confirm-modal-ok:hover { background-color: rgba(225,29,72,0.12); }
+html.dark #confirm-modal .border-t { border-color: #334155; }
+html.dark #confirm-modal .w-px { background-color: #334155; }
+
+/* ===================== DARK MODE: Modal cancel buttons ===================== */
+html.dark #modal-meta-cancel,
+html.dark #modal-lembrete-cancel,
+html.dark #modal-deposito-cancel,
+html.dark #modal-saque-cancel {
+    background-color: #334155;
+    color: #e2e8f0;
+}
+html.dark #modal-meta-cancel:hover,
+html.dark #modal-lembrete-cancel:hover,
+html.dark #modal-deposito-cancel:hover,
+html.dark #modal-saque-cancel:hover {
+    background-color: #475569;
+}
+
+/* --- Reportar & Feedback Page --- */
+html.dark #form-report input,
+html.dark #form-report textarea {
+    background-color: #1e293b;
+    border-color: #334155;
+    color: #e2e8f0;
+}
+html.dark #form-report input::placeholder,
+html.dark #form-report textarea::placeholder {
+    color: #64748b;
+}
+html.dark #form-report input:focus,
+html.dark #form-report textarea:focus {
+    background-color: #0f172a;
+    border-color: #14b8a6;
+}
+html.dark .tipo-btn:not(.active-bug):not(.active-feat):not(.active-praise) {
+    background-color: #334155;
+    color: #94a3b8;
+}
+html.dark #report-success-card {
+    background-color: #1e293b;
+}
+html.dark #report-success-card h2 {
+    color: #f1f5f9;
+}
+html.dark #report-success-card p {
+    color: #94a3b8;
+}

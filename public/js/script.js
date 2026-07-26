@@ -217,7 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const novoNome = inputNovoNome.value.trim();
                     
                     if (!novoNome) {
-                        window._notyf.error("Por favor, digite um nome valido.");
+                        window._notyf.error("Por favor, digite um nome válido.");
                         return;
                     }
                     

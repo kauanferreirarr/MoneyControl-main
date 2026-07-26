@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador de Icones PWA - MoneyControl</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .container { max-width: 500px; width: 100%; text-align: center; }
+    h1 { font-size: 24px; margin-bottom: 8px; color: #818cf8; }
+    p { font-size: 14px; color: #94a3b8; margin-bottom: 24px; }
+    .upload-area { border: 2px dashed #334155; border-radius: 16px; padding: 40px 20px; margin-bottom: 24px; cursor: pointer; transition: border-color 0.2s; }
+    .upload-area:hover { border-color: #6366f1; }
+    .upload-area p { margin-bottom: 0; }
+    input[type="file"] { display: none; }
+    .preview { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px; }
+    .preview-item { text-align: center; }
+    .preview-item canvas { border-radius: 12px; border: 1px solid #1e293b; background: #1e293b; }
+    .preview-item span { display: block; margin-top: 8px; font-size: 12px; color: #64748b; }
+    .btn { display: inline-block; padding: 12px 24px; background: #6366f1; color: white; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; margin: 4px; transition: background 0.2s; }
+    .btn:hover { background: #4f46e5; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .download-area { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Gerador de Icones PWA</h1>
+    <p>Faca upload do logo do MoneyControl e gere os icones de 192x192 e 512x512</p>
+
+    <div class="upload-area" id="uploadArea">
+      <p>Clique ou arraste uma imagem aqui</p>
+      <input type="file" id="fileInput" accept="image/*">
+    </div>
+
+    <div class="preview" id="preview"></div>
+
+    <div class="download-area" id="downloadArea">
+      <button class="btn" id="btn192" disabled>Download 192x192</button>
+      <button class="btn" id="btn512" disabled>Download 512x512</button>
+      <button class="btn" id="btnAll" disabled>Download Todos</button>
+    </div>
+  </div>
+
+  <script>
+    var uploadArea = document.getElementById('uploadArea');
+    var fileInput = document.getElementById('fileInput');
+    var preview = document.getElementById('preview');
+    var btn192 = document.getElementById('btn192');
+    var btn512 = document.getElementById('btn512');
+    var btnAll = document.getElementById('btnAll');
+    var img = new Image();
+
+    uploadArea.addEventListener('click', function () { fileInput.click(); });
+    uploadArea.addEventListener('dragover', function (e) { e.preventDefault(); uploadArea.style.borderColor = '#6366f1'; });
+    uploadArea.addEventListener('dragleave', function () { uploadArea.style.borderColor = '#334155'; });
+    uploadArea.addEventListener('drop', function (e) {
+      e.preventDefault();
+      uploadArea.style.borderColor = '#334155';
+      if (e.dataTransfer.files.length) loadImage(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', function () { if (fileInput.files.length) loadImage(fileInput.files[0]); });
+
+    function loadImage(file) {
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        img.onload = function () { renderPreviews(); };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function renderPreviews() {
+      preview.innerHTML = '';
+      [192, 512].forEach(function (size) {
+        var canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        var ctx = canvas.getContext('2d');
+        var ratio = Math.min(size / img.width, size / img.height);
+        var w = img.width * ratio;
+        var h = img.height * ratio;
+        ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+        var div = document.createElement('div');
+        div.className = 'preview-item';
+        div.appendChild(canvas);
+        var span = document.createElement('span');
+        span.textContent = size + 'x' + size;
+        div.appendChild(span);
+        preview.appendChild(div);
+      });
+      btn192.disabled = false;
+      btn512.disabled = false;
+      btnAll.disabled = false;
+    }
+
+    function download(size) {
+      var canvas = preview.querySelectorAll('canvas')[size === 192 ? 0 : 1];
+      var link = document.createElement('a');
+      link.download = 'icon-' + size + '.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    btn192.addEventListener('click', function () { download(192); });
+    btn512.addEventListener('click', function () { download(512); });
+    btnAll.addEventListener('click', function () { download(192); setTimeout(function () { download(512); }, 300); });
+  </script>
+</body>
+</html>

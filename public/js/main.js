@@ -72,6 +72,51 @@ function formatBR(n) {
   return "R$ " + Number(n).toFixed(2).replace(".", ",");
 }
 
+// === MODAL DE CONFIRMACAO CUSTOMIZADO ===
+function confirmModal(title, text) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById("confirm-modal");
+    const titleEl = document.getElementById("confirm-modal-title");
+    const textEl = document.getElementById("confirm-modal-text");
+    const btnOk = document.getElementById("confirm-modal-ok");
+    const btnCancel = document.getElementById("confirm-modal-cancel");
+
+    titleEl.textContent = title;
+    textEl.textContent = text;
+
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+    void modal.offsetHeight;
+    modal.style.opacity = "0";
+    modal.querySelector("div").style.transform = "scale(0.95)";
+    requestAnimationFrame(() => {
+      modal.style.opacity = "1";
+      modal.querySelector("div").style.transform = "scale(1)";
+    });
+
+    function close(result) {
+      modal.style.opacity = "0";
+      modal.querySelector("div").style.transform = "scale(0.95)";
+      setTimeout(() => {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+        btnOk.removeEventListener("click", onOk);
+        btnCancel.removeEventListener("click", onCancel);
+        modal.removeEventListener("click", onBackdrop);
+      }, 200);
+      resolve(result);
+    }
+
+    function onOk() { close(true); }
+    function onCancel() { close(false); }
+    function onBackdrop(e) { if (e.target === modal) close(false); }
+
+    btnOk.addEventListener("click", onOk);
+    btnCancel.addEventListener("click", onCancel);
+    modal.addEventListener("click", onBackdrop);
+  });
+}
+
 
 let ultimaNotificacaoNivel = null;
 
@@ -102,6 +147,32 @@ function checarLimite(gastos, limite) {
   }
 
   ultimaNotificacaoNivel = nivel;
+}
+
+// =========================== LEMBRETES VENCIDOS ===========================
+function verificarLembretesVencidos(lembretes) {
+  if (!lembretes || lembretes.length === 0) return;
+
+  const hoje = new Date();
+  const diaAtual = hoje.getDate();
+  const chave = "mc_last_lembrete_notif";
+  const cooldown = 5 * 60 * 1000; // 5 minutos
+
+  const ultimoAviso = parseInt(localStorage.getItem(chave)) || 0;
+  if (Date.now() - ultimoAviso < cooldown) return;
+
+  const vencidos = lembretes.filter(l => l.dia < diaAtual && !l.concluido);
+  const vencemHoje = lembretes.filter(l => l.dia === diaAtual && !l.concluido);
+
+  if (vencidos.length > 0) {
+    const nomes = vencidos.map(l => l.descricao).join(", ");
+    notyf.error(`Contas atrasadas: ${nomes}`);
+    localStorage.setItem(chave, String(Date.now()));
+  } else if (vencemHoje.length > 0) {
+    const nomes = vencemHoje.map(l => l.descricao).join(", ");
+    notyf.error(`Vence hoje: ${nomes}`);
+    localStorage.setItem(chave, String(Date.now()));
+  }
 }
 
 
@@ -166,33 +237,44 @@ function formatarDataTransacao(timestamp){
 async function verificarResetMensal(dadosUsuario, userRef) {
   if (!dadosUsuario.dataReinicio) return;
 
-  const diaHoje = new Date().getDate(); // pega o dia do mês atual
-  const ultimoReset = dadosUsuario.ultimoReset || 0; // último reset feito
+  const now = new Date();
+  const diaHoje = now.getDate();
+  const mesAtual = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+  const dataReinicio = Number(dadosUsuario.dataReinicio);
 
-  if (diaHoje === Number(dadosUsuario.dataReinicio) && ultimoReset !== diaHoje) {
+  // Compatibilidade: migrar campo antigo "ultimoReset" (dia) para "ultimoResetMes" (ano-mes)
+  let ultimoResetMes = dadosUsuario.ultimoResetMes || '';
+  if (!ultimoResetMes && dadosUsuario.ultimoReset) {
+    // Se so tem o campo antigo, assume que foi no mes atual para evitar reset duplicado
+    ultimoResetMes = mesAtual;
+    await updateDoc(userRef, { ultimoResetMes: mesAtual }).catch(() => {});
+  }
+
+  // Reset se: dia atual >= dia de reinicio E ainda nao resetou este mes
+  if (diaHoje >= dataReinicio && ultimoResetMes !== mesAtual) {
     try {
       await updateDoc(userRef, {
-        gastos: 0, // zera gastos
-        ultimoReset: diaHoje, // marca que já fez reset
+        gastos: 0,
+        ultimoResetMes: mesAtual,
       });
 
       const gastosEl = document.getElementById("gastos-atual");
       if (gastosEl) gastosEl.textContent = "R$ 0,00";
 
-      console.log("[resetMensal] Gastos zerados automaticamente no dia certo!");
+      console.log("[resetMensal] Gastos zerados automaticamente! (dia " + diaHoje + " >= " + dataReinicio + ")");
 
-      // 🔔 Notificação aqui
+      // Notificação
       if (Notification.permission === "granted") {
         new Notification("MoneyControl", {
-          body: "Seus gastos foram resetados automaticamente hoje.",
-          icon: "../assets/logo.png"// opcional, coloca um ícone se quiser
+          body: "Seus gastos foram resetados automaticamente.",
+          icon: "assets/logo.png"
         });
       } else if (Notification.permission !== "denied") {
         Notification.requestPermission().then((perm) => {
           if (perm === "granted") {
             new Notification("MoneyControl", {
-              body: "Seus gastos foram resetados automaticamente hoje.",
-              icon: "../assets/logo.png",
+              body: "Seus gastos foram resetados automaticamente.",
+              icon: "assets/logo.png",
             });
           }
         });
@@ -250,7 +332,7 @@ function renderMetaDashboard(dados) {
     statusEl.textContent = "Quase no limite";
   } else {
     statusEl.classList.add("bg-emerald-50", "text-emerald-600");
-    statusEl.textContent = "Dentro do orcamento";
+    statusEl.textContent = "Dentro do orçamento";
   }
 }
 
@@ -346,37 +428,57 @@ async function carregarDados(uid) {
   if (historicoEl) {
     historicoEl.innerHTML = "";
     const transacoes = (dadosAtualizados.transacoes || []).slice().sort((a, b) => b.data - a.data);
-    transacoes.forEach((t, index) => {
-      const li = document.createElement("li");
-      li.setAttribute('data-index', index);
-      li.className = "txn-item";
-      const cor = t.tipo === "despesa" ? "red" : "green";
-      li.innerHTML = `
-        <div>
-          <h3 class="medio-text">${t.descricao}</h3>
-          <p>${formatarDataTransacao(t.data)}</p>
-        </div>
-        <span class="medio-text ${cor}">${formatBR(t.valor)}</span>
-        <div class="delete-icon" style="display:none; cursor:pointer;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"></polyline>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            <line x1="10" y1="11" x2="10" y2="17"></line>
-            <line x1="14" y1="11" x2="14" y2="17"></line>
+
+    if (transacoes.length === 0) {
+      const emptyDiv = document.createElement("div");
+      emptyDiv.className = "flex flex-col items-center justify-center py-12 px-6 text-center";
+      emptyDiv.innerHTML = `
+        <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
           </svg>
         </div>
+        <p class="text-sm font-semibold text-slate-500 mb-1">Nenhuma transação ainda</p>
+        <p class="text-xs text-slate-400">Adicione uma despesa ou saldo para começar</p>
       `;
-      historicoEl.appendChild(li);
+      historicoEl.appendChild(emptyDiv);
+    } else {
+      transacoes.forEach((t, index) => {
+        const li = document.createElement("li");
+        li.setAttribute('data-index', index);
+        li.className = "txn-item";
+        const cor = t.tipo === "despesa" ? "red" : "green";
+        li.innerHTML = `
+          <div>
+            <h3 class="medio-text">${t.descricao}</h3>
+            <p>${formatarDataTransacao(t.data)}</p>
+          </div>
+          <span class="medio-text ${cor}">${formatBR(t.valor)}</span>
+          <div class="delete-icon" style="display:none; cursor:pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg>
+          </div>
+        `;
+        historicoEl.appendChild(li);
 
-      if (index < transacoes.length - 1) {
-        const separator = document.createElement("div");
-        separator.className = "linha";
-        historicoEl.appendChild(separator);
-      }
-    });
+        if (index < transacoes.length - 1) {
+          const separator = document.createElement("div");
+          separator.className = "linha";
+          historicoEl.appendChild(separator);
+        }
+      });
+    }
   }
-  
+
   setupTransactionItems();
+
+  // Alerta de meta ao carregar dados
+  checarLimite(dadosAtualizados.gastos, dadosAtualizados.limiteMensal);
 }
 
 // === PERFIL ===
@@ -533,7 +635,8 @@ async function apagarTransacao(uid, transacaoIndex) {
   if (!snap.exists()) return false;
 
   const dados = snap.data();
-  const transacoes = [...(dados.transacoes || [])];
+  // Ordena igual ao carregarDados pra garantir que o index bata
+  const transacoes = [...(dados.transacoes || [])].sort((a, b) => b.data - a.data);
   if (transacaoIndex < 0 || transacaoIndex >= transacoes.length) return false;
 
   const t = transacoes[transacaoIndex];
@@ -542,15 +645,20 @@ async function apagarTransacao(uid, transacaoIndex) {
 
   if(t.tipo === "despesa"){
     novoSaldo += Number(t.valor);
-    // garante que gastos nunca fiquem negativos
     novosGastos = Math.max(0, dados.gastos - Number(t.valor));
   } else if(t.tipo === "entrada"){
     novoSaldo -= Number(t.valor);
   }
 
+  // Encontra e remove a transacao correta no array original
+  const transacoesOriginal = [...(dados.transacoes || [])];
+  const idxOriginal = transacoesOriginal.findIndex(tx =>
+    tx.data === t.data && tx.valor === t.valor && tx.descricao === t.descricao && tx.tipo === t.tipo
+  );
+  if (idxOriginal === -1) return false;
+  transacoesOriginal.splice(idxOriginal, 1);
 
-  transacoes.splice(transacaoIndex, 1);
-  await updateDoc(userRef, { transacoes, saldo: novoSaldo, gastos: novosGastos });
+  await updateDoc(userRef, { transacoes: transacoesOriginal, saldo: novoSaldo, gastos: novosGastos });
   await carregarDados(uid);
   return true;
 }
@@ -713,7 +821,7 @@ if (formTrocarNome){
     e.preventDefault();
     const inputNovoNome = document.getElementById('novo-nome');
     const novoNome = inputNovoNome.value.trim();
-    if (!novoNome) return notyf.error("Digite um nome valido");
+    if (!novoNome) return notyf.error("Digite um nome válido");
     if (currentUser) await atualizarNomeUsuario(currentUser.uid, novoNome);
     document.getElementById('modal-trocar-nome').classList.remove('active');
     document.body.style.overflow = '';
@@ -746,10 +854,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   if(btnAddDespesa){
     btnAddDespesa.addEventListener("click", async ()=>{
-      if(!currentUser) return notyf.error("Usuario nao logado!");
+      if(!currentUser) return notyf.error("Usuário não logado!");
       const valor = parseFloat(inputValor.value.replace(",", "."));
       const descricao = inputDescricao.value.trim() || "Despesa";
-      if(!valor || !descricao) return notyf.error("Preencha valor e descricao");
+      if(!valor || !descricao) return notyf.error("Preencha valor e descrição");
 
       const userRef = doc(db, "usuarios", currentUser.uid);
       const snap = await getDoc(userRef);
@@ -777,10 +885,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   if(btnAddSaldo){
     btnAddSaldo.addEventListener("click", async ()=>{
-      if(!currentUser) return notyf.error("Usuario nao logado!");
+      if(!currentUser) return notyf.error("Usuário não logado!");
       const valor = parseFloat(inputValor.value.replace(",", "."));
-      const descricao = inputDescricao.value.trim() || "Deposito";
-      if(!valor) return notyf.error("Preencha um valor valido");
+      const descricao = inputDescricao.value.trim() || "Depósito";
+      if(!valor) return notyf.error("Preencha um valor válido");
 
       const userRef = doc(db, "usuarios", currentUser.uid);
       const snap = await getDoc(userRef);
@@ -806,7 +914,14 @@ function setupTransactionItems(){
     const deleteIcon = item.querySelector('.delete-icon');
 
     if (valueSpan && deleteIcon){
-      deleteIcon.onclick = async () => { if(currentUser) await apagarTransacao(currentUser.uid, index); };
+      deleteIcon.onclick = async () => {
+        if(!currentUser) return;
+        const nome = item.querySelector('h3')?.textContent || 'esta transação';
+        const ok = await confirmModal("Deletar transação?", " \"" + nome + "\" será removida permanentemente.");
+        if(!ok) return;
+        await apagarTransacao(currentUser.uid, index);
+        notyf.success("Transação deletada");
+      };
     }
 
     item.oncontextmenu = (e) => {
@@ -831,12 +946,45 @@ function iniciarOnboarding(uid) {
   const welcomeEl = document.getElementById("onboarding-welcome");
   const metaEl = document.getElementById("onboarding-meta");
   const reinicioEl = document.getElementById("onboarding-reinicio");
+  const installEl = document.getElementById("onboarding-install");
 
   function showStep(step) {
-    [welcomeEl, metaEl, reinicioEl].forEach(el => {
+    [welcomeEl, metaEl, reinicioEl, installEl].forEach(el => {
       if (el) el.classList.remove("active");
     });
     if (step) step.classList.add("active");
+  }
+
+  async function finalizarOnboarding() {
+    const userRef = doc(db, "usuarios", uid);
+    const updates = { onboardingComplete: true };
+
+    const limiteVal = parseFloat(document.getElementById("onboarding-limite").value);
+    if (isNaN(limiteVal) || limiteVal < 50) {
+      document.getElementById("onboarding-meta-error").classList.remove("hidden");
+      document.getElementById("onboarding-limite").focus();
+      return;
+    }
+    updates.limiteMensal = limiteVal;
+
+    const diaVal = document.getElementById("onboarding-dia").value;
+    if (diaVal) {
+      updates.dataReinicio = Number(diaVal);
+      // Marca o mes atual para evitar reset imediato
+      const now = new Date();
+      updates.ultimoResetMes = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+    }
+
+    try {
+      await updateDoc(userRef, updates);
+    } catch (e) {
+      console.error("Erro ao salvar onboarding:", e);
+    }
+
+    showStep(null);
+    notyf.success("Tudo pronto! Bora gerenciar suas finanças!");
+
+    await carregarDados(uid);
   }
 
   showStep(welcomeEl);
@@ -850,6 +998,13 @@ function iniciarOnboarding(uid) {
   });
 
   document.getElementById("onboarding-next-2").addEventListener("click", () => {
+    const limiteVal = parseFloat(document.getElementById("onboarding-limite").value);
+    if (isNaN(limiteVal) || limiteVal < 50) {
+      document.getElementById("onboarding-meta-error").classList.remove("hidden");
+      document.getElementById("onboarding-limite").focus();
+      return;
+    }
+    document.getElementById("onboarding-meta-error").classList.add("hidden");
     showStep(reinicioEl);
   });
 
@@ -857,39 +1012,31 @@ function iniciarOnboarding(uid) {
     showStep(metaEl);
   });
 
-  document.getElementById("onboarding-sem-limite").addEventListener("change", (e) => {
-    const input = document.getElementById("onboarding-limite");
-    input.disabled = e.target.checked;
-    if (e.target.checked) input.value = "";
+  document.getElementById("onboarding-next-3").addEventListener("click", () => {
+    showStep(installEl);
   });
 
-  document.getElementById("onboarding-finish").addEventListener("click", async () => {
-    const userRef = doc(db, "usuarios", uid);
-    const updates = { onboardingComplete: true };
+  document.getElementById("onboarding-back-4").addEventListener("click", () => {
+    showStep(reinicioEl);
+  });
 
-    const semLimite = document.getElementById("onboarding-sem-limite").checked;
-    if (!semLimite) {
-      const limiteVal = parseFloat(document.getElementById("onboarding-limite").value);
-      if (!isNaN(limiteVal) && limiteVal > 0) {
-        updates.limiteMensal = limiteVal;
-      }
+  document.getElementById("onboarding-install-btn").addEventListener("click", () => {
+    if (window._deferredInstallPrompt) {
+      window._deferredInstallPrompt.prompt();
+      window._deferredInstallPrompt.userChoice.then((result) => {
+        if (result.outcome === "accepted") {
+          console.log("[PWA] Instalacao aceita pelo usuario");
+        }
+        window._deferredInstallPrompt = null;
+        finalizarOnboarding();
+      });
+    } else {
+      finalizarOnboarding();
     }
+  });
 
-    const diaVal = document.getElementById("onboarding-dia").value;
-    if (diaVal) {
-      updates.dataReinicio = Number(diaVal);
-    }
-
-    try {
-      await updateDoc(userRef, updates);
-    } catch (e) {
-      console.error("Erro ao salvar onboarding:", e);
-    }
-
-    showStep(null);
-    notyf.success("Tudo pronto! Bora gerenciar suas financas!");
-
-    await carregarDados(uid);
+  document.getElementById("onboarding-skip-install").addEventListener("click", () => {
+    finalizarOnboarding();
   });
 }
 
@@ -949,6 +1096,11 @@ onAuthStateChanged(auth, async (user) => {
     await carregarDados(user.uid);
     await carregarNomeUsuario(user.uid);
 
+    // Verifica lembretes vencidos
+    const snapLemb = await getDoc(doc(db, "usuarios", user.uid)).catch(() => null);
+    const dadosLemb = snapLemb && snapLemb.exists() ? snapLemb.data() : {};
+    verificarLembretesVencidos(dadosLemb.lembretes || []);
+
     // Atualiza nome do cache se disponível
     const cachedName = localStorage.getItem("userName");
     const userNameEl = document.querySelector(".user-name");
@@ -990,7 +1142,7 @@ const btnSalvarMeta = document.getElementById("btn-salvar-meta");
 
 if (btnSalvarMeta) {
 btnSalvarMeta.addEventListener("click", async () => {
-  if (!currentUser) return notyf.error("Usuario nao logado!");
+  if (!currentUser) return notyf.error("Usuário não logado!");
 
   const limiteInput = document.getElementById("limit-range");
   const noLimitCheckbox = document.getElementById("no-limit");
@@ -998,7 +1150,7 @@ btnSalvarMeta.addEventListener("click", async () => {
 
   if (!noLimitCheckbox.checked) {
     limiteMensal = parseFloat(limiteInput.value);
-    if (isNaN(limiteMensal)) return notyf.error("Valor invalido!");
+    if (isNaN(limiteMensal)) return notyf.error("Valor inválido!");
   }
 
   const userRef = doc(db, "usuarios", currentUser.uid);

@@ -22,8 +22,8 @@
 #historico-list li:last-child { border-bottom: none; }
 #historico-list li:hover { background-color: #F8FAFC; }
 #historico-list li div { text-align: left; }
-#historico-list li h3 { font-size: 15px; font-weight: 600; margin: 0; }
-#historico-list li p { font-size: 12px; font-weight: 400; color: #94A3B8; margin: 2px 0 0 0; }
+#historico-list li h3 { font-size: 15px; font-weight: 600; margin: 0; color: #1E293B; }
+#historico-list li p { font-size: 12px; font-weight: 400; color: #64748B; margin: 2px 0 0 0; }
 #historico-list li span { font-size: 16px; font-weight: 700; white-space: nowrap; }
 
 /* Sparkline */
@@ -188,4 +188,14 @@
     height: 40px;
     background: white;
     border-radius: 50% 50% 0 0;
+}
+
+/* ============================================
+   Confirm Modal
+   ============================================ */
+#confirm-modal > div {
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+#confirm-modal .fixed {
+    transition: opacity 0.2s ease;
 }

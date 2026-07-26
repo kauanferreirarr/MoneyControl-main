@@ -1,15 +1,25 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <script>if(localStorage.getItem('mc_theme')==='dark')document.documentElement.classList.add('dark')</script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Login - MoneyControl</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="stylesheet" href="css/login.css">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="dns-prefetch" href="https://www.gstatic.com">
+
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6366F1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MoneyControl">
+    <meta name="application-name" content="MoneyControl">
+    <meta name="description" content="Gerencie suas finanças de forma simples e eficiente.">
+    <link rel="apple-touch-icon" href="assets/icon-192.png">
     <link rel="shortcut icon" href="assets/logo.png" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="css/pwa.css">
+    <link rel="stylesheet" href="css/dark-mode.css">
 </head>
 <body>
     <div class="login-wrapper">
@@ -22,7 +32,7 @@
                 </svg>
             </div>
             <h1>MoneyControl</h1>
-            <p>Gerencie suas financas de forma simples e eficiente</p>
+            <p>Gerencie suas finanças de forma simples e eficiente</p>
             <div class="brand-features">
                 <div class="brand-feature">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -115,7 +125,7 @@
             </button>
             
             <div class="signup-link">
-                Nao tem uma conta? <a href="registrar.html">Criar uma conta</a>
+                Não tem uma conta? <a href="registrar.html">Criar uma conta</a>
             </div>
         </div>
     </div>
@@ -125,15 +135,12 @@
         <div class="footer-links">
             <a href="#">Termos de Uso</a>
             <a href="#">Politica de Privacidade</a>
-            <a href="#">Ajuda</a>
+            <a href="ajuda.html">Ajuda</a>
         </div>
     </div>
 
     <script type="module" src="js/main.js"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js').catch(() => {});
-      }
-    </script>
+    <script src="js/pwa.js"></script>
+    <script src="js/dark-mode.js"></script>
 </body>
 </html>

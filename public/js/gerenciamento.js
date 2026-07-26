@@ -13,7 +13,9 @@ import {
   getFirestore,
   doc,
   getDoc,
-  setDoc
+  setDoc,
+  updateDoc,
+  arrayUnion
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
 // =========================== FIREBASE CONFIG ===========================
@@ -46,8 +48,68 @@ try {
 }
 
 // =========================== HELPERS ===========================
+function isDark() {
+  return document.documentElement.classList.contains("dark");
+}
+
+function chartColors() {
+  const dark = isDark();
+  return {
+    tooltipBg: dark ? "#1e293b" : "#0F172A",
+    tooltipText: dark ? "#e2e8f0" : "#ffffff",
+    tickColor: dark ? "#94a3b8" : "#475569",
+    gridColor: dark ? "#334155" : "#F1F5F9",
+    donutBorder: dark ? "#1e293b" : "#FFFFFF",
+    metaLine: dark ? "#64748b" : "#94A3B8",
+    areaFill: dark ? "rgba(129, 140, 248, 0.15)" : "rgba(79, 70, 229, 0.1)"
+  };
+}
 function formatBR(n) {
   return "R$ " + Number(n).toFixed(2).replace(".", ",");
+}
+
+function confirmModal(title, text) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById("confirm-modal");
+    const titleEl = document.getElementById("confirm-modal-title");
+    const textEl = document.getElementById("confirm-modal-text");
+    const btnOk = document.getElementById("confirm-modal-ok");
+    const btnCancel = document.getElementById("confirm-modal-cancel");
+
+    titleEl.textContent = title;
+    textEl.textContent = text;
+
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+    void modal.offsetHeight;
+    modal.style.opacity = "0";
+    modal.querySelector("div").style.transform = "scale(0.95)";
+    requestAnimationFrame(() => {
+      modal.style.opacity = "1";
+      modal.querySelector("div").style.transform = "scale(1)";
+    });
+
+    function close(result) {
+      modal.style.opacity = "0";
+      modal.querySelector("div").style.transform = "scale(0.95)";
+      setTimeout(() => {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+        btnOk.removeEventListener("click", onOk);
+        btnCancel.removeEventListener("click", onCancel);
+        modal.removeEventListener("click", onBackdrop);
+      }, 200);
+      resolve(result);
+    }
+
+    function onOk() { close(true); }
+    function onCancel() { close(false); }
+    function onBackdrop(e) { if (e.target === modal) close(false); }
+
+    btnOk.addEventListener("click", onOk);
+    btnCancel.addEventListener("click", onCancel);
+    modal.addEventListener("click", onBackdrop);
+  });
 }
 
 function parseValorElemento(text) {
@@ -307,6 +369,7 @@ function renderDonut(transacoes) {
   if (chartRosca) chartRosca.destroy();
 
   const ctx = document.getElementById("chart-rosca").getContext("2d");
+  const cc = chartColors();
   chartRosca = new Chart(ctx, {
     type: "doughnut",
     data: {
@@ -315,7 +378,7 @@ function renderDonut(transacoes) {
         data: values,
         backgroundColor: colors,
         borderWidth: 4,
-        borderColor: "#FFFFFF",
+        borderColor: cc.donutBorder,
         hoverBorderWidth: 0,
         hoverOffset: 10
       }]
@@ -327,7 +390,9 @@ function renderDonut(transacoes) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: "#0F172A",
+          backgroundColor: cc.tooltipBg,
+          titleColor: cc.tooltipText,
+          bodyColor: cc.tooltipText,
           titleFont: { family: "Inter", weight: "700", size: 13 },
           bodyFont: { family: "Inter", weight: "500", size: 12 },
           padding: 12,
@@ -423,17 +488,17 @@ function renderMeta(transacoes) {
     bannerEl.classList.add("status-danger");
     iconEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
     textoEl.textContent = "Limite ultrapassado!";
-    detalheEl.textContent = `Voce excedeu ${formatBR(gastoTotal - limiteMensal)} da sua meta`;
+    detalheEl.textContent = `Você excedeu ${formatBR(gastoTotal - limiteMensal)} da sua meta`;
   } else if (pct >= 80) {
     bannerEl.classList.add("status-warn");
     iconEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
-    textoEl.textContent = "Atencao! Quase no limite";
+    textoEl.textContent = "Atenção! Quase no limite";
     detalheEl.textContent = `Resta apenas ${formatBR(resta)} da sua meta`;
   } else {
     bannerEl.classList.add("status-ok");
     iconEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-    textoEl.textContent = "Dentro do orcamento";
-    detalheEl.textContent = `Voce ainda tem ${formatBR(resta)} disponivel`;
+    textoEl.textContent = "Dentro do orçamento";
+    detalheEl.textContent = `Você ainda tem ${formatBR(resta)} disponível`;
   }
 
   // Category breakdown
@@ -469,6 +534,7 @@ function renderBalanca(transacoes) {
   if (chartBalanca) chartBalanca.destroy();
 
   const ctx = document.getElementById("chart-balanca").getContext("2d");
+  const cc = chartColors();
   chartBalanca = new Chart(ctx, {
     type: "bar",
     data: {
@@ -503,7 +569,9 @@ function renderBalanca(transacoes) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: "#0F172A",
+          backgroundColor: cc.tooltipBg,
+          titleColor: cc.tooltipText,
+          bodyColor: cc.tooltipText,
           titleFont: { family: "Inter", weight: "700", size: 13 },
           bodyFont: { family: "Inter", weight: "500", size: 12 },
           padding: 12,
@@ -520,14 +588,14 @@ function renderBalanca(transacoes) {
           grid: { display: false },
           ticks: {
             font: { family: "Inter", size: 11, weight: "600" },
-            color: "#475569"
+            color: cc.tickColor
           }
         },
         y: {
-          grid: { color: "#F1F5F9", drawBorder: false },
+          grid: { color: cc.gridColor, drawBorder: false },
           ticks: {
             font: { family: "Inter", size: 11, weight: "600" },
-            color: "#475569",
+            color: cc.tickColor,
             callback: (v) => v >= 1000 ? (v / 1000).toFixed(0) + "k" : v
           },
           beginAtZero: true
@@ -579,6 +647,7 @@ function renderEvolucao(transacoes) {
   if (chartEvolucao) chartEvolucao.destroy();
 
   const ctx = document.getElementById("chart-evolução").getContext("2d");
+  const cc = chartColors();
   chartEvolucao = new Chart(ctx, {
     type: "line",
     data: {
@@ -588,7 +657,7 @@ function renderEvolucao(transacoes) {
           label: "Gasto real",
           data: acumulado,
           borderColor: "#4F46E5",
-          backgroundColor: "rgba(79, 70, 229, 0.1)",
+          backgroundColor: cc.areaFill,
           fill: true,
           tension: 0.35,
           borderWidth: 3,
@@ -601,7 +670,7 @@ function renderEvolucao(transacoes) {
         {
           label: "Meta ideal",
           data: metaIdeal,
-          borderColor: "#94A3B8",
+          borderColor: cc.metaLine,
           borderDash: [6, 4],
           fill: false,
           tension: 0,
@@ -618,7 +687,9 @@ function renderEvolucao(transacoes) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: "#0F172A",
+          backgroundColor: cc.tooltipBg,
+          titleColor: cc.tooltipText,
+          bodyColor: cc.tooltipText,
           titleFont: { family: "Inter", weight: "700", size: 13 },
           bodyFont: { family: "Inter", weight: "500", size: 12 },
           padding: 12,
@@ -639,17 +710,17 @@ function renderEvolucao(transacoes) {
           grid: { display: false },
           ticks: {
             font: { family: "Inter", size: 10, weight: "600" },
-            color: "#475569",
+            color: cc.tickColor,
             maxRotation: 0,
             autoSkip: true,
             maxTicksLimit: 15
           }
         },
         y: {
-          grid: { color: "#F1F5F9", drawBorder: false },
+          grid: { color: cc.gridColor, drawBorder: false },
           ticks: {
             font: { family: "Inter", size: 11, weight: "600" },
-            color: "#475569",
+            color: cc.tickColor,
             callback: (v) => v >= 1000 ? (v / 1000).toFixed(0) + "k" : v
           },
           beginAtZero: true
@@ -659,6 +730,386 @@ function renderEvolucao(transacoes) {
     }
   });
 }
+
+// =========================== RENDER: METAS DE ECONOMIA ===========================
+function renderMetasEconomia() {
+  const listEl = document.getElementById("metas-list");
+  const emptyEl = document.getElementById("metas-empty");
+  if (!listEl) return;
+
+  const metas = dadosUsuario?.metas || [];
+  listEl.innerHTML = "";
+
+  if (metas.length === 0) {
+    emptyEl.classList.remove("hidden");
+    return;
+  }
+  emptyEl.classList.add("hidden");
+
+  metas.forEach((meta, index) => {
+    const alvo = Number(meta.valorAlvo) || 0;
+    const atual = Number(meta.valorAtual) || 0;
+    const pct = alvo > 0 ? Math.min((atual / alvo) * 100, 100) : 0;
+    const cor = meta.cor || "#f59e0b";
+
+    const card = document.createElement("div");
+    card.className = "meta-card-item p-3 rounded-xl border border-slate-100 hover:border-slate-200 transition-all";
+    card.innerHTML = `
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-3 rounded-full flex-shrink-0" style="background:${cor}"></div>
+          <span class="text-sm font-bold text-slate-800">${meta.nome}</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <button class="meta-deposit-btn w-7 h-7 flex items-center justify-center rounded-lg hover:bg-emerald-50 text-emerald-500 transition-colors" title="Depositar" data-index="${index}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          </button>
+          <button class="meta-withdraw-btn w-7 h-7 flex items-center justify-center rounded-lg hover:bg-amber-50 text-amber-500 transition-colors" title="Retirar" data-index="${index}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 17 17 7"></polyline><polyline points="7 7 17 7 17 17"></polyline></svg>
+          </button>
+          <button class="meta-delete-btn w-7 h-7 flex items-center justify-center rounded-lg hover:bg-rose-50 text-rose-400 transition-colors" title="Excluir" data-index="${index}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </button>
+        </div>
+      </div>
+      <div class="flex items-center justify-between mb-1.5">
+        <span class="text-xs font-semibold text-slate-500">${formatBR(atual)}</span>
+        <span class="text-xs font-semibold text-slate-400">${formatBR(alvo)}</span>
+      </div>
+      <div class="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+        <div class="h-full rounded-full transition-all duration-500" style="width:${pct}%;background:${cor}"></div>
+      </div>
+      <p class="text-[10px] font-semibold text-slate-400 mt-1 text-right">${pct.toFixed(0)}% concluído</p>
+    `;
+    listEl.appendChild(card);
+  });
+
+  listEl.querySelectorAll(".meta-deposit-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const idx = parseInt(btn.dataset.index);
+      depositarMeta(idx);
+    });
+  });
+
+  listEl.querySelectorAll(".meta-withdraw-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const idx = parseInt(btn.dataset.index);
+      sacarMeta(idx);
+    });
+  });
+
+  listEl.querySelectorAll(".meta-delete-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const idx = parseInt(btn.dataset.index);
+      excluirMeta(idx);
+    });
+  });
+}
+
+async function depositarMeta(index) {
+  openDepositoModal(index);
+}
+
+// --- Modal Saque ---
+const modalSaque = document.getElementById("modal-saque");
+const btnSaqueClose = document.getElementById("modal-saque-close");
+const btnSaqueCancel = document.getElementById("modal-saque-cancel");
+const btnSaqueSave = document.getElementById("modal-saque-save");
+let saqueMetaIndex = -1;
+
+function openSaqueModal(index) {
+  saqueMetaIndex = index;
+  const meta = dadosUsuario?.metas?.[index];
+  if (!meta) return;
+  const saldoMeta = Number(meta.valorAtual) || 0;
+  document.getElementById("saque-meta-display").textContent = formatBR(saldoMeta);
+  document.getElementById("saque-valor").value = "";
+  modalSaque.classList.remove("hidden");
+  modalSaque.classList.add("flex");
+}
+
+function closeSaqueModal() {
+  modalSaque.classList.add("hidden");
+  modalSaque.classList.remove("flex");
+  saqueMetaIndex = -1;
+}
+
+if (btnSaqueClose) btnSaqueClose.addEventListener("click", closeSaqueModal);
+if (btnSaqueCancel) btnSaqueCancel.addEventListener("click", closeSaqueModal);
+if (modalSaque) modalSaque.addEventListener("click", e => { if (e.target === modalSaque) closeSaqueModal(); });
+
+if (btnSaqueSave) btnSaqueSave.addEventListener("click", async () => {
+  if (saqueMetaIndex < 0) return;
+  const valor = parseFloat(document.getElementById("saque-valor").value);
+  if (!valor || valor <= 0) { notyf.error("Informe um valor válido!"); return; }
+
+  const metas = [...(dadosUsuario.metas || [])];
+  const saldoMeta = Number(metas[saqueMetaIndex].valorAtual) || 0;
+  if (valor > saldoMeta) { notyf.error("Valor maior que o saldo da meta!"); return; }
+
+  const nomeMeta = metas[saqueMetaIndex]?.nome || "Meta";
+  metas[saqueMetaIndex].valorAtual = saldoMeta - valor;
+
+  const novoSaldo = (Number(dadosUsuario?.saldo) || 0) + valor;
+  const userRef = doc(db, "usuarios", currentUser.uid);
+  await updateDoc(userRef, {
+    metas,
+    saldo: novoSaldo,
+    transacoes: arrayUnion({ descricao: `Retirada: ${nomeMeta}`, valor, tipo: "entrada", data: Date.now() })
+  });
+  dadosUsuario.metas = metas;
+  dadosUsuario.saldo = novoSaldo;
+  renderMetasEconomia();
+  closeSaqueModal();
+  notyf.success(`R$ ${valor.toFixed(2)} devolvido ao saldo!`);
+});
+
+async function sacarMeta(index) {
+  openSaqueModal(index);
+}
+
+async function excluirMeta(index) {
+  const ok = await confirmModal("Excluir meta?", `"${dadosUsuario.metas?.[index]?.nome}" será removida permanentemente.`);
+  if (!ok) return;
+  const metas = [...(dadosUsuario.metas || [])];
+  metas.splice(index, 1);
+
+  const userRef = doc(db, "usuarios", currentUser.uid);
+  await updateDoc(userRef, { metas });
+  dadosUsuario.metas = metas;
+  renderMetasEconomia();
+  notyf.success("Meta excluída!");
+}
+
+// Modal Meta
+const modalMeta = document.getElementById("modal-meta");
+const btnAddMeta = document.getElementById("btn-add-meta");
+const btnMetaClose = document.getElementById("modal-meta-close");
+const btnMetaCancel = document.getElementById("modal-meta-cancel");
+const btnMetaSave = document.getElementById("modal-meta-save");
+let metaCorSelecionada = "#f59e0b";
+
+// Modal Deposito
+const modalDeposito = document.getElementById("modal-deposito");
+const btnDepositoClose = document.getElementById("modal-deposito-close");
+const btnDepositoCancel = document.getElementById("modal-deposito-cancel");
+const btnDepositoSave = document.getElementById("modal-deposito-save");
+let depositoMetaIndex = -1;
+
+document.querySelectorAll(".meta-cor-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".meta-cor-btn").forEach(b => {
+      b.style.boxShadow = "none";
+      b.style.outline = "none";
+      b.style.setProperty("ring-width", "0");
+    });
+    metaCorSelecionada = btn.dataset.cor;
+    btn.style.boxShadow = `0 0 0 2px white, 0 0 0 4px ${metaCorSelecionada}`;
+  });
+});
+
+if (btnAddMeta) btnAddMeta.addEventListener("click", () => {
+  document.getElementById("meta-nome").value = "";
+  document.getElementById("meta-valor-alvo").value = "";
+  document.getElementById("meta-inicial").value = "0";
+  metaCorSelecionada = "#f59e0b";
+  document.querySelectorAll(".meta-cor-btn").forEach((b, i) => {
+    b.style.boxShadow = i === 0 ? `0 0 0 2px white, 0 0 0 4px ${metaCorSelecionada}` : "none";
+  });
+  modalMeta.classList.remove("hidden");
+  modalMeta.classList.add("flex");
+});
+
+if (btnMetaClose) btnMetaClose.addEventListener("click", () => { modalMeta.classList.add("hidden"); modalMeta.classList.remove("flex"); });
+if (btnMetaCancel) btnMetaCancel.addEventListener("click", () => { modalMeta.classList.add("hidden"); modalMeta.classList.remove("flex"); });
+if (modalMeta) modalMeta.addEventListener("click", e => { if (e.target === modalMeta) { modalMeta.classList.add("hidden"); modalMeta.classList.remove("flex"); } });
+
+if (btnMetaSave) btnMetaSave.addEventListener("click", async () => {
+  const nome = document.getElementById("meta-nome").value.trim();
+  const valorAlvo = parseFloat(document.getElementById("meta-valor-alvo").value);
+  const valorInicial = parseFloat(document.getElementById("meta-inicial").value) || 0;
+  if (!nome) { notyf.error("Preencha o nome!"); return; }
+  if (!valorAlvo || valorAlvo <= 0) { notyf.error("Preencha um valor alvo válido!"); return; }
+
+  const metas = [...(dadosUsuario.metas || [])];
+  metas.push({ id: Date.now().toString(36), nome, valorAlvo, valorAtual: valorInicial, cor: metaCorSelecionada });
+
+  const userRef = doc(db, "usuarios", currentUser.uid);
+  await updateDoc(userRef, { metas });
+  dadosUsuario.metas = metas;
+  renderMetasEconomia();
+  modalMeta.classList.add("hidden");
+  modalMeta.classList.remove("flex");
+  notyf.success("Meta criada!");
+});
+
+// --- Modal Depósito ---
+function openDepositoModal(index) {
+  depositoMetaIndex = index;
+  const saldo = Number(dadosUsuario?.saldo) || 0;
+  document.getElementById("deposito-saldo-display").textContent = formatBR(saldo);
+  document.getElementById("deposito-valor").value = "";
+  modalDeposito.classList.remove("hidden");
+  modalDeposito.classList.add("flex");
+}
+
+function closeDepositoModal() {
+  modalDeposito.classList.add("hidden");
+  modalDeposito.classList.remove("flex");
+  depositoMetaIndex = -1;
+}
+
+if (btnDepositoClose) btnDepositoClose.addEventListener("click", closeDepositoModal);
+if (btnDepositoCancel) btnDepositoCancel.addEventListener("click", closeDepositoModal);
+if (modalDeposito) modalDeposito.addEventListener("click", e => { if (e.target === modalDeposito) closeDepositoModal(); });
+
+if (btnDepositoSave) btnDepositoSave.addEventListener("click", async () => {
+  if (depositoMetaIndex < 0) return;
+  const valor = parseFloat(document.getElementById("deposito-valor").value);
+  if (!valor || valor <= 0) { notyf.error("Informe um valor válido!"); return; }
+
+  const saldoAtual = Number(dadosUsuario?.saldo) || 0;
+  if (valor > saldoAtual) { notyf.error("Saldo insuficiente!"); return; }
+
+  const metas = [...(dadosUsuario.metas || [])];
+  const nomeMeta = metas[depositoMetaIndex]?.nome || "Meta";
+  metas[depositoMetaIndex].valorAtual = (Number(metas[depositoMetaIndex].valorAtual) || 0) + valor;
+
+  const novoSaldo = saldoAtual - valor;
+  const userRef = doc(db, "usuarios", currentUser.uid);
+  await updateDoc(userRef, {
+    metas,
+    saldo: novoSaldo,
+    transacoes: arrayUnion({ descricao: `Depósito: ${nomeMeta}`, valor, tipo: "despesa", data: Date.now() })
+  });
+  dadosUsuario.metas = metas;
+  dadosUsuario.saldo = novoSaldo;
+  renderMetasEconomia();
+  closeDepositoModal();
+  notyf.success(`R$ ${valor.toFixed(2)} depositado na meta!`);
+});
+
+// =========================== RENDER: LEMBRETES ===========================
+function renderLembretes() {
+  const listEl = document.getElementById("lembretes-list");
+  const emptyEl = document.getElementById("lembretes-empty");
+  if (!listEl) return;
+
+  const lembretes = dadosUsuario?.lembretes || [];
+  listEl.innerHTML = "";
+
+  if (lembretes.length === 0) {
+    emptyEl.classList.remove("hidden");
+    return;
+  }
+  emptyEl.classList.add("hidden");
+
+  const hoje = new Date();
+  const diaAtual = hoje.getDate();
+
+  const sorted = [...lembretes].sort((a, b) => (a.dia || 0) - (b.dia || 0));
+
+  sorted.forEach((lem, i) => {
+    const origIndex = lembretes.indexOf(lem);
+    const vencido = lem.dia < diaAtual && !lem.concluido;
+    const hojeVence = lem.dia === diaAtual && !lem.concluido;
+    const pago = lem.concluido;
+
+    let statusClass = "bg-slate-50 text-slate-600 border-slate-100";
+    if (pago) statusClass = "bg-emerald-50 text-emerald-700 border-emerald-100";
+    else if (hojeVence) statusClass = "bg-amber-50 text-amber-700 border-amber-200";
+    else if (vencido) statusClass = "bg-rose-50 text-rose-700 border-rose-100";
+
+    const item = document.createElement("div");
+    item.className = `flex items-center gap-3 p-3 rounded-xl border transition-all ${statusClass}`;
+    item.innerHTML = `
+      <button class="lemb-check w-6 h-6 flex-shrink-0 rounded-lg border-2 flex items-center justify-center transition-all ${pago ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 hover:border-emerald-400'}" data-index="${origIndex}">
+        ${pago ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
+      </button>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-bold ${pago ? 'line-through opacity-60' : ''}">${lem.descricao}</p>
+        <p class="text-xs font-semibold ${vencido ? 'text-rose-500' : hojeVence ? 'text-amber-500' : 'text-slate-400'}">Dia ${lem.dia}${vencido ? ' - Atrasado' : hojeVence ? ' - Vence hoje' : pago ? ' - Pago' : ''}</p>
+      </div>
+      <span class="text-sm font-bold">${formatBR(lem.valor)}</span>
+      <button class="lemb-delete w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/80 text-slate-400 hover:text-rose-500 transition-colors" data-index="${origIndex}" title="Excluir">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    `;
+    listEl.appendChild(item);
+  });
+
+  listEl.querySelectorAll(".lemb-check").forEach(btn => {
+    btn.addEventListener("click", () => toggleLembrete(parseInt(btn.dataset.index)));
+  });
+
+  listEl.querySelectorAll(".lemb-delete").forEach(btn => {
+    btn.addEventListener("click", () => excluirLembrete(parseInt(btn.dataset.index)));
+  });
+}
+
+async function toggleLembrete(index) {
+  const lembretes = [...(dadosUsuario.lembretes || [])];
+  lembretes[index].concluido = !lembretes[index].concluido;
+
+  const userRef = doc(db, "usuarios", currentUser.uid);
+  await updateDoc(userRef, { lembretes });
+  dadosUsuario.lembretes = lembretes;
+  renderLembretes();
+  notyf.success(lembretes[index].concluido ? "Marcado como pago!" : "Desmarcado!");
+}
+
+async function excluirLembrete(index) {
+  const ok = await confirmModal("Excluir lembrete?", `"${dadosUsuario.lembretes?.[index]?.descricao}" será removido permanentemente.`);
+  if (!ok) return;
+  const lembretes = [...(dadosUsuario.lembretes || [])];
+  lembretes.splice(index, 1);
+
+  const userRef = doc(db, "usuarios", currentUser.uid);
+  await updateDoc(userRef, { lembretes });
+  dadosUsuario.lembretes = lembretes;
+  renderLembretes();
+  notyf.success("Lembrete excluído!");
+}
+
+// Modal Lembrete
+const modalLembrete = document.getElementById("modal-lembrete");
+const btnAddLembrete = document.getElementById("btn-add-lembrete");
+const btnLembreteClose = document.getElementById("modal-lembrete-close");
+const btnLembreteCancel = document.getElementById("modal-lembrete-cancel");
+const btnLembreteSave = document.getElementById("modal-lembrete-save");
+
+if (btnAddLembrete) btnAddLembrete.addEventListener("click", () => {
+  document.getElementById("lemb-desc").value = "";
+  document.getElementById("lemb-valor").value = "";
+  document.getElementById("lemb-dia").value = "1";
+  modalLembrete.classList.remove("hidden");
+  modalLembrete.classList.add("flex");
+});
+
+if (btnLembreteClose) btnLembreteClose.addEventListener("click", () => { modalLembrete.classList.add("hidden"); modalLembrete.classList.remove("flex"); });
+if (btnLembreteCancel) btnLembreteCancel.addEventListener("click", () => { modalLembrete.classList.add("hidden"); modalLembrete.classList.remove("flex"); });
+if (modalLembrete) modalLembrete.addEventListener("click", e => { if (e.target === modalLembrete) { modalLembrete.classList.add("hidden"); modalLembrete.classList.remove("flex"); } });
+
+if (btnLembreteSave) btnLembreteSave.addEventListener("click", async () => {
+  const desc = document.getElementById("lemb-desc").value.trim();
+  const valor = parseFloat(document.getElementById("lemb-valor").value);
+  const dia = parseInt(document.getElementById("lemb-dia").value);
+
+  if (!desc) { notyf.error("Preencha a descrição!"); return; }
+  if (!valor || valor <= 0) { notyf.error("Preencha um valor válido!"); return; }
+  if (!dia || dia < 1 || dia > 31) { notyf.error("Dia inválido!"); return; }
+
+  const lembretes = [...(dadosUsuario.lembretes || [])];
+  lembretes.push({ id: Date.now().toString(36), descricao: desc, valor, dia, concluido: false });
+
+  const userRef = doc(db, "usuarios", currentUser.uid);
+  await updateDoc(userRef, { lembretes });
+  dadosUsuario.lembretes = lembretes;
+  renderLembretes();
+  modalLembrete.classList.add("hidden");
+  modalLembrete.classList.remove("flex");
+  notyf.success("Lembrete criado!");
+});
 
 // =========================== RENDER ALL ===========================
 function renderAll() {
@@ -670,6 +1121,8 @@ function renderAll() {
   renderMeta(transacoes);
   renderBalanca(transacoes);
   renderEvolucao(transacoes);
+  renderMetasEconomia();
+  renderLembretes();
 }
 
 // =========================== UI INTERACTIONS ===========================
@@ -829,14 +1282,14 @@ onAuthStateChanged(auth, async (user) => {
     const snap = await getDoc(userRef);
 
     if (!snap.exists()) {
-      await setDoc(userRef, { saldo: 0, gastos: 0, transacoes: [], nome: "Usuario", limiteMensal: null });
-      dadosUsuario = { saldo: 0, gastos: 0, transacoes: [], nome: "Usuario", limiteMensal: null };
+      await setDoc(userRef, { saldo: 0, gastos: 0, transacoes: [], nome: "Usuário", limiteMensal: null });
+      dadosUsuario = { saldo: 0, gastos: 0, transacoes: [], nome: "Usuário", limiteMensal: null };
     } else {
       dadosUsuario = snap.data();
     }
 
     // Render profile info
-    const nome = dadosUsuario.nome || "Usuario";
+    const nome = dadosUsuario.nome || "Usuário";
     const userNameEl = document.querySelector(".user-name");
     const userEmailEl = document.querySelector(".user-email");
     const userPhotoEl = document.getElementById("user-photo");
@@ -866,3 +1319,10 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
+
+// Re-render charts when theme changes
+new MutationObserver(() => {
+  if (currentUser && dadosUsuario) {
+    renderAll();
+  }
+}).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });

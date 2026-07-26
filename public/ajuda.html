@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <script>if(localStorage.getItem('mc_theme')==='dark')document.documentElement.classList.add('dark')</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Ajuda - MoneyControl</title>
+
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6366F1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MoneyControl">
+  <meta name="application-name" content="MoneyControl">
+  <meta name="description" content="Central de ajuda do MoneyControl.">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <link rel="shortcut icon" href="assets/logo.png" type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          borderRadius: { '2xl': '16px', '3xl': '20px' }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="css/pwa.css">
+  <link rel="stylesheet" href="css/dark-mode.css">
+  <style>
+    .help-section-content { max-height: 0; overflow: hidden; transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease; opacity: 0; }
+    .help-section-content.open { max-height: 2000px; opacity: 1; }
+    .help-chevron { transition: transform 0.3s ease; }
+    .help-chevron.rotated { transform: rotate(180deg); }
+    .help-item { border-left: 3px solid transparent; transition: border-color 0.2s, background 0.2s; }
+    .help-item:hover { border-left-color: #6366F1; background: #f8fafc; }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-start justify-center p-4 sm:p-6 pt-8 sm:pt-12">
+
+  <section id="ajuda" class="bg-white rounded-2xl shadow-sm border border-slate-100 w-full max-w-2xl overflow-hidden">
+
+    <!-- Header -->
+    <div class="relative flex items-center justify-center px-6 py-5 border-b border-slate-100">
+      <a href="index.html" class="absolute left-5 w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 transition-colors duration-200 text-slate-400 hover:text-slate-600">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+      </a>
+      <div class="text-center">
+        <h2 class="text-lg font-bold text-slate-800">Ajuda</h2>
+        <p class="text-xs text-slate-400 mt-0.5">Central de orientação do MoneyControl</p>
+      </div>
+    </div>
+
+    <!-- Busca -->
+    <div class="px-4 sm:px-6 pt-5 pb-2">
+      <div class="relative">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="help-search" placeholder="Buscar na ajuda..."
+          class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:border-indigo-400 focus:ring-0 focus:outline-none transition-colors">
+      </div>
+    </div>
+
+    <!-- Secoes de Ajuda -->
+    <div class="px-4 sm:px-6 py-3 space-y-2" id="help-sections">
+
+      <!-- 1. O que e o MoneyControl -->
+      <div class="help-section border border-slate-100 rounded-xl overflow-hidden">
+        <button class="help-section-toggle w-full flex items-center gap-3 px-4 py-4 text-left hover:bg-slate-50 transition-colors" onclick="toggleSection(this)">
+          <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-sm font-semibold text-slate-700">O que é o MoneyControl?</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Visão geral do aplicativo</p>
+          </div>
+          <svg class="help-chevron text-slate-300 shrink-0" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <div class="help-section-content px-4 pb-5">
+          <div class="pl-13 space-y-3 text-sm text-slate-600 leading-relaxed">
+            <p>O <strong>MoneyControl</strong> é um gerenciador financeiro pessoal que funciona direto no navegador do seu celular ou computador. Com ele você pode:</p>
+            <ul class="space-y-2 ml-1">
+              <li class="flex items-start gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0"></span>
+                <span>Controlar seu saldo e gastos do mês em tempo real</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0"></span>
+                <span>Adicionar despesas e receitas manualmente</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0"></span>
+                <span>Importar extratos bancários de CSV e PDF</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0"></span>
+                <span>Criar transações recorrentes (assinaturas, aluguel, etc.)</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0"></span>
+                <span>Definir metas de economia e acompanhar seu progresso</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0"></span>
+                <span>Receber lembretes de contas a pagar</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0"></span>
+                <span>Definir metas de gastos mensais e receber alertas</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0"></span>
+                <span>Ver gráficos detalhados de análise financeira</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0"></span>
+                <span>Reportar bugs e sugestões diretamente pelo app</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0"></span>
+                <span>Instalar como aplicativo no celular (PWA)</span>
+              </li>
+            </ul>
+            <p class="text-slate-500 text-xs">O app é totalmente gratuito e funciona offline após a primeira visita.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Cadastro e Login -->
+      <div class="help-section border border-slate-100 rounded-xl overflow-hidden">
+        <button class="help-section-toggle w-full flex items-center gap-3 px-4 py-4 text-left hover:bg-slate-50 transition-colors" onclick="toggleSection(this)">
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+              <polyline points="10 17 15 12 10 7"></polyline>
+              <line x1="15" y1="12" x2="3" y2="12"></line>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-sm font-semibold text-slate-700">Cadastro e Login</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Como criar conta e acessar</p>
+          </div>
+          <svg class="help-chevron text-slate-300 shrink-0" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <div class="help-section-content px-4 pb-5">
+          <div class="pl-13 space-y-4 text-sm text-slate-600 leading-relaxed">
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Criar uma conta</h4>
+              <ol class="list-decimal list-inside space-y-1 text-slate-600">
+                <li>Acesse a pagina de login e clique em <strong>Criar conta</strong></li>
+                <li>Preencha seu nome, email e senha</li>
+                <li>Clique em <strong>Registrar</strong></li>
+                <li>Você será redirecionado para o onboarding de boas-vindas</li>
+              </ol>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Fazer login</h4>
+              <ol class="list-decimal list-inside space-y-1 text-slate-600">
+                <li>Digite seu email e senha na tela de login</li>
+                <li>Ou clique em <strong>Entrar com Google</strong> para usar sua conta Google</li>
+              </ol>
+            </div>
+            <div class="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+              <p class="text-amber-700 text-xs font-medium">Seus dados são salvos de forma segura no Firebase e ficam disponíveis em qualquer dispositivo.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Dashboard -->
+      <div class="help-section border border-slate-100 rounded-xl overflow-hidden">
+        <button class="help-section-toggle w-full flex items-center gap-3 px-4 py-4 text-left hover:bg-slate-50 transition-colors" onclick="toggleSection(this)">
+          <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="9"></rect>
+              <rect x="14" y="3" width="7" height="5"></rect>
+              <rect x="14" y="12" width="7" height="9"></rect>
+              <rect x="3" y="16" width="7" height="5"></rect>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-sm font-semibold text-slate-700">Dashboard (Tela Inicial)</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Saldo, despesas e histórico</p>
+          </div>
+          <svg class="help-chevron text-slate-300 shrink-0" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <div class="help-section-content px-4 pb-5">
+          <div class="pl-13 space-y-4 text-sm text-slate-600 leading-relaxed">
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Cards de Saldo</h4>
+              <p>Na parte superior você vê dois cards:</p>
+              <ul class="space-y-1 mt-2 ml-1">
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0"></span>
+                  <span><strong>Saldo Atual</strong> — quanto você tem disponível no momento</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-rose-400 mt-1.5 shrink-0"></span>
+                  <span><strong>Gastos do Mês</strong> — total gasto no mês corrente</span>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Adicionar Transação</h4>
+              <p>Preencha o <strong>valor</strong> e a <strong>descrição</strong>, depois escolha:</p>
+              <ul class="space-y-1 mt-2 ml-1">
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0"></span>
+                  <span><strong>Adicionar Despesa</strong> — desconta o valor do saldo (gasto)</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0"></span>
+                  <span><strong>Adicionar Saldo</strong> — adiciona valor ao saldo (receita)</span>
+                </li>
+              </ul>
+              <p class="mt-2">Você também pode usar as <strong>tags rápidas</strong> (Contas, Gasolina, Mercado, etc.) para preencher a descrição automaticamente.</p>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Histórico de Transações</h4>
+              <p>Abaixo do formulário você vê todas as transações realizadas, com opção de filtrar por:</p>
+              <ul class="space-y-1 mt-2 ml-1">
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0"></span>
+                  <span><strong>Todas</strong> — todas as transações</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-rose-400 mt-1.5 shrink-0"></span>
+                  <span><strong>Despesas</strong> — apenas gastos</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0"></span>
+                  <span><strong>Saldo</strong> — apenas receitas</span>
+                </li>
+              </ul>
+              <p class="mt-2 text-xs text-slate-500">Para deletar uma transação, clique nos três pontinhos ao lado dela.</p>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Meta de Gastos (Dashboard)</h4>
+              <p>Se você definiu uma meta mensal, um card de progresso aparece na tela inicial mostrando quanto já gastou em relação ao limite.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Gerenciamento -->
+      <div class="help-section border border-slate-100 rounded-xl overflow-hidden">
+        <button class="help-section-toggle w-full flex items-center gap-3 px-4 py-4 text-left hover:bg-slate-50 transition-colors" onclick="toggleSection(this)">
+          <div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="20" x2="12" y2="10"></line>
+              <line x1="18" y1="20" x2="18" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="16"></line>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-sm font-semibold text-slate-700">Gerenciamento Financeiro</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Gráficos e análises detalhadas</p>
+          </div>
+          <svg class="help-chevron text-slate-300 shrink-0" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <div class="help-section-content px-4 pb-5">
+          <div class="pl-13 space-y-4 text-sm text-slate-600 leading-relaxed">
+            <p>Acesse pela aba <strong>Gerenciamento</strong> no menu lateral. Aqui você encontra uma visão completa das suas finanças:</p>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Gráfico de Rosca (Por Categoria)</h4>
+              <p>Mostra a distribuição dos seus gastos por categoria (Alimentação, Transporte, Moradia, Lazer, etc.). As categorias são identificadas automaticamente pela descrição da transação.</p>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Barra de Progresso (Meta)</h4>
+              <p>Exibe quanto você já gastou do seu limite mensal definido, com indicador visual de proximidade do limite.</p>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Gráfico de Barras (Balanço Mensal)</h4>
+              <p>Compara seus gastos vs. receitas mês a mês, mostrando se você teve lucro ou prejuízo em cada período.</p>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Gráfico de Linha (Evolução dos Gastos)</h4>
+              <p>Mostra a tendência dos seus gastos ao longo dos meses, ajudando a identificar padrões e oportunidades de economia.</p>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Seletor de Mês/Ano</h4>
+              <p>Use as setas para navegar entre meses e analisar períodos diferentes.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Recorrencias -->
+      <div class="help-section border border-slate-100 rounded-xl overflow-hidden">
+        <button class="help-section-toggle w-full flex items-center gap-3 px-4 py-4 text-left hover:bg-slate-50 transition-colors" onclick="toggleSection(this)">
+          <div class="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EA580C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-sm font-semibold text-slate-700">Transações Recorrentes</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Assinaturas, aluguel e contas fixas</p>
+          </div>
+          <svg class="help-chevron text-slate-300 shrink-0" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <div class="help-section-content px-4 pb-5">
+          <div class="pl-13 space-y-4 text-sm text-slate-600 leading-relaxed">
+            <p>As <strong>Transações Recorrentes</strong> permitem registrar despesas ou receitas que se repetem todo mês, como assinaturas, aluguel, internet, etc.</p>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Como criar</h4>
+              <ol class="list-decimal list-inside space-y-1">
+                <li>Acesse <strong>Recorrências</strong> no menu lateral</li>
+                <li>Clique em <strong>+ Nova Recorrência</strong></li>
+                <li>Preencha a descrição, valor e escolha se é despesa ou receita</li>
+                <li>Selecione a data de início e a recorrência (mensal, semanal, etc.)</li>
+                <li>Confirme criando a recorrência</li>
+              </ol>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Como funciona</h4>
+              <ul class="space-y-1 ml-1">
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-orange-400 mt-1.5 shrink-0"></span>
+                  <span>As recorrências aparecem listadas na página com valor, tipo e próxima data</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-orange-400 mt-1.5 shrink-0"></span>
+                  <span>Você pode pausar, retomar ou excluir qualquer recorrência</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-orange-400 mt-1.5 shrink-0"></span>
+                  <span>Use o botão "Aplicar" para registrar a transação no mês atual</span>
+                </li>
+              </ul>
+            </div>
+            <div class="bg-orange-50 border border-orange-200 rounded-lg px-4 py-3">
+              <p class="text-orange-700 text-xs font-medium">Dica: crie recorrências para todas as suas assinaturas fixas (Netflix, Spotify, academia, etc.) para nunca esquecer de registrar.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Metas de Economia -->
+      <div class="help-section border border-slate-100 rounded-xl overflow-hidden">
+        <button class="help-section-toggle w-full flex items-center gap-3 px-4 py-4 text-left hover:bg-slate-50 transition-colors" onclick="toggleSection(this)">
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-sm font-semibold text-slate-700">Metas de Economia</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Economize para objetivos específicos</p>
+          </div>
+          <svg class="help-chevron text-slate-300 shrink-0" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <div class="help-section-content px-4 pb-5">
+          <div class="pl-13 space-y-4 text-sm text-slate-600 leading-relaxed">
+            <p>As <strong>Metas de Economia</strong> ajudam você a juntar dinheiro para objetivos específicos, como uma viagem, um celular novo ou uma reserva de emergência.</p>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Como criar uma meta</h4>
+              <ol class="list-decimal list-inside space-y-1">
+                <li>Vá em <strong>Gerenciamento</strong> e role até "Metas de Economia"</li>
+                <li>Clique em <strong>+ Nova Meta</strong></li>
+                <li>Defina o nome, valor alvo e opcionalmente um valor inicial</li>
+                <li>Confirme para criar a meta</li>
+              </ol>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Gerenciando suas metas</h4>
+              <ul class="space-y-1 ml-1">
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0"></span>
+                  <span><strong>Depositar</strong> — Adiciona valor à meta (desconta do seu saldo disponível)</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0"></span>
+                  <span><strong>Retirar</strong> — Devolve valor da meta ao seu saldo</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0"></span>
+                  <span><strong>Excluir</strong> — Remove a meta e devolve todo o valor ao saldo</span>
+                </li>
+              </ul>
+              <p class="mt-2 text-xs text-slate-500">A barra de progresso mostra visualmente quanto você já juntou em relação ao valor alvo.</p>
+            </div>
+            <div class="bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3">
+              <p class="text-emerald-700 text-xs font-medium">Cada depósito ou retirada gera uma transação no extrato, para você acompanhar no histórico.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. Lembretes de Contas -->
+      <div class="help-section border border-slate-100 rounded-xl overflow-hidden">
+        <button class="help-section-toggle w-full flex items-center gap-3 px-4 py-4 text-left hover:bg-slate-50 transition-colors" onclick="toggleSection(this)">
+          <div class="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E11D48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-sm font-semibold text-slate-700">Lembretes de Contas</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Nunca esqueça de pagar uma conta</p>
+          </div>
+          <svg class="help-chevron text-slate-300 shrink-0" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <div class="help-section-content px-4 pb-5">
+          <div class="pl-13 space-y-4 text-sm text-slate-600 leading-relaxed">
+            <p>Os <strong>Lembretes de Contas</strong> ajudam você a lembrar de contas que precisam ser pagas em datas específicas.</p>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Como criar um lembrete</h4>
+              <ol class="list-decimal list-inside space-y-1">
+                <li>Vá em <strong>Gerenciamento</strong> e role até "Lembretes de Contas"</li>
+                <li>Clique em <strong>+ Novo Lembrete</strong></li>
+                <li>Preencha o nome da conta, valor e data de vencimento</li>
+                <li>Confirme para criar o lembrete</li>
+              </ol>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Gerenciando lembretes</h4>
+              <ul class="space-y-1 ml-1">
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-rose-400 mt-1.5 shrink-0"></span>
+                  <span><strong>Pendente</strong> — Conta ainda não foi paga (aparece em vermelho se atrasou)</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-rose-400 mt-1.5 shrink-0"></span>
+                  <span><strong>Paga</strong> — Marque como paga ao clicar no botão de check</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-rose-400 mt-1.5 shrink-0"></span>
+                  <span><strong>Excluir</strong> — Remove o lembrete</span>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Notificações</h4>
+              <p>Ao abrir o dashboard, o app verifica automaticamente se há contas vencidas ou vencendo hoje e exibe um alerta visual. Um aviso aparece no máximo a cada 5 minutos para não incomodar.</p>
+            </div>
+            <div class="bg-rose-50 border border-rose-200 rounded-lg px-4 py-3">
+              <p class="text-rose-700 text-xs font-medium">Dica: crie lembretes para contas fixas como aluguel, energia, água e internet. Assim você nunca perde o prazo!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. Importar Extratos -->
+      <div class="help-section border border-slate-100 rounded-xl overflow-hidden">
+        <button class="help-section-toggle w-full flex items-center gap-3 px-4 py-4 text-left hover:bg-slate-50 transition-colors" onclick="toggleSection(this)">
+          <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-sm font-semibold text-slate-700">Importar Extratos Bancários</h3>
+            <p class="text-xs text-slate-400 mt-0.5">CSV e PDF de vários bancos</p>
+          </div>
+          <svg class="help-chevron text-slate-300 shrink-0" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <div class="help-section-content px-4 pb-5">
+          <div class="pl-13 space-y-4 text-sm text-slate-600 leading-relaxed">
+            <p>Você pode importar transações de extratos bancários direto para o MoneyControl. Acesse em <strong>Configurações &gt; Importar histórico</strong>.</p>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-2">Bancos Compatíveis</h4>
+              <div class="grid grid-cols-2 gap-2">
+                <div class="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg">
+                  <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                  <span class="text-xs font-medium text-slate-600">Nubank</span>
+                </div>
+                <div class="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg">
+                  <span class="w-2 h-2 rounded-full bg-orange-400"></span>
+                  <span class="text-xs font-medium text-slate-600">Inter</span>
+                </div>
+                <div class="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg">
+                  <span class="w-2 h-2 rounded-full bg-amber-600"></span>
+                  <span class="text-xs font-medium text-slate-600">Itaú</span>
+                </div>
+                <div class="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg">
+                  <span class="w-2 h-2 rounded-full bg-yellow-500"></span>
+                  <span class="text-xs font-medium text-slate-600">Banco do Brasil</span>
+                </div>
+                <div class="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg">
+                  <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                  <span class="text-xs font-medium text-slate-600">Bradesco</span>
+                </div>
+                <div class="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg">
+                  <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                  <span class="text-xs font-medium text-slate-600">PicPay</span>
+                </div>
+                <div class="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg">
+                  <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+                  <span class="text-xs font-medium text-slate-600">Mercado Pago</span>
+                </div>
+                <div class="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg">
+                  <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+                  <span class="text-xs font-medium text-slate-600">Outros (genérico)</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Como importar</h4>
+              <ol class="list-decimal list-inside space-y-1">
+                <li>Vá em <strong>Configurações</strong> e clique em <strong>Importar histórico</strong></li>
+                <li>Escolha o tipo de arquivo (CSV ou PDF)</li>
+                <li>Selecione o arquivo do extrato do seu banco</li>
+                <li>O sistema detecta automaticamente o banco e importa as transações</li>
+              </ol>
+            </div>
+            <div class="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
+              <p class="text-blue-700 text-xs font-medium">O app detecta automaticamente o formato do banco. Caso não consiga identificar, ele tenta uma importação genérica.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 9. Configuracoes -->
+      <div class="help-section border border-slate-100 rounded-xl overflow-hidden">
+        <button class="help-section-toggle w-full flex items-center gap-3 px-4 py-4 text-left hover:bg-slate-50 transition-colors" onclick="toggleSection(this)">
+          <div class="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E11D48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-sm font-semibold text-slate-700">Configurações</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Personalize sua experiência</p>
+          </div>
+          <svg class="help-chevron text-slate-300 shrink-0" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <div class="help-section-content px-4 pb-5">
+          <div class="pl-13 space-y-4 text-sm text-slate-600 leading-relaxed">
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Reinício do Saldo Mensal</h4>
+              <p>Escolha o dia do mês em que seus gastos serão resetados automaticamente. Por exemplo, se você recebe no dia 5, defina o dia 5 para que tudo reinicie junto com seu salário. Se você perder o dia, o reset acontece assim que abrir o app.</p>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Meta de Gastos</h4>
+              <p>Defina um limite mensal de gastos. Quando você se aproximar do limite, o app exibe um alerta. Você pode alterar ou remover a meta a qualquer momento.</p>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Notificações</h4>
+              <p>Configure alertas para receber avisos quando estiver perto do limite de gastos mensal. Ative ou desative conforme sua preferência.</p>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Importar Histórico</h4>
+              <p>Importe extratos bancários em CSV ou PDF. Veja a seção <strong>Importar Extratos Bancários</strong> acima para mais detalhes.</p>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Perfil do Usuário</h4>
+              <p>Edite seu nome e visualize seu email. Para alterar a foto, utilize a integração com Google.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 10. Onboarding -->
+      <div class="help-section border border-slate-100 rounded-xl overflow-hidden">
+        <button class="help-section-toggle w-full flex items-center gap-3 px-4 py-4 text-left hover:bg-slate-50 transition-colors" onclick="toggleSection(this)">
+          <div class="w-10 h-10 rounded-xl bg-cyan-50 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0891B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-sm font-semibold text-slate-700">Onboarding (Primeiros Passos)</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Configuração inicial para novos usuários</p>
+          </div>
+          <svg class="help-chevron text-slate-300 shrink-0" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <div class="help-section-content px-4 pb-5">
+          <div class="pl-13 space-y-3 text-sm text-slate-600 leading-relaxed">
+            <p>Na primeira vez que você acessa o MoneyControl, um assistente de configuração aparece com 4 passos:</p>
+            <div class="space-y-3 mt-2">
+              <div class="flex items-start gap-3">
+                <div class="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0 mt-0.5">
+                  <span class="text-xs font-bold text-indigo-600">1</span>
+                </div>
+                <div>
+                  <span class="font-semibold text-slate-700">Boas-vindas</span>
+                  <p class="text-xs text-slate-500 mt-0.5">Visão geral do que o app faz</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0 mt-0.5">
+                  <span class="text-xs font-bold text-emerald-600">2</span>
+                </div>
+                <div>
+                  <span class="font-semibold text-slate-700">Meta de Gastos</span>
+                  <p class="text-xs text-slate-500 mt-0.5">Defina um limite mensal (obrigatório)</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center shrink-0 mt-0.5">
+                  <span class="text-xs font-bold text-amber-600">3</span>
+                </div>
+                <div>
+                  <span class="font-semibold text-slate-700">Dia de Reinício</span>
+                  <p class="text-xs text-slate-500 mt-0.5">Escolha quando seus gastos resetam</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center shrink-0 mt-0.5">
+                  <span class="text-xs font-bold text-violet-600">4</span>
+                </div>
+                <div>
+                  <span class="font-semibold text-slate-700">Instalar o App</span>
+                  <p class="text-xs text-slate-500 mt-0.5">Instale na tela inicial para acesso rápido</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 11. PWA / Instalar App -->
+      <div class="help-section border border-slate-100 rounded-xl overflow-hidden">
+        <button class="help-section-toggle w-full flex items-center gap-3 px-4 py-4 text-left hover:bg-slate-50 transition-colors" onclick="toggleSection(this)">
+          <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9333EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+              <line x1="12" y1="18" x2="12.01" y2="18"></line>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-sm font-semibold text-slate-700">Instalar como Aplicativo (PWA)</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Acesso rápido na tela inicial</p>
+          </div>
+          <svg class="help-chevron text-slate-300 shrink-0" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <div class="help-section-content px-4 pb-5">
+          <div class="pl-13 space-y-4 text-sm text-slate-600 leading-relaxed">
+            <p>O MoneyControl é um <strong>Progressive Web App (PWA)</strong>, ou seja, pode ser instalado como um aplicativo nativo no seu celular.</p>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-2">Como instalar</h4>
+              <div class="space-y-3">
+                <div>
+                  <p class="font-medium text-slate-700">No Chrome (Android):</p>
+                  <ol class="list-decimal list-inside space-y-1 mt-1">
+                    <li>Clique nos três pontinhos no canto superior direito</li>
+                    <li>Selecione <strong>"Instalar app"</strong> ou <strong>"Adicionar a tela inicial"</strong></li>
+                    <li>Confirme a instalação</li>
+                  </ol>
+                </div>
+                <div>
+                  <p class="font-medium text-slate-700">No Safari (iPhone):</p>
+                  <ol class="list-decimal list-inside space-y-1 mt-1">
+                    <li>Toque no ícone de <strong>compartilhar</strong> (quadrado com seta)</li>
+                    <li>Selecione <strong>"Adicionar à Tela de Início"</strong></li>
+                    <li>Confirme tocando em <strong>"Adicionar"</strong></li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Vantagens do modo app</h4>
+              <ul class="space-y-1 ml-1">
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-purple-400 mt-1.5 shrink-0"></span>
+                  <span>Abre instantaneamente sem precisar digitar URL</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-purple-400 mt-1.5 shrink-0"></span>
+                  <span>Tela cheia sem barras de navegação</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-purple-400 mt-1.5 shrink-0"></span>
+                  <span>Funciona offline (dados salvos localmente)</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-purple-400 mt-1.5 shrink-0"></span>
+                  <span>Ícone próprio na tela inicial</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 11. Reportar & Feedback -->
+      <div class="help-section border border-slate-100 rounded-xl overflow-hidden">
+        <button class="help-section-toggle w-full flex items-center gap-3 px-4 py-4 text-left hover:bg-slate-50 transition-colors" onclick="toggleSection(this)">
+          <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0D9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-sm font-semibold text-slate-700">Reportar & Feedback</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Reportar bugs, sugestões ou elogios</p>
+          </div>
+          <svg class="help-chevron text-slate-300 shrink-0" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <div class="help-section-content px-4 pb-5">
+          <div class="pl-13 space-y-4 text-sm text-slate-600 leading-relaxed">
+            <p>Encontrou um bug ou tem uma sugestão de melhoria? Use a página de <strong>Reportar & Feedback</strong> para nos enviar!</p>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Como enviar um report</h4>
+              <ol class="list-decimal list-inside space-y-1">
+                <li>Acesse <strong>Reportar & Feedback</strong> no menu lateral</li>
+                <li>Escolha o tipo: <strong>Bug</strong>, <strong>Sugestão</strong> ou <strong>Elogio</strong></li>
+                <li>Preencha seu nome e email (opcional, caso queira retorno)</li>
+                <li>Dê uma nota de 1 a 5 estrelas</li>
+                <li>Escreva sua mensagem detalhadamente</li>
+                <li>Clique em <strong>Enviar</strong></li>
+              </ol>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-700 mb-1">Tipos de report</h4>
+              <ul class="space-y-1 ml-1">
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 shrink-0"></span>
+                  <span><strong>Bug</strong> — Algo não está funcionando corretamente</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0"></span>
+                  <span><strong>Sugestão</strong> — Uma ideia para melhorar o app</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-green-400 mt-1.5 shrink-0"></span>
+                  <span><strong>Elogio</strong> — Algo que você gostou no app</span>
+                </li>
+              </ul>
+            </div>
+            <div class="bg-teal-50 border border-teal-200 rounded-lg px-4 py-3">
+              <p class="text-teal-700 text-xs font-medium">Seus reports são enviados diretamente para nossa equipe de suporte. Respostas são enviadas em até 48h.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 12. Dicas de Seguranca -->
+      <div class="help-section border border-slate-100 rounded-xl overflow-hidden">
+        <button class="help-section-toggle w-full flex items-center gap-3 px-4 py-4 text-left hover:bg-slate-50 transition-colors" onclick="toggleSection(this)">
+          <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-sm font-semibold text-slate-700">Segurança e Privacidade</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Seus dados estão protegidos</p>
+          </div>
+          <svg class="help-chevron text-slate-300 shrink-0" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <div class="help-section-content px-4 pb-5">
+          <div class="pl-13 space-y-3 text-sm text-slate-600 leading-relaxed">
+            <ul class="space-y-2">
+              <li class="flex items-start gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 shrink-0"></span>
+                <span><strong>Autenticação segura</strong> — Login via email/senha ou Google com criptografia</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 shrink-0"></span>
+                <span><strong>Banco de dados criptografado</strong> — Dados armazenados no Firebase com segurança de nível empresarial</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 shrink-0"></span>
+                <span><strong>Cada usuário vê apenas seus próprios dados</strong> — Não há compartilhamento de informações</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 shrink-0"></span>
+                <span><strong>Extratos processados localmente</strong> — Arquivos CSV/PDF são enviados apenas para extrair transações</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 13. Problemas Comuns -->
+      <div class="help-section border border-slate-100 rounded-xl overflow-hidden">
+        <button class="help-section-toggle w-full flex items-center gap-3 px-4 py-4 text-left hover:bg-slate-50 transition-colors" onclick="toggleSection(this)">
+          <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-sm font-semibold text-slate-700">Problemas Comuns</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Dúvidas frequentes e soluções</p>
+          </div>
+          <svg class="help-chevron text-slate-300 shrink-0" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <div class="help-section-content px-4 pb-5">
+          <div class="pl-13 space-y-4 text-sm text-slate-600 leading-relaxed">
+            <div class="help-item pl-3 py-2 rounded-lg">
+              <h4 class="font-semibold text-slate-700 mb-1">O saldo não atualiza</h4>
+              <p>Puxe a tela para baixo (pull-to-refresh) ou recarregue a página. Se o problema persistir, faça logout e faça login novamente.</p>
+            </div>
+            <div class="help-item pl-3 py-2 rounded-lg">
+              <h4 class="font-semibold text-slate-700 mb-1">Não consigo importar o extrato</h4>
+              <p>Verifique se o arquivo está no formato correto (CSV ou PDF) e se é de um banco compatível. O app detecta o banco automaticamente. Tente exportar o extrato novamente pelo app do banco.</p>
+            </div>
+            <div class="help-item pl-3 py-2 rounded-lg">
+              <h4 class="font-semibold text-slate-700 mb-1">As categorias estão erradas</h4>
+              <p>O MoneyControl identifica categorias automaticamente pela descrição. Se uma transação foi classificada incorretamente, isso não afeta seus saldos — apenas a análise por categoria no Gerenciamento.</p>
+            </div>
+            <div class="help-item pl-3 py-2 rounded-lg">
+              <h4 class="font-semibold text-slate-700 mb-1">Esqueci minha senha</h4>
+              <p>Na tela de login, use a opção <strong>"Entrar com Google"</strong> se sua conta está vinculada ao Google, ou redefina sua senha pelo Firebase Authentication.</p>
+            </div>
+            <div class="help-item pl-3 py-2 rounded-lg">
+              <h4 class="font-semibold text-slate-700 mb-1">O app não instala no celular</h4>
+              <p>A instalação só funciona em navegadores compatíveis com PWA (Chrome Android, Edge, Samsung Browser). No iPhone, use o Safari. Verifique se você está acessando via HTTPS.</p>
+            </div>
+            <div class="help-item pl-3 py-2 rounded-lg">
+              <h4 class="font-semibold text-slate-700 mb-1">Como sair da conta</h4>
+              <p>Abra o menu lateral (três pontinhos) e clique em <strong>Sair da Conta</strong>.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="px-4 sm:px-6 py-5 border-t border-slate-100 text-center">
+      <p class="text-xs text-slate-400">MoneyControl v1.0 — Gerenciador Financeiro Pessoal</p>
+      <p class="text-xs text-slate-300 mt-1">Feito com dedicação para ajudar você a controlar suas finanças</p>
+    </div>
+  </section>
+
+  <script>
+    /* Toggle das secoes de ajuda */
+    function toggleSection(btn) {
+      var content = btn.nextElementSibling;
+      var chevron = btn.querySelector('.help-chevron');
+      var isOpen = content.classList.contains('open');
+
+      /* Fecha todas as outras secoes */
+      document.querySelectorAll('.help-section-content.open').forEach(function(el) {
+        el.classList.remove('open');
+      });
+      document.querySelectorAll('.help-chevron.rotated').forEach(function(el) {
+        el.classList.remove('rotated');
+      });
+
+      /* Abre a secao clicada (se estava fechada) */
+      if (!isOpen) {
+        content.classList.add('open');
+        chevron.classList.add('rotated');
+      }
+    }
+
+    /* Busca nas secoes */
+    document.getElementById('help-search').addEventListener('input', function(e) {
+      var query = e.target.value.toLowerCase().trim();
+      var sections = document.querySelectorAll('.help-section');
+
+      sections.forEach(function(section) {
+        var text = section.textContent.toLowerCase();
+        if (query === '' || text.includes(query)) {
+          section.style.display = '';
+        } else {
+          section.style.display = 'none';
+        }
+      });
+
+      /* Se ha busca, abre todas as secoes visiveis */
+      if (query.length > 0) {
+        document.querySelectorAll('.help-section-content').forEach(function(el) {
+          el.classList.add('open');
+        });
+        document.querySelectorAll('.help-chevron').forEach(function(el) {
+          el.classList.add('rotated');
+        });
+      } else {
+        document.querySelectorAll('.help-section-content').forEach(function(el) {
+          el.classList.remove('open');
+        });
+        document.querySelectorAll('.help-chevron').forEach(function(el) {
+          el.classList.remove('rotated');
+        });
+      }
+    });
+  </script>
+  <script src="js/pwa.js"></script>
+  <script src="js/dark-mode.js"></script>
+</body>
+</html>

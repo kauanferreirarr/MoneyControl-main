@@ -1,9 +1,20 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+  <script>if(localStorage.getItem('mc_theme')==='dark')document.documentElement.classList.add('dark')</script>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Configurações - MoneyControl</title>
+
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6366F1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MoneyControl">
+  <meta name="application-name" content="MoneyControl">
+  <meta name="description" content="Configurações do MoneyControl.">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
   <link rel="shortcut icon" href="assets/logo.png" type="image/x-icon">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,6 +39,8 @@
   </script>
   <link rel="stylesheet" href="css/config-components.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+  <link rel="stylesheet" href="css/pwa.css">
+  <link rel="stylesheet" href="css/dark-mode.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
 </head>
@@ -94,7 +107,7 @@
           </svg>
         </div>
         <div class="flex-1 min-w-0">
-          <h3 class="text-sm font-semibold text-slate-700">Notificacoes</h3>
+          <h3 class="text-sm font-semibold text-slate-700">Notificações</h3>
           <p class="text-xs text-slate-400 mt-0.5">Configure alertas sobre seus gastos</p>
         </div>
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-300 shrink-0">
@@ -129,7 +142,7 @@
           </svg>
         </div>
         <div class="flex-1 min-w-0">
-          <h3 class="text-sm font-semibold text-slate-700">Perfil do usuario</h3>
+          <h3 class="text-sm font-semibold text-slate-700">Perfil do Usuário</h3>
           <p class="text-xs text-slate-400 mt-0.5">Edite suas informações pessoais</p>
         </div>
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-300 shrink-0">
@@ -142,7 +155,7 @@
 
   <!-- ============ MODAL: REINICIO ============ -->
   <div id="menureinicio" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[1000] items-center justify-center p-4">
-    <div class="modal-panel bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
+    <div class="modal-panel bg-white rounded-2xl w-full max-w-md shadow-xl p-6">
       <div class="flex items-center gap-3 mb-5">
         <a href="config.html" class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 transition-colors duration-200 text-slate-400 hover:text-slate-600">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -153,7 +166,7 @@
         <h2 class="text-base font-bold text-slate-800">Reset do saldo mensal</h2>
       </div>
       <p class="text-sm text-slate-400 mb-5 leading-relaxed">
-        Nessa data, o saldo e o histórico mensal serão reiniciados automaticamente (as transações permanecem salvas).
+        Nessa data, os gastos do mês serão reiniciados automaticamente. Se você perder o dia, o reset acontece assim que abrir o app.
       </p>
       <div class="relative mb-4">
         <select id="dia-reinicio" class="input-focus w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 appearance-none cursor-pointer">
@@ -190,7 +203,7 @@
 
   <!-- ============ MODAL: METAS ============ -->
   <div id="menumetas" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[1000] items-center justify-center p-4">
-    <div class="modal-panel bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
+    <div class="modal-panel bg-white rounded-2xl w-full max-w-md shadow-xl p-6">
       <div class="flex items-center gap-3 mb-5">
         <a href="#" class="btn-back w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 transition-colors duration-200 text-slate-400 hover:text-slate-600" onclick="fecharMetas()">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -205,14 +218,14 @@
       </p>
       <div class="mb-3">
         <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Limite mensal (R$)</label>
-        <input type="range" id="limit-range" min="0" max="2000" step="5" class="w-full">
+        <input type="range" id="limit-range" min="0" max="50000" step="50" class="w-full">
       </div>
       <div class="text-center mb-4">
         <span class="text-3xl font-bold text-slate-800">R$ <span id="display-value">0</span></span>
       </div>
       <div class="mb-4">
         <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5" for="manual-input">Ou digite o valor</label>
-        <input type="number" id="manual-input" min="0" max="2000" value="200"
+        <input type="number" id="manual-input" min="0" max="50000" value="200"
           class="input-focus w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700">
       </div>
       <label class="flex items-center gap-3 mb-5 cursor-pointer">
@@ -225,7 +238,7 @@
 
   <!-- ============ MODAL: NOTIFICACOES ============ -->
   <div id="notifcard" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[999] items-center justify-center p-4">
-    <div class="modal-panel bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
+    <div class="modal-panel bg-white rounded-2xl w-full max-w-md shadow-xl p-6">
       <div class="flex items-center gap-3 mb-5">
         <a href="#" class="btn-back w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 transition-colors duration-200 text-slate-400 hover:text-slate-600" onclick="fecharNotifCard()">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -233,7 +246,7 @@
             <polyline points="12 19 5 12 12 5"></polyline>
           </svg>
         </a>
-        <h2 class="text-base font-bold text-slate-800">Notificacoes</h2>
+        <h2 class="text-base font-bold text-slate-800">Notificações</h2>
       </div>
       <p class="text-sm text-slate-400 mb-5 leading-relaxed">
         Escolha quando deseja receber alertas sobre seus gastos em relação à meta definida.
@@ -256,7 +269,7 @@
         <div class="border-b border-slate-100 mx-3"></div>
         <label class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors duration-200">
           <input type="checkbox" id="chkNone" class="checkbox-custom">
-          <span class="text-sm font-medium text-slate-600">Desativar notificacoes</span>
+          <span class="text-sm font-medium text-slate-600">Desativar notificações</span>
         </label>
       </div>
       <button id="btn-salvar-nofif" class="btn-salvar w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold rounded-xl transition-all duration-200 shadow-sm shadow-indigo-200">Salvar</button>
@@ -265,7 +278,7 @@
 
   <!-- ============ MODAL: IMPORTAR ============ -->
   <div id="menuimportar" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[1000] items-center justify-center p-4">
-    <div class="modal-panel bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
+    <div class="modal-panel bg-white rounded-2xl w-full max-w-md shadow-xl p-6">
       <div class="flex items-center gap-3 mb-5">
         <a href="#" class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 transition-colors duration-200 text-slate-400 hover:text-slate-600" onclick="fecharImportar(); return false;">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -294,7 +307,7 @@
 
   <!-- ============ MODAL: PERFIL ============ -->
   <div id="menuperfil" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[1000] items-center justify-center p-4">
-    <div class="modal-panel bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
+    <div class="modal-panel bg-white rounded-2xl w-full max-w-md shadow-xl p-6">
       <div class="flex items-center gap-3 mb-5">
         <a href="#" class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 transition-colors duration-200 text-slate-400 hover:text-slate-600" onclick="fecharPerfil(); return false;">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -302,12 +315,12 @@
             <polyline points="12 19 5 12 12 5"></polyline>
           </svg>
         </a>
-        <h2 class="text-base font-bold text-slate-800">Perfil do usuario</h2>
+        <h2 class="text-base font-bold text-slate-800">Perfil do Usuário</h2>
       </div>
 
       <!-- Avatar -->
       <div class="flex flex-col items-center mb-5">
-        <div id="perfil-avatar" class="relative w-24 h-24 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 text-white flex items-center justify-center text-3xl font-bold shadow-lg shadow-indigo-200 ring-4 ring-white overflow-hidden mb-3">
+        <div id="perfil-avatar" class="relative w-24 h-24 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 text-white flex items-center justify-center text-3xl font-bold shadow-sm shadow-indigo-200/60 ring-4 ring-white overflow-hidden mb-3">
           <img id="perfil-foto" class="hidden w-full h-full object-cover" alt="Foto de perfil">
           <span id="perfil-iniciais"></span>
         </div>
@@ -338,5 +351,7 @@
   <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
   <script src="js/configurações.js"></script>
   <script type="module" src="js/main.js"></script>
+  <script src="js/pwa.js"></script>
+  <script src="js/dark-mode.js"></script>
 </body>
 </html>
