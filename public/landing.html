@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <script>if(localStorage.getItem('mc_theme')==='dark')document.documentElement.classList.add('dark')</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>MoneyControl - Gerenciamento Financeiro Pessoal Grátis</title>
+    <meta name="description" content="Gerencie suas finanças de forma simples e gratuita. Controle saldo, gastos, metas e transações recorrentes. Disponível como app no celular e computador.">
+    <meta name="keywords" content="gerenciamento financeiro, controle financeiro pessoal, organizar gastos, app de finanças, controle de saldo, metas financeiras, orçamento pessoal, dinheiro, finanças">
+    <meta name="author" content="MoneyControl">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://www.moneycontroll.xyz/">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.moneycontroll.xyz/">
+    <meta property="og:title" content="MoneyControl - Gerenciamento Financeiro Pessoal Grátis">
+    <meta property="og:description" content="Gerencie suas finanças de forma simples e gratuita. Controle saldo, gastos, metas e transações recorrentes.">
+    <meta property="og:image" content="https://www.moneycontroll.xyz/assets/icon-512.png">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:site_name" content="MoneyControl">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="MoneyControl - Gerenciamento Financeiro Pessoal Grátis">
+    <meta name="twitter:description" content="Gerencie suas finanças de forma simples e gratuita. Controle saldo, gastos, metas e transações recorrentes.">
+    <meta name="twitter:image" content="https://www.moneycontroll.xyz/assets/icon-512.png">
+
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6366F1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MoneyControl">
+    <link rel="apple-touch-icon" href="assets/icon-192.png">
+    <link rel="shortcut icon" href="assets/logo.png" type="image/x-icon">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "MoneyControl",
+        "url": "https://www.moneycontroll.xyz",
+        "description": "Gerencie suas finanças de forma simples e gratuita. Controle saldo, gastos, metas e transações recorrentes.",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Web, Android, iOS",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "BRL"
+        },
+        "inLanguage": "pt-BR",
+        "screenshot": "https://www.moneycontroll.xyz/assets/icon-512.png"
+    }
+    </script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #1e293b;
+            background: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        /* HERO */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 80px 24px 60px;
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 30%, #c7d2fe 70%, #a5b4fc 100%);
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 40%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 60%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-2%, 2%); }
+        }
+
+        .hero-content { position: relative; z-index: 1; max-width: 720px; }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            color: #4f46e5;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #1e1b4b, #4338ca, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: clamp(1rem, 2.5vw, 1.25rem);
+            color: #475569;
+            line-height: 1.6;
+            margin-bottom: 36px;
+            max-width: 560px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: #fff;
+            padding: 16px 32px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(99, 102, 241, 0.45);
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #fff;
+            color: #4f46e5;
+            padding: 16px 32px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            text-decoration: none;
+            border: 2px solid #e0e7ff;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            border-color: #6366f1;
+        }
+
+        .hero-screenshot {
+            margin-top: 60px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-screenshot img {
+            max-width: 340px;
+            width: 100%;
+            border-radius: 24px;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.06);
+        }
+
+        /* FEATURES */
+        .section { padding: 80px 24px; }
+
+        .section-title {
+            text-align: center;
+            font-size: clamp(1.75rem, 4vw, 2.5rem);
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: #64748b;
+            font-size: 1.1rem;
+            max-width: 560px;
+            margin: 0 auto 60px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03);
+            border: 1px solid #f1f5f9;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+        }
+
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; }
+        .feature-card p { color: #64748b; font-size: 0.95rem; line-height: 1.6; }
+
+        /* HOW IT WORKS */
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 32px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .step { text-align: center; }
+
+        .step-number {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #818cf8);
+            color: #fff;
+            font-size: 22px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+        }
+
+        .step h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+        .step p { color: #64748b; font-size: 0.95rem; line-height: 1.5; }
+
+        /* CTA */
+        .cta {
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            color: #fff;
+            text-align: center;
+            padding: 80px 24px;
+        }
+
+        .cta h2 { font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 800; margin-bottom: 16px; }
+        .cta p { font-size: 1.1rem; opacity: 0.9; margin-bottom: 36px; max-width: 500px; margin-left: auto; margin-right: auto; }
+
+        .cta .btn-primary {
+            background: #fff;
+            color: #4f46e5;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+
+        .cta .btn-primary:hover { box-shadow: 0 12px 32px rgba(0,0,0,0.2); }
+
+        /* FOOTER */
+        footer {
+            background: #0f172a;
+            color: #94a3b8;
+            text-align: center;
+            padding: 40px 24px;
+            font-size: 14px;
+        }
+
+        footer a { color: #818cf8; text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        /* DARK MODE */
+        .dark body, .dark { background: #0f172a; color: #e2e8f0; }
+        .dark .hero { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%); }
+        .dark .hero h1 { background: linear-gradient(135deg, #c7d2fe, #a5b4fc, #818cf8); -webkit-background-clip: text; background-clip: text; }
+        .dark .feature-card { background: #1e293b; border-color: #334155; }
+        .dark .feature-card p { color: #94a3b8; }
+        .dark .section-subtitle { color: #94a3b8; }
+        .dark .step p { color: #94a3b8; }
+        .dark .cta { background: linear-gradient(135deg, #312e81, #4338ca); }
+
+        @media (max-width: 640px) {
+            .hero { padding: 60px 20px 40px; }
+            .hero-buttons { flex-direction: column; align-items: center; }
+            .btn-primary, .btn-secondary { width: 100%; max-width: 300px; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">100% Gratuito</div>
+            <h1>Controle suas finanças de forma simples</h1>
+            <p>Gerencie saldo, gastos, metas e transações recorrentes em um único lugar. Acesse de qualquer dispositivo, a qualquer momento.</p>
+            <div class="hero-buttons">
+                <a href="login.html" class="btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                    Começar Agora
+                </a>
+                <a href="#funcionalidades" class="btn-secondary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 16 16 12 12 8"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                    Saiba Mais
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="section" id="funcionalidades">
+        <h2 class="section-title">Funcionalidades</h2>
+        <p class="section-subtitle">Tudo que você precisa para manter suas finanças organizadas</p>
+        <div class="features-grid">
+            <article class="feature-card">
+                <div class="feature-icon" style="background: #ede9fe; color: #7c3aed;">💰</div>
+                <h3>Controle de Saldo</h3>
+                <p>Acompanhe seu saldo em tempo real. Registre entradas e saídas de forma rápida e intuitiva.</p>
+            </article>
+            <article class="feature-card">
+                <div class="feature-icon" style="background: #fef2f2; color: #dc2626;">📊</div>
+                <h3>Registro de Gastos</h3>
+                <p>Categorize e acompanhe todos os seus gastos. Saiba exatamente para onde seu dinheiro está indo.</p>
+            </article>
+            <article class="feature-card">
+                <div class="feature-icon" style="background: #ecfdf5; color: #16a34a;">🎯</div>
+                <h3>Metas de Economia</h3>
+                <p>Defina metas de economia mensais e acompanhe seu progresso. Economize mais a cada mês.</p>
+            </article>
+            <article class="feature-card">
+                <div class="feature-icon" style="background: #eff6ff; color: #2563eb;">🔄</div>
+                <h3>Transações Recorrentes</h3>
+                <p>Registre aluguel, assinaturas e contas fixas. Nunca mais esqueça de uma despesa recorrente.</p>
+            </article>
+            <article class="feature-card">
+                <div class="feature-icon" style="background: #fff7ed; color: #ea580c;">📤</div>
+                <h3>Exportar Dados</h3>
+                <p>Exporte seus dados financeiros em CSV para análises detalhadas no Excel ou Google Sheets.</p>
+            </article>
+            <article class="feature-card">
+                <div class="feature-icon" style="background: #fdf4ff; color: #9333ea;">🌙</div>
+                <h3>Modo Escuro</h3>
+                <p>Interface confortável para os olhos, dia e noite. Use o app sem cansaço visual.</p>
+            </article>
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="section" style="background: #f1f5f9;">
+        <h2 class="section-title">Como Funciona</h2>
+        <p class="section-subtitle">Três passos simples para começar a controlar suas finanças</p>
+        <div class="steps-grid">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Crie sua Conta</h3>
+                <p>Cadastre-se gratuitamente com email ou Google. Leva menos de 30 segundos.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Registre seus Dados</h3>
+                <p>Adicione seu saldo atual e comece a registrar entradas e saídas.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Acompanhe tudo</h3>
+                <p>Veja seus gastos, metas e saldo em tempo real. Instale o app no celular.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta">
+        <h2>Comece a organizar suas finanças hoje</h2>
+        <p>É grátis, rápido e funciona no seu celular e computador.</p>
+        <a href="login.html" class="btn-primary">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+            Criar Minha Conta Grátis
+        </a>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>&copy; 2025 MoneyControl. Todos os direitos reservados.</p>
+        <p style="margin-top: 8px;">
+            <a href="ajuda.html">Ajuda</a> &middot;
+            <a href="reportar.html">Reportar Problema</a> &middot;
+            <a href="login.html">Entrar</a>
+        </p>
+    </footer>
+
+    <script src="js/dark-mode.js"></script>
+    <script src="js/pwa.js"></script>
+</body>
+</html>

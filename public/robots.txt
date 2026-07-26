@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /js/
+Disallow: /css/
+Disallow: /config.html
+Disallow: /gerenciamento.html
+Disallow: /recorrentes.html
+
+Sitemap: https://www.moneycontroll.xyz/sitemap.xml
