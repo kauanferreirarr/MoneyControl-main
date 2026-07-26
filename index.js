@@ -488,7 +488,22 @@ module.exports = app;
 // ===================================================
 if (require.main === module) {
     const port = process.env.PORT || 3000;
-    app.listen(port, () => {
-        console.log("Servidor local rodando em http://localhost:" + port);
-    });
+    const certPath = path.join(__dirname, 'certs', 'cert.pem');
+    const keyPath = path.join(__dirname, 'certs', 'key.pem');
+
+    if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
+        const https = require('https');
+        const httpsOptions = {
+            key: fs.readFileSync(keyPath),
+            cert: fs.readFileSync(certPath)
+        };
+        https.createServer(httpsOptions, app).listen(port, '0.0.0.0', () => {
+            console.log("Servidor HTTPS rodando em https://localhost:" + port);
+            console.log("Para testar no iPad, acesse pelo IP local com https://");
+        });
+    } else {
+        app.listen(port, '0.0.0.0', () => {
+            console.log("Servidor local rodando em http://localhost:" + port);
+        });
+    }
 }
