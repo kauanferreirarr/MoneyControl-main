@@ -198,9 +198,17 @@
         window._deferredInstallPrompt = null;
       });
     } else {
-      alert('Para instalar o MoneyControl:\n\nNo Chrome, toque nos 3 pontinhos (⋮) e selecione "Instalar app" ou "Adicionar à Tela de Início".');
+      alert('Para instalar o MoneyControl:\n\nNo Chrome, toque nos 3 pontinhos (⋮) e selecione "Instalar app".');
     }
   };
+
+  /* Mostra/esconde botao de instalar no menu */
+  var menuBtn = document.getElementById('pwa-install-menu-btn');
+
+  /* Se ja esta instalado, esconde o botao */
+  if (isStandalone() && menuBtn) {
+    menuBtn.style.display = 'none';
+  }
 
   /* Quando o app ja estiver instalado, esconder qualquer banner */
   window.addEventListener('appinstalled', function () {
