@@ -310,9 +310,10 @@
                 if (!msg) { window.Notyf && new Notyf({duration:3000,position:{x:"right",y:"top"}}).error("Escreva sua mensagem!"); return; }
 
                 const tipoLabels = { bug: "Bug/Problema", feature: "Sugestão", praise: "Elogio" };
+                const estrelas = "★".repeat(rating) + "☆".repeat(5 - rating);
                 const params = {
                     tipo: tipoLabels[tipo],
-                    nota: rating + "/5 estrelas",
+                    nota: estrelas + " " + rating + "/5",
                     nome: nome,
                     email: email || "Não informado",
                     mensagem: msg,
