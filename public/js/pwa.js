@@ -34,7 +34,9 @@
   var notificationEl = null;
 
   function isIOS() {
-    return /iphone|ipad|ipod/i.test(navigator.userAgent);
+    if (/iphone|ipad|ipod/i.test(navigator.userAgent)) return true;
+    if (/Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1) return true;
+    return false;
   }
 
   function isAndroid() {
