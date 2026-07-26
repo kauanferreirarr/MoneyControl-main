@@ -1,0 +1,29 @@
+{
+  "name": "MoneyControl - Gestao Financeira",
+  "short_name": "MoneyControl",
+  "description": "Gerencie suas financas de forma simples e eficiente. Acompanhe saldo, gastos e metas.",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F8FAFC",
+  "theme_color": "#6366F1",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "scope": "/",
+  "categories": ["finance", "utilities"],
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "prefer_related_applications": false
+}
